@@ -1,7 +1,7 @@
 # 英文 v1.4 源文勘误记录
 
 - 基准：arXiv `2606.24937v3`（Version 1.4，2026-09-29）
-- 复核日期：2026-10-22
+- 初版日期：2026-10-22；更新日期：2026-10-23
 - 范围：`qa/independent-review.md` 中列出的 12 类源文继承问题
 - 原则：英文源文件不作为本仓库的修改对象；中文版在确认有误后直接修正，并在下表记录依据。未能确认的内容保留原文。
 
@@ -28,16 +28,29 @@
 
 第三轮复验发现的下列问题已核实并修正：
 
-- **P2-1 GRPO 长度归一化**：`contents/part3.tex` 中“防止偏向较短回答”改为“消除回答长度对损失与梯度尺度的放大”；原英文注释保留，并加注勘误。
+- **P2-1 GRPO 长度归一化**：`contents/part3.tex` 中“防止偏向较短回答”改为“消除回答长度对损失与梯度尺度的放大”，本轮进一步精化为“消除显式的线性长度缩放”；原英文注释保留，并加注勘误。
 - **P2-2 EXO 元数据**：`ji2024exo` 改为 Haozhe Ji 等，*Towards Efficient Exact Optimization of Language Model Alignment*，ICML 2024，arXiv:2402.00856。
 - **P2-3 NCA 作者**：`chen2024nca` 改为 Huayu Chen、Guande He、Lifan Yuan、Ganqu Cui、Hang Su、Jun Zhu。
-- **P2-4 OpenRLHF 作者**：`hu2024openrlhf` 改为 Jian Hu、Xibin Wu、Weixun Wang、Xianyu、Dehao Zhang、Yu Cao（对应 arXiv:2405.11143v3 作者页）。
+- **P2-4 OpenRLHF 作者**：`hu2024openrlhf` 改为 Jian Hu、Xibin Wu、Weixun Wang、Xianyu、Dehao Zhang、Yu Cao（对应 arXiv:2405.11143v3 作者页）；URL 与 journal 字段一并固定为 `2405.11143v3`，避免无版本链接解析到后来的 v6 作者列表。
 - **P3-1 英文注释**：恢复 DPO β 两条原始英文注释；第 5–9、11 项保留英文原句并补充 `% 勘误` 注。
 - **P3-2 PSD 定义**：明确限定“对于对称矩阵 A”，并说明特征值等价条件。
 - **P3-3 errata 引证与笔误**：修正“注意力得分矩阵”笔误；DPO 依据改为 KL 正则目标与最优策略推导。
 - **P3-4 errata 结论**：限定为“最初 12 项范围内无”，并补记本轮 P2/P3 处理。
+- **P3-5 OpenRLHF URL**：`hu2024openrlhf` 的 `url` 与 `journal` 固定为 `2405.11143v3`，与书目中的 v3 作者列表一致。
+- **P3-6 errata 日期**：头部改为“初版日期：2026-10-22；更新日期：2026-10-23”，避免与新增处理节混淆。
+- **P3-7 GRPO 措辞**：按复验建议将“消除回答长度对损失与梯度尺度的放大”精化为“消除显式的线性长度缩放”。
 
-未处理的 P3：p110 标题/浮动体分页、p595 空白等排版遗留；CI 固定 TeX Live 版本与字体回退复核。这两项属于排版/构建环境优化，不改变正文技术内容。
+## 术语规范化（2026-10-23）
+
+本轮按“公认中文译名用中文；专有名词、无稳定译名或易歧义的术语保留英文”的原则，做了一次限定范围的术语统一；约定与例外见 `qa/terminology.md`。主要修改：
+
+- **多智能体 / 单智能体**：正文中的混合写法“多 Agent”“单 Agent”统一为“多智能体”“单智能体”，与第 26 章标题《多智能体系统》及既有“多智能体”用法一致；`Agent` 作为核心术语仍按项目约定保留英文。
+- **上下文**：第 18 章的 `Context`、`Context Window` 统一为“上下文”“上下文窗口”，与全书既有的“上下文”“上下文窗口”用法一致；`Model Context Protocol` 作为协议名保留英文。
+- **Prompt 相关**：`Prompt` 作为对象/构件保留英文（`System Prompt`、`Prompt 模板`、`Prompt 链`、`Prompt 缓存`）；已成词的中文术语统一为“提示工程”“提示注入”；“系统提示”“系统 Prompt”统一为 `System Prompt`。第 28 章 `Agent 化 UI` 统一为章节标题所用的 `Agentic UI`，`Agent 化 RAG` 统一为“智能体 RAG”。
+- **其他**：`时延` 统一为“延迟”；`人在回路` 统一为“人机协同”；第 18 章正文中的 `Workflow` 统一为“工作流”。
+- **歧义消解**：第 6 部分循环工程清单中的“提示注入”（意为向循环注入提示）改为“注入提示（Hint Injection）”，避免与安全术语“提示注入（prompt injection）”混淆。其余“Agent 化”统一为“智能体”（如“智能体模式”“智能体工作流”），`Agentic AI`、`Agentic UI` 等术语保留英文。
+
+未处理的 P3：p110 标题/浮动体分页、p595 空白等排版遗留；CI 固定 TeX Live 版本与字体回退复核。这两项属于排版/构建环境优化，不改变正文技术内容；复验报告中的 OpenRLHF 版本 URL、errata 日期与 GRPO 可选措辞已在本轮关闭。
 
 ## 说明
 

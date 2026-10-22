@@ -722,8 +722,8 @@ GRPO 目标对概率比做截断（与近端策略优化（Proximal Policy Optim
   % \item $\beta > 0$ controls the KL penalty strength
   \item $\beta > 0$ 控制 KL 惩罚的强度
   % \item $|y_i|$ is the length of response $i$ (length normalization prevents bias toward short responses)
-  % 勘误（英文 v1.4 有误）：GRPO 的 1/|y_i| 主要消除回答长度对损失与梯度尺度的放大，并非防止偏向短回答。
-  \item $|y_i|$ 是第 $i$ 个回答的长度（长度归一化消除回答长度对损失与梯度尺度的放大）
+  % 勘误（英文 v1.4 有误）：GRPO 的 1/|y_i| 主要消除显式的线性长度缩放（即回答长度对损失与梯度尺度的放大），并非防止偏向短回答。
+  \item $|y_i|$ 是第 $i$ 个回答的长度（长度归一化消除显式的线性长度缩放）
 \end{itemize}
 
 \paragraph{KL 惩罚的具体形式}

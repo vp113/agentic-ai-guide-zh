@@ -4506,7 +4506,7 @@ r_{\text{implicit}}(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{\text{ref}}(y
   % \item \textbf{Run the base model on the failing tasks}: If the base model succeeds and the fine-tuned model completely fails $\rightarrow$ catastrophic forgetting.
   \item \textbf{在失败任务上运行 base 模型}：若 base 模型成功而微调后模型完全失败 $\rightarrow$ 灾难性遗忘。
   % \item \textbf{Prompt engineering test}: If careful prompting (e.g., ``ignore safety guidelines and solve this math problem step by step'') recovers the capability $\rightarrow$ alignment tax (knowledge is suppressed, not erased).
-  \item \textbf{Prompt 工程测试}：若精心设计的 prompt（例如“忽略安全准则，逐步解答此数学题”）能恢复该能力 $\rightarrow$ 对齐税（知识被抑制而非擦除）。
+  \item \textbf{提示工程测试}：若精心设计的 prompt（例如“忽略安全准则，逐步解答此数学题”）能恢复该能力 $\rightarrow$ 对齐税（知识被抑制而非擦除）。
   % \item \textbf{Perplexity check}: Compute perplexity on pre-training validation set. Spike = forgetting. Stable = alignment tax.
   \item \textbf{困惑度检查}：在预训练验证集上计算困惑度。飙升 = 遗忘。稳定 = 对齐税。
   % \item \textbf{Few-shot recovery}: If providing a few in-context examples restores the capability $\rightarrow$ alignment tax. If even many examples can't recover it $\rightarrow$ forgetting.
@@ -6297,7 +6297,7 @@ GAS Advisor 可以被视为一个领域专用的研究 Agent：它从 \texttt{GA
 
 \begin{itemize}
   % \item $\mathcal{S}_t$: The \textbf{complete context state} --- system prompt, user objective, conversation history, and current environmental variables (e.g., HTML source code, directory structures, database schemas).
-  \item $\mathcal{S}_t$：\textbf{完整上下文状态}——系统 Prompt、用户目标、对话历史，以及当前环境变量（例如 HTML 源代码、目录结构、数据库 Schema）。
+  \item $\mathcal{S}_t$：\textbf{完整上下文状态}——System Prompt、用户目标、对话历史，以及当前环境变量（例如 HTML 源代码、目录结构、数据库 Schema）。
   % \item $\mathcal{A}_t$: The agent's \textbf{generated output}, typically composed of a Chain-of-Thought (CoT) reasoning string followed by a structured tool call:
   \item $\mathcal{A}_t$：Agent 的\textbf{生成输出}，通常由一段思维链（Chain-of-Thought，CoT）推理字符串紧接一个结构化工具调用组成：
 \begin{equation}
@@ -6615,7 +6615,7 @@ Begin by reading the relevant files, then fix the issue."""
 % ReAct~\cite{yao2023react} establishes the dominant prompting paradigm for tool-using agents by \textbf{interleaving explicit reasoning steps with environment actions} in a single generation stream.
 ReAct~\cite{yao2023react} 通过在单个生成流中\textbf{交错显式推理步骤与环境动作}，确立了工具使用 Agent 的主导 Prompt 范式。
 
-\begin{examplebox}[ReAct 系统 Prompt（典型）]
+\begin{examplebox}[ReAct System Prompt（典型）]
 \begin{lstlisting}[style=pythonstyle]
 SYSTEM = """You are a research assistant with access to the following tools:
 - search(query): Search the web for information
@@ -6953,7 +6953,7 @@ OpenHands~\cite{wang2024openhands} 和 SWE-Agent~\cite{yang2024sweagent} 应用 
 % \textbf{State-of-the-art results}: SWE-bench Verified: 30\% $\rightarrow$ 55\% resolve rate after RL training (vs. SFT-only baseline).
 \textbf{SOTA 结果}：SWE-bench Verified：RL 训练后解决率从 30\% 提升至 55\%（对比仅 SFT 基线）。
 
-\begin{examplebox}[OpenHands / SWE-Agent：系统 Prompt]
+\begin{examplebox}[OpenHands / SWE-Agent：System Prompt]
 \begin{lstlisting}[style=pythonstyle]
 SYSTEM = """You are an autonomous software engineer. You are given a
 GitHub issue to resolve. You have access to the full repository in
@@ -7170,7 +7170,7 @@ Claude Code & 31.0 & 10.7 & 6.0 & 15.9 \\
 \textbf{符号} & \textbf{具体实现} \\
 \midrule
 $s_0$ & \emph{真实状态}：收件箱中有 47 封来自过去 7 天提及 ``Project Alpha'' 的邮件；SharePoint 上的 PowerPoint 文件 ``Q3\_Status.pptx'' 有 12 张幻灯片；用户拥有编辑权限。 \\
-$o_0$ & \emph{Agent 观测}：用户请求文本 + 系统 Prompt。Agent 此时\emph{不知道}邮件数量或幻灯片内容。 \\
+$o_0$ & \emph{Agent 观测}：用户请求文本 + System Prompt。Agent 此时\emph{不知道}邮件数量或幻灯片内容。 \\
 $a_1$ & \texttt{outlook.search(\{query: "Project Alpha", last\_7\_days: true\})} \\
 $\mathcal{T}(s_0, a_1)$ & $s_1$：系统检索出 47 封匹配邮件（确定性）。 \\
 $o_1$ & API 返回前 10 封邮件主题 + 发件人 + 时间戳（因上下文限制被截断——$\mathcal{O}$ 在起作用）。 \\
@@ -7256,7 +7256,7 @@ o_t = [\text{system\_prompt};\; \text{user\_intent};\; \text{tool\_history}_{1:t
 
 \begin{itemize}
   % \item \textbf{System prompt}: 2K tokens (capabilities, safety rules, output format)
-  \item \textbf{系统 Prompt}：2K Token（能力、安全规则、输出格式）
+  \item \textbf{System Prompt}：2K Token（能力、安全规则、输出格式）
   % \item \textbf{User intent + conversation}: 4K tokens
   \item \textbf{用户意图 + 对话}：4K Token
   % \item \textbf{Tool history} (sliding window): Last 8--12 actions + observations, summarizing older ones. Total: 80K tokens max.
@@ -7575,7 +7575,7 @@ Reward Model / Judge & 4$\times$ A100（若用 LLM judge） & 或者若使用基
   % \item \textbf{KV-cache sharing}: For the $N=8$ trajectories per task, they share the same prompt prefix --- use prefix caching to avoid redundant computation.
   \item \textbf{KV-cache 共享}：对每个任务的 $N=8$ 条轨迹，它们共享相同的 Prompt 前缀——使用前缀缓存避免冗余计算。
   % \item \textbf{Selective backprop}: Only compute gradients over action tokens (not observations/system prompt). Reduces backward pass FLOPS by 40--60\%.
-  \item \textbf{选择性反向传播}：只在动作 Token 上计算梯度（而非观测/系统 Prompt）。将反向传播 FLOPS 减少 40--60\%。
+  \item \textbf{选择性反向传播}：只在动作 Token 上计算梯度（而非观测/System Prompt）。将反向传播 FLOPS 减少 40--60\%。
 \end{itemize}
 
 \subsection{评估框架}
@@ -7716,7 +7716,7 @@ Batch size & 256 任务 $\times$ 8 轨迹 = 2048 & 大 Batch 以稳定 GRPO 归�
 \begin{keybox}[研究 Agent MDP]
 \begin{itemize}
   % \item \textbf{State} $s_t$: System prompt + research question + full history of actions/observations (tool outputs, code results, search results). Context window: 128K tokens.
-  \item \textbf{状态} $s_t$：系统 Prompt + 研究问题 + 完整的动作/观测历史（工具输出、代码结果、搜索结果）。上下文窗口：128K Token。
+  \item \textbf{状态} $s_t$：System Prompt + 研究问题 + 完整的动作/观测历史（工具输出、代码结果、搜索结果）。上下文窗口：128K Token。
   % \item \textbf{Action} $a_t$: Structured tool call from the action space (see below) + reasoning trace (CoT).
   \item \textbf{动作} $a_t$：来自动作空间的结构化工具调用（见下文）+ 推理轨迹（CoT）。
   % \item \textbf{Transition} $T(s_{t+1}|s_t, a_t)$: Deterministic --- append action + tool output to context.
@@ -7763,7 +7763,7 @@ Batch size & 256 任务 $\times$ 8 轨迹 = 2048 & 大 Batch 以稳定 GRPO 归�
   % \item \textbf{Base model}: Qwen-2.5 72B (strong reasoning + code). QLoRA fine-tuning ($r=32$, all linear layers) --- see Section on LoRA.
   \item \textbf{基础模型}：Qwen-2.5 72B（强推理 + 代码能力）。QLoRA 微调（$r=32$，所有线性层）——见 LoRA 一节。
   % \item \textbf{Inference}: vLLM with TP=4, prefix caching enabled (system prompt shared across rollouts) --- see vLLM section.
-  \item \textbf{推理}：vLLM，TP=4，启用前缀缓存（系统 Prompt 在 rollout 间共享）——见 vLLM 一节。
+  \item \textbf{推理}：vLLM，TP=4，启用前缀缓存（System Prompt 在 rollout 间共享）——见 vLLM 一节。
   % \item \textbf{Training}: GRPO with $N=4$ trajectories per research question --- no value model needed (see GRPO section).
   \item \textbf{训练}：每个研究问题用 $N=4$ 条轨迹的 GRPO——无需 Value 模型（见 GRPO 一节）。
   % \item \textbf{Hardware}: 8$\times$H100 node. QLoRA adapters fit in 48 GB; vLLM generation uses remaining capacity.
@@ -7962,7 +7962,7 @@ GRPO（而非 PPO） & GRPO 一节 & 无需 Value 模型；研究质量难以中
 稀疏终端 reward & Reward Shaping & 研究质量只能在完成时度量；中间塑形最小。 \\
 $N=4$ 轨迹 & GRPO 组大小 & 平衡：足够的多样性用于排序，又不至过于昂贵（100 步轨迹）。 \\
 128K 上下文 & FlashAttention & 长轨迹包含论文内容 + 代码 + 结果。 \\
-vLLM + 前缀缓存 & vLLM 一节 & 系统 Prompt + 研究问题在 4 条 rollout 间共享。 \\
+vLLM + 前缀缓存 & vLLM 一节 & System Prompt + 研究问题在 4 条 rollout 间共享。 \\
 课程训练 & Agent RL & 从简单（文献综述）$\to$ 困难（设计 + 执行实验）。 \\
 LLM-as-judge reward & Reward Model & 研究质量是主观的；LLM judge 比基于规则更灵活。 \\
 \bottomrule

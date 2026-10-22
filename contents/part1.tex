@@ -18,8 +18,8 @@ GAS 原型通过 Ollama 运行在共享的 \texttt{llama3.2:3b} 基座模型上�
 \textbf{模型压缩（\hyperref[model-compression-methods]{\S~模型压缩方法}）}。
 GAS 通过 Ollama 使用 4-bit GGUF 量化（Q4\_K\_M），使所有智能体都能在单块消费级 GPU 上运行。\texttt{capstone\_gas/gas\_system.py} 中的 \texttt{GASLLMClient} 会自动检测可用后端（OpenAI $\to$ Anthropic $\to$ Ollama $\to$ Mock），并优雅回退，因此即使没有 GPU，系统也能运行。
 
-\textbf{Prompt 工程（\hyperref[sec:prompt-engineering]{\S~Prompt 工程}）}。
-\texttt{capstone\_gas/gas\_system.py} 中的每个智能体节点都使用结构化的系统 Prompt，其中定义了该智能体的角色、输出格式（带结构化分节的纯文本）以及升级标准。本节中的 Prompt 工程模式——角色分配、输出约束、思维链诱导——直接应用于 \texttt{monitor\_node()}、\texttt{advisor\_node()}、\texttt{safety\_node()} 和 \texttt{caregiver\_node()}。
+\textbf{提示工程（\hyperref[sec:prompt-engineering]{\S~提示工程}）}。
+\texttt{capstone\_gas/gas\_system.py} 中的每个智能体节点都使用结构化的 System Prompt，其中定义了该智能体的角色、输出格式（带结构化分节的纯文本）以及升级标准。本节中的提示工程模式——角色分配、输出约束、思维链诱导——直接应用于 \texttt{monitor\_node()}、\texttt{advisor\_node()}、\texttt{safety\_node()} 和 \texttt{caregiver\_node()}。
 
 \textbf{安全（\hyperref[sec:safety]{\S~LLM 安全与负责任 AI}）}。
 安全评审器（\texttt{capstone\_gas/gas\_system.py} 中的 \texttt{safety\_node()}）实现基于规则的宪法式检查：它按 0.0--1.0 的尺度为 Advisor 的输出评分，并拒绝那些建议危险胰岛素剂量或轻视关键血糖读数的建议。评分 $\geq 0.7$ 才获批；系统最多重试 2 次，之后升级处理。
@@ -3394,11 +3394,11 @@ P'(v | x_{<t}) = \begin{cases}
 \end{keybox}
 
 % \section{Prompt Engineering}
-\section{Prompt 工程}
+\section{提示工程}
 \label{sec:prompt-engineering}
 
 % Prompt engineering is the discipline of designing inputs to LLMs that reliably elicit desired behaviour---without changing model weights. While fine-tuning modifies the model, prompt engineering exploits the model's \emph{existing} capabilities through careful framing, examples, and structure. It is the fastest, cheapest, and most accessible lever for improving LLM outputs, and remains essential even when using fine-tuned models.
-Prompt 工程是一门设计 LLM 输入的学科，目标是在不修改模型权重的情况下可靠地激发预期行为。微调修改的是模型本身，而 Prompt 工程则通过精心的框架、示例与结构来挖掘模型\emph{已有}的能力。它是改善 LLM 输出最快、最便宜、也最易获得的杠杆，即使在使用微调模型时也依然不可或缺。
+提示工程是一门设计 LLM 输入的学科，目标是在不修改模型权重的情况下可靠地激发预期行为。微调修改的是模型本身，而提示工程则通过精心的框架、示例与结构来挖掘模型\emph{已有}的能力。它是改善 LLM 输出最快、最便宜、也最易获得的杠杆，即使在使用微调模型时也依然不可或缺。
 
 % \subsection{In-Context Learning (ICL)}
 \subsection{上下文学习（In-Context Learning，ICL）}
@@ -3555,7 +3555,7 @@ Abstract: [...]
 \label{system-prompts-vs.-user-prompts.}
 
 % Modern chat APIs separate the \emph{system} prompt (persistent instructions, role definition) from the \emph{user} message (per-turn input). System prompts are processed with higher attention priority in most models and provide a natural place for role definitions, constraints, and output format specifications~\cite{openai2023gpt4}.
-现代聊天 API 将\emph{系统} Prompt（持久指令、角色定义）与\emph{用户}消息（每轮输入）分离。多数模型对 system prompt 赋予更高的 attention 优先级，是放置角色定义、约束和输出格式说明的天然位置~\cite{openai2023gpt4}。
+现代聊天 API 将 \emph{System Prompt}（持久指令、角色定义）与\emph{用户}消息（每轮输入）分离。多数模型对 System Prompt 赋予更高的 attention 优先级，是放置角色定义、约束和输出格式说明的天然位置~\cite{openai2023gpt4}。
 
 % \subsection{Structured Output Prompts (JSON/XML)}
 \subsection{结构化输出 Prompt（JSON/XML）}
@@ -3817,7 +3817,7 @@ ARQ~\cite{yang2025arq} 解决了标准 Prompting 的一个根本弱点：随着�
 % Based on empirical findings across the literature and practitioner experience, the following principles reliably improve prompt quality:
 基于文献中的实证发现与从业者经验，以下原则能够稳定地提升 Prompt 质量：
 
-\begin{keybox}[Prompt 工程检查清单]
+\begin{keybox}[提示工程检查清单]
 \begin{enumerate}
   % \item \textbf{Be specific and unambiguous}: Replace ``summarize this'' with ``summarize in 2--3 bullet points, each under 20 words, focusing on actionable findings.''
   \item \textbf{具体且无歧义}：把 ``总结一下'' 替换为 ``用 2--3 个要点总结，每条不超过 20 字，聚焦可操作的发现''。
@@ -3859,9 +3859,9 @@ ARQ~\cite{yang2025arq} 解决了标准 Prompting 的一个根本弱点：随着�
 \end{tabularx}
 \end{table}
 
-\begin{intuitionbox}[Prompt 工程的心智模型]
+\begin{intuitionbox}[提示工程的心智模型]
 % Think of prompt engineering as \emph{programming in natural language}. The model is a powerful but literal interpreter---it will do exactly what you ask, interpreted in the most likely way given its training distribution. Common principles from software engineering apply:
-把 Prompt 工程想象成\emph{用自然语言编程}。模型是一个强大但字面化的解释器——它会严格按照你的要求执行，并按其训练分布中最可能的方式去理解。软件工程的常见原则同样适用：
+把提示工程想象成\emph{用自然语言编程}。模型是一个强大但字面化的解释器——它会严格按照你的要求执行，并按其训练分布中最可能的方式去理解。软件工程的常见原则同样适用：
 
 \begin{itemize}
   % \item \textbf{DRY (Don't Repeat Yourself)}: Unless fighting attention decay in long contexts
@@ -5093,15 +5093,15 @@ vLLM~\cite{kwon2023efficient} 引入了分页注意力（PagedAttention），它
 \label{prefix-sharing-copy-on-write.}
 
 % Multiple sequences sharing a common prefix (e.g., a system prompt) can share the \emph{same physical blocks} for that prefix. The block table simply points multiple sequences to the same physical blocks. When a sequence needs to write to a shared block (diverging from the prefix), a copy-on-write is triggered.
-多条共享同一前缀（例如同一系统提示）的序列可以\emph{共享相同的物理块}来表示该前缀。块表只需让多条序列指向相同的物理块。当某条序列需要写入共享块（与前缀分叉）时，会触发写时复制（Copy-on-Write）。
+多条共享同一前缀（例如同一 System Prompt）的序列可以\emph{共享相同的物理块}来表示该前缀。块表只需让多条序列指向相同的物理块。当某条序列需要写入共享块（与前缀分叉）时，会触发写时复制（Copy-on-Write）。
 
 \begin{intuitionbox}[前缀共享带来的节约]
 % In a chatbot with a 1000-token system prompt serving 128 concurrent users:
-在一个拥有 1000-token 系统提示、服务 128 位并发用户的聊天机器人中：
+在一个拥有 1000-token System Prompt、服务 128 位并发用户的聊天机器人中：
 
 \begin{itemize}
   % \item Without prefix sharing: $128 \times 1000 \times 327{,}680 / 10^9 \approx 42$ GB just for system prompt KV cache
-  \item 无前缀共享：仅系统提示 KV cache 就需 $128 \times 1000 \times 327{,}680 / 10^9 \approx 42$ GB
+  \item 无前缀共享：仅 System Prompt KV cache 就需 $128 \times 1000 \times 327{,}680 / 10^9 \approx 42$ GB
   % \item With prefix sharing: $1 \times 1000 \times 327{,}680 / 10^9 \approx 0.33$ GB
   \item 有前缀共享：$1 \times 1000 \times 327{,}680 / 10^9 \approx 0.33$ GB
   % \item Savings: $\sim$128$\times$ for the shared prefix portion
@@ -5278,7 +5278,7 @@ vLLM 将 PagedAttention 封装在一整套服务栈中：连续批处理（Conti
 \label{prefix-caching-automatic-prompt-caching}
 
 % When multiple requests share a common prefix (system prompt, few-shot examples):
-当多个请求共享相同前缀（系统 prompt、few-shot 示例）时：
+当多个请求共享相同前缀（System Prompt、few-shot 示例）时：
 
 \begin{enumerate}
   % \item Hash the token content of each logical block.
@@ -5292,7 +5292,7 @@ vLLM 将 PagedAttention 封装在一整套服务栈中：连续批处理（Conti
 \end{enumerate}
 
 % \textbf{Impact}: For chat applications with long system prompts (2K+ tokens shared across all users), prefix caching reduces TTFT by 60--80\%.
-\textbf{影响}：对于具有长系统提示（2K+ token、所有用户共享）的聊天应用，前缀缓存可降低 TTFT 60--80\%。
+\textbf{影响}：对于具有长 System Prompt（2K+ token、所有用户共享）的聊天应用，前缀缓存可降低 TTFT 60--80\%。
 
 \subsection{vLLM 中的引导（受约束）解码}
 \label{sec:vllm-guided-decoding}
@@ -5388,7 +5388,7 @@ vLLM 将掩码计算委托给后端引擎：
 吞吐（tok/s） & 2,500--4,000 & 300--600 & 连续批处理 + PagedAttention \\
 显存利用率 & 90--95\% & 50--60\% & 零碎片，动态块分配 \\
 最大并发序列数 & 200--500 & 16--32 & 分页 KV 消除每序列预留 \\
-首 token 延迟 & 100--300ms & 500--2000ms & 对重复系统提示启用前缀缓存 \\
+首 token 延迟 & 100--300ms & 500--2000ms & 对重复 System Prompt 启用前缀缓存 \\
 \bottomrule
 \end{tabularx}
 \end{table}

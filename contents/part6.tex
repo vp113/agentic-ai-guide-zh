@@ -1387,7 +1387,7 @@ TRL：\texttt{loss\_type=["sigmoid", "sft"], loss\_weights=[1.0, 1.0]}
 
 \begin{itemize}
   % \item \textbf{Prefix sharing}: Multiple sequences with the same system prompt share KV cache blocks (copy-on-write). Saves 30--50\% memory for chat applications.
-  \item \textbf{前缀共享}：拥有相同系统 prompt 的多条序列共享 KV cache 块（写时复制）。聊天应用可省 30--50\% 显存。
+  \item \textbf{前缀共享}：拥有相同 System Prompt 的多条序列共享 KV cache 块（写时复制）。聊天应用可省 30--50\% 显存。
   % \item \textbf{Preemption}: Can ``swap out'' a low-priority sequence’s blocks to CPU, freeing GPU memory for higher-priority requests.
   \item \textbf{抢占}：可将低优先级序列的块“换出”到 CPU，为高优先级请求腾出 GPU 显存。
   % \item \textbf{Near-zero fragmentation}: Internal fragmentation limited to last block ($<$16 tokens). External fragmentation eliminated (any free block can be used anywhere).
@@ -2923,7 +2923,7 @@ $K$ 因子控制更新幅度（$K$ 越大对近期结果反应越敏感）。
 C = S + M + T + H + R \leq L
 \]
 % where $S$ = system prompt, $M$ = memory/retrieved context, $T$ = tool descriptions, $H$ = conversation history, $R$ = reserved for response.
-其中 $S$ = 系统 Prompt，$M$ = 记忆/检索上下文，$T$ = 工具描述，$H$ = 对话历史，$R$ = 为响应预留。
+其中 $S$ = System Prompt，$M$ = 记忆/检索上下文，$T$ = 工具描述，$H$ = 对话历史，$R$ = 为响应预留。
 
 % As conversations grow, $H$ increases and pushes out other components.
 随着对话增长，$H$ 增大并挤掉其他组件。
@@ -3210,14 +3210,14 @@ Sampling & 服务器 $\to$ 客户端 & 请求 LLM 生成 & 服务器请求 LLM �
 \textbf{LLM 的局限}：LLM 常常高估自身能力（幻觉置信度）。投标应纳入历史记录（相似任务的历史成功率），而不仅是自报置信度。
 
 % \emph{\textbf{Review:} Chapters~24 and~25 (A2A; Multi-Agent Systems).}
-\emph{\textbf{复习：}第 25 章与第 26 章（A2A；多 Agent 系统）。}
+\emph{\textbf{复习：}第 25 章与第 26 章（A2A；多智能体系统）。}
 \end{questionbox}
 
-\section{多 Agent 系统问题}
+\section{多智能体系统问题}
 \label{multi-agent-systems-questions}
 
 % \begin{questionbox}[Q: Compare centralized vs decentralized multi-agent architectures for LLMs]
-\begin{questionbox}[Q：比较 LLM 多 Agent 系统的中心化 vs 去中心化架构]
+\begin{questionbox}[Q：比较 LLM 多智能体系统的中心化 vs 去中心化架构]
 \textbf{答}：
 
 % \textbf{Centralized (Supervisor)}:
@@ -3257,16 +3257,16 @@ Sampling & 服务器 $\to$ 客户端 & 请求 LLM 生成 & 服务器请求 LLM �
 \textbf{决策框架}：需要可预测性和可审计性时用中心化。需要弹性和创造性时用去中心化。大型（$>$10 个 Agent）系统用层次化。
 
 % \emph{\textbf{Review:} Chapter~25 (Multi-Agent Systems).}
-\emph{\textbf{复习：}第 26 章（多 Agent 系统）。}
+\emph{\textbf{复习：}第 26 章（多智能体系统）。}
 \end{questionbox}
 
 % \begin{questionbox}[Q: What is CTDE and why is it important for training multi-agent LLM systems?]
-\begin{questionbox}[Q：什么是 CTDE，为什么它对训练多 Agent LLM 系统重要？]
+\begin{questionbox}[Q：什么是 CTDE，为什么它对训练多智能体 LLM 系统重要？]
 % \textbf{Answer}: \textbf{CTDE} = Centralized Training; Decentralized Execution.
 \textbf{答}：\textbf{CTDE} = 中心化训练；去中心化执行（Centralized Training; Decentralized Execution）。
 
 % \textbf{The problem}: In multi-agent RL each agent’s environment is non-stationary (other agents are changing their policies simultaneously). This makes independent training unstable.
-\textbf{问题}：多 Agent RL 中，每个 Agent 的环境都是非平稳的（其他 Agent 同时在改变各自的 Policy）。这使独立训练不稳定。
+\textbf{问题}：多智能体 RL 中，每个 Agent 的环境都是非平稳的（其他 Agent 同时在改变各自的 Policy）。这使独立训练不稳定。
 
 % \textbf{CTDE solution}:
 \textbf{CTDE 方案}：
@@ -3284,14 +3284,14 @@ Sampling & 服务器 $\to$ 客户端 & 请求 LLM 生成 & 服务器请求 LLM �
 % \textbf{Practical challenge}: Full CTDE requires all agents to train simultaneously with shared state --- expensive for LLMs. Approximations: train agents in rounds (freeze others and train one) or use population-based training with periodic synchronization.
 \textbf{实际挑战}：完整 CTDE 要求所有 Agent 在共享状态下同时训练——对 LLM 而言代价昂贵。近似方法：分轮训练 Agent（冻结其余 Agent 训练一个），或使用具有周期同步的种群训练。
 
-\emph{\textbf{复习：}第 26 章（多 Agent 系统）。}
+\emph{\textbf{复习：}第 26 章（多智能体系统）。}
 \end{questionbox}
 
 \section{Agent 开发框架问题}
 \label{agent-development-framework-questions}
 
 % \begin{questionbox}[Q: Compare LangGraph vs AutoGen vs CrewAI for building multi-agent systems]
-\begin{questionbox}[Q：比较 LangGraph、AutoGen、CrewAI 用于构建多 Agent 系统]
+\begin{questionbox}[Q：比较 LangGraph、AutoGen、CrewAI 用于构建多智能体系统]
 \textbf{答}：
 
 \noindent\begin{tabularx}{\linewidth}{@{}l Z{0.99} Z{1.01}@{}}
@@ -3304,7 +3304,7 @@ Sampling & 服务器 $\to$ 客户端 & 请求 LLM 生成 & 服务器请求 LLM �
 % State mgmt & TypedDict schemas; checkpointing & Conversation history as state \\
 状态管理 & TypedDict schema；checkpoint & 以对话历史为状态 \\
 % Multi-agent & Graph with conditional routing & GroupChat / Crew \\
-多 Agent & 带条件路由的图 & GroupChat / Crew \\
+多智能体 & 带条件路由的图 & GroupChat / Crew \\
 % Debugging & Graph visualization; step replay & Chat logs \\
 调试 & 图可视化；步骤回放 & 聊天日志 \\
 % HITL & First-class (interrupt nodes) & Via approval tools \\
@@ -3320,7 +3320,7 @@ Sampling & 服务器 $\to$ 客户端 & 请求 LLM 生成 & 服务器请求 LLM �
 \textbf{选 LangGraph 当}：需要细粒度控制；复杂条件流；带持久化和人机协同的生产部署。
 
 % \textbf{Choose AutoGen when}: Rapid prototyping of multi-agent conversations; code execution agents; research experimentation.
-\textbf{选 AutoGen 当}：多 Agent 对话的快速原型；代码执行 Agent；研究实验。
+\textbf{选 AutoGen 当}：多智能体对话的快速原型；代码执行 Agent；研究实验。
 
 % \textbf{Choose CrewAI when}: Simple role-based teams; sequential task execution; quick demos; minimal code.
 \textbf{选 CrewAI 当}：简单的基于角色的团队；顺序任务执行；快速演示；代码量最小。
@@ -3559,7 +3559,7 @@ r_{\text{shaped}}(s, a, s') = r(s, a, s') + \gamma \Phi(s') - \Phi(s)
 \emph{\textbf{复习：}第 18 章与第 28 章（Agent Harness；Agent UI 框架）。}
 \end{questionbox}
 
-\section{RAG 与 Agent 化 RAG 问题}
+\section{RAG 与智能体 RAG 问题}
 \label{rag-and-agentic-rag-questions}
 
 % \begin{questionbox}[Q: Explain Reciprocal Rank Fusion (RRF) and why it works for hybrid retrieval]
@@ -3595,7 +3595,7 @@ r_{\text{shaped}}(s, a, s') = r(s, a, s') + \gamma \Phi(s') - \Phi(s)
 \end{questionbox}
 
 % \begin{questionbox}[Q: What is Agentic RAG and how does it differ from standard RAG?]
-\begin{questionbox}[Q：什么是 Agent 化 RAG，它与标准 RAG 有何不同？]
+\begin{questionbox}[Q：什么是智能体 RAG，它与标准 RAG 有何不同？]
 % \textbf{Answer}: \textbf{Standard RAG} follows a fixed pipeline: query $\to$ retrieve $\to$ generate. It has no ability to:
 \textbf{答}：\textbf{标准 RAG} 遵循固定流水线：查询 $\to$ 检索 $\to$ 生成。它没有能力：
 
@@ -3611,7 +3611,7 @@ r_{\text{shaped}}(s, a, s') = r(s, a, s') + \gamma \Phi(s') - \Phi(s)
 \end{itemize}
 
 % \textbf{Agentic RAG} treats retrieval as an \emph{action} in the agent’s MDP:
-\textbf{Agent 化 RAG} 将检索视为 Agent MDP 中的一个\emph{动作}：
+\textbf{智能体 RAG} 将检索视为 Agent MDP 中的一个\emph{动作}：
 
 \begin{itemize}
 %   \item \textbf{Retrieve-or-not decision}: Agent assesses if it already knows the answer (skip retrieval for factual questions in its training data)
@@ -3627,10 +3627,10 @@ r_{\text{shaped}}(s, a, s') = r(s, a, s') + \gamma \Phi(s') - \Phi(s)
 \end{itemize}
 
 % \textbf{Key architectural difference}: Standard RAG = deterministic pipeline. Agentic RAG = state machine with conditional transitions (LangGraph pattern with retrieve/grade/rewrite/generate nodes).
-\textbf{关键架构差异}：标准 RAG = 确定性流水线。Agent 化 RAG = 带条件转移的状态机（LangGraph 的 retrieve/grade/rewrite/generate 节点模式）。
+\textbf{关键架构差异}：标准 RAG = 确定性流水线。智能体 RAG = 带条件转移的状态机（LangGraph 的 retrieve/grade/rewrite/generate 节点模式）。
 
 % \textbf{Trade-off}: Agentic RAG is more accurate on complex queries but adds latency (multiple LLM calls for routing/grading). Use standard RAG for simple factual lookups; agentic RAG for multi-hop or ambiguous queries.
-\textbf{权衡}：Agent 化 RAG 在复杂查询上更准确，但增加延迟（多次 LLM 调用用于路由/评分）。简单事实查询用标准 RAG；多跳或歧义查询用 Agent 化 RAG。
+\textbf{权衡}：智能体 RAG 在复杂查询上更准确，但增加延迟（多次 LLM 调用用于路由/评分）。简单事实查询用标准 RAG；多跳或歧义查询用智能体 RAG。
 
 % \emph{\textbf{Review:} Chapters~16 and~18 (RAG; Agent Harness).}
 \emph{\textbf{复习：}第 16 章与第 18 章（RAG；Agent Harness）。}
@@ -3767,7 +3767,7 @@ r_{\text{shaped}}(s, a, s') = r(s, a, s') + \gamma \Phi(s') - \Phi(s)
 % \begin{questionbox}[Q: What is context engineering and why does it matter more than prompt engineering for long-running loops?]
 \begin{questionbox}[Q：什么是上下文工程？为什么对长时间运行的循环而言，它比提示工程更重要？]
 % \textbf{Answer}: \textbf{Prompt engineering} optimizes the \emph{content} of a single system prompt. \textbf{Context engineering} optimizes \emph{everything that fills the context window} across the entire loop lifetime: the system prompt, retrieved knowledge, tool definitions, conversation history, intermediate results, and reserved output space.
-\textbf{答}：\textbf{提示工程}优化单个系统提示的\emph{内容}。\textbf{上下文工程}优化\emph{在整个循环生命周期内填满上下文窗口的一切}：系统提示、检索到的知识、工具定义、对话历史、中间结果，以及预留的输出空间。
+\textbf{答}：\textbf{提示工程}优化单个 System Prompt 的\emph{内容}。\textbf{上下文工程}优化\emph{在整个循环生命周期内填满上下文窗口的一切}：System Prompt、检索到的知识、工具定义、对话历史、中间结果，以及预留的输出空间。
 
 % \textbf{Why it matters more for loops}: A single-turn prompt has a fixed context. A loop accumulates context with every step---tool outputs, error messages, intermediate reasoning, retry attempts. Without active management, the context window fills and quality degrades. The model begins to ``forget'' early instructions, repeat failed actions, or lose track of the original goal.
 \textbf{为什么对循环更重要}：单轮提示的上下文是固定的。循环则随着每一步累积上下文——工具输出、错误消息、中间推理、重试尝试。没有主动管理，上下文窗口会被填满，质量随之下降。模型开始“忘记”早先的指令、重复失败的动作，或偏离最初的目标。
@@ -3819,7 +3819,7 @@ C \geq S_{\text{system}} + M_{\text{memory/RAG}} + T_{\text{tool defs}} + H_{\te
 \textbf{恢复策略}（按升级顺序）：
 \begin{enumerate}
 %   \item \textbf{Hint injection}: Add a system message: ``You have tried similar approaches without success. Consider a fundamentally different strategy.''
-  \item \textbf{提示注入}：添加一条系统消息：“你已经尝试过类似方法但未成功。请考虑一种根本不同的策略。”
+  \item \textbf{注入提示（Hint Injection）}：添加一条系统消息：“你已经尝试过类似方法但未成功。请考虑一种根本不同的策略。”
 %   \item \textbf{Context reset}: Summarize progress so far and restart the loop with a fresh context, preserving only the goal and key findings.
   \item \textbf{上下文重置}：总结迄今的进展，用全新上下文重启循环，只保留目标与关键发现。
 %   \item \textbf{Strategy diversification}: Explicitly enumerate what has been tried and instruct the agent to avoid those approaches.
@@ -4212,7 +4212,7 @@ C \geq \underbrace{S}_{\text{system}} + \underbrace{M}_{\text{memory/RAG}} + \un
 
 \begin{itemize}
   % \item System prompt: 1--4K tokens (fixed)
-  \item 系统提示：1--4K token（固定）
+  \item System Prompt：1--4K token（固定）
   % \item Tool definitions: 2--8K (scales with \# tools)
   \item 工具定义：2--8K（随工具数量增长）
   % \item RAG context: 4--16K (top-$k$ chunks)
@@ -4376,7 +4376,7 @@ Push Notifications & 长任务的 webhook 更新（通过 \texttt{tasks/pushNoti
 
 \noindent\begin{tabularx}{\linewidth}{@{}l Z{0.8} Z{0.5} Z{1.7}@{}}
 \toprule
-\textbf{框架} & \textbf{编排方式} & \textbf{多 Agent} & \textbf{最适用于} \\
+\textbf{框架} & \textbf{编排方式} & \textbf{多智能体} & \textbf{最适用于} \\
 \midrule
 LangGraph & 显式状态图 & 条件路由 & 生产环境：持久化、HITL、精细控制 \\
 OpenAI Agents SDK & 声明式 handoff & 基于 handoff & 简单易用：护栏、追踪、快速上手 \\
@@ -4405,12 +4405,12 @@ Google ADK & 会话 + 事件 & 原生 A2A & 企业级：artifact 管理、多模
 \toprule
 \textbf{威胁} & \textbf{层级} & \textbf{缓解措施} \\
 \midrule
-Prompt 注入（直接） & 输入 & 输入校验、指令层级、分隔符 \\
-Prompt 注入（间接） & 工具输出 & 将工具输出视为不可信；勿遵循检索文档中的指令 \\
+提示注入（直接） & 输入 & 输入校验、指令层级、分隔符 \\
+提示注入（间接） & 工具输出 & 将工具输出视为不可信；勿遵循检索文档中的指令 \\
 工具滥用 & 执行 & 最小权限；\texttt{destructiveHint} 关卡；沙箱化 \\
 数据外泄 & 输出 & 输出过滤；限制工具仅访问白名单域 \\
 过度自主 & 架构 & 最大迭代次数；成本预算；人工审批关卡 \\
-混淆代理（Confused Deputy） & 多 Agent & 校验任务来源；基于能力的访问控制 \\
+混淆代理（Confused Deputy） & 多智能体 & 校验任务来源；基于能力的访问控制 \\
 \bottomrule
 \end{tabularx}
 
@@ -4473,7 +4473,7 @@ Terminal-Bench & 长时程终端任务 & 任务完成率 & $\sim$38\%（困难�
   % \item \textbf{Evaluation drives everything.} Without rigorous evaluation---from reward model validation to agent task success rates, from contamination detection to LLM-as-Judge calibration---progress is unmeasurable and regressions are invisible. The benchmarks you choose shape the systems you build.
   \item \textbf{评估驱动一切。} 没有严格的评估——从奖励模型验证到 Agent 任务成功率，从污染检测到 LLM-as-Judge 校准——进步无法度量、回退也不可见。你所选择的基准塑造了你所构建的系统。
   % \item \textbf{Simplicity scales.} The most reliable production agents use the simplest architecture that meets requirements---prompt chaining and routing before autonomous loops, single agents before multi-agent swarms. Complexity should be earned through demonstrated need.
-  \item \textbf{简单才能扩展。} 最可靠的生产级 Agent 采用满足需求的最简单架构——优先使用 prompt chaining 与 routing，而非自主循环；优先使用单 Agent，而非多 Agent 集群。复杂度只能通过被证实的需要去赢得。
+  \item \textbf{简单才能扩展。} 最可靠的生产级 Agent 采用满足需求的最简单架构——优先使用 prompt chaining 与 routing，而非自主循环；优先使用单智能体，而非多智能体集群。复杂度只能通过被证实的需要去赢得。
 \end{enumerate}
 
 \section{前路：开放挑战}
@@ -4575,7 +4575,7 @@ A2A 协议~\cite{google-a2a-2025} 与多智能体框架预示着这样一种未�
 
 \begin{itemize}
   % \item \textbf{Prompt injection at scale}~\cite{greshake2023indirect}: As agents consume untrusted content (web pages, emails, API responses), indirect prompt injection becomes systemic. No robust defense exists today.
-  \item \textbf{规模化的 Prompt 注入}~\cite{greshake2023indirect}：随着 Agent 消费不可信内容（网页、邮件、API 响应），间接 prompt 注入成为系统性问题。目前尚无稳健的防御手段。
+  \item \textbf{规模化的提示注入}~\cite{greshake2023indirect}：随着 Agent 消费不可信内容（网页、邮件、API 响应），间接提示注入成为系统性问题。目前尚无稳健的防御手段。
   % \item \textbf{Confused deputy attacks}: An agent with legitimate credentials can be tricked into misusing them on behalf of an attacker embedded in the data stream~\cite{anthropic-mcp-2024}.
   \item \textbf{混淆代理（Confused Deputy）攻击}：持有合法凭证的 Agent 可能被骗，代表潜伏在数据流中的攻击者滥用其凭证~\cite{anthropic-mcp-2024}。
   % \item \textbf{Sandboxing without crippling}: Least-privilege execution constrains what agents can do, but overly restrictive sandboxes negate agentic value. Finding the right boundary is an open design problem.
