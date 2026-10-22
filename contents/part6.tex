@@ -2411,7 +2411,7 @@ AWQ 识别出 top 1\% 的“显著”通道（在校准数据上始终具有较�
 \end{center}
 
 % \emph{\textbf{Review:} Chapters~12 and~20 (LLM Agentic Training; Agent Design Patterns).}
-\emph{\textbf{复习：}第 12 章与第 20 章（LLM Agent 训练；Agent 设计模式）。}
+\emph{\textbf{复习：}第 12 章与第 21 章（LLM Agent 训练；Agent 设计模式）。}
 \end{questionbox}
 
 % \begin{questionbox}[Q: Why is GRPO preferred over PPO for a research agent?]
@@ -2733,7 +2733,7 @@ $K$ 因子控制更新幅度（$K$ 越大对近期结果反应越敏感）。
 \textbf{直觉}：若 50/200 个样本通过（$c=50$，$n=200$），pass@1 $\approx 0.25$，pass@10 $\approx 0.94$。该估计器统计大小为 $k$ 的抽取中至少包含一个成功的比例。
 
 % \emph{\textbf{Review:} Chapters~14 and~21 (LLM Evaluation; Agentic Environments).}
-\emph{\textbf{复习：}第 14 章与第 21 章（LLM 评估；Agent 环境）。}
+\emph{\textbf{复习：}第 14 章与第 22 章（LLM 评估；Agent 环境）。}
 \end{questionbox}
 
 % \begin{questionbox}[Q: How do you detect and mitigate benchmark contamination?]
@@ -3008,7 +3008,7 @@ C = S + M + T + H + R \leq L
 \end{itemize}
 
 % \emph{\textbf{Review:} Chapters~18 and~20 (Agent Harness; Agent Design Patterns).}
-\emph{\textbf{复习：}第 18 章与第 20 章（Agent Harness；Agent 设计模式）。}
+\emph{\textbf{复习：}第 18 章与第 21 章（Agent Harness；Agent 设计模式）。}
 \end{questionbox}
 
 % \begin{questionbox}[Q: How do you detect and prevent infinite loops in agent execution?]
@@ -3047,7 +3047,7 @@ C = S + M + T + H + R \leq L
 % \textbf{Best practice}: Combine max iterations (safety net) + hash-based detection (early intervention) + graceful escalation (preserve user trust).
 \textbf{最佳实践}：组合最大迭代（安全网）+ 基于哈希的检测（早期干预）+ 优雅升级（维护用户信任）。
 
-\emph{\textbf{复习：}第 18 章与第 20 章（Agent Harness；Agent 设计模式）。}
+\emph{\textbf{复习：}第 18 章与第 21 章（Agent Harness；Agent 设计模式）。}
 \end{questionbox}
 
 \newpage
@@ -3083,7 +3083,7 @@ C = S + M + T + H + R \leq L
 \textbf{类比}：USB 标准化了外设连接。USB 之前：每种设备都有专有接口。USB 之后：一个口适配所有。MCP 对 Agent–工具连接做了同样的事。
 
 % \emph{\textbf{Review:} Chapter~22 (Model Context Protocol).}
-\emph{\textbf{复习：}第 22 章（模型上下文协议）。}
+\emph{\textbf{复习：}第 23 章（模型上下文协议）。}
 \end{questionbox}
 
 % \begin{questionbox}[Q: What are MCP’s four core primitives and when do you use each?]
@@ -3120,7 +3120,7 @@ Sampling & 服务器 $\to$ 客户端 & 请求 LLM 生成 & 服务器请求 LLM �
   \item \textbf{Prompts} 是元数据（可复用模板），不是执行。它们帮助 Agent 构造更好的工具调用。
 \end{itemize}
 
-\emph{\textbf{复习：}第 22 章（模型上下文协议）。}
+\emph{\textbf{复习：}第 23 章（模型上下文协议）。}
 \end{questionbox}
 
 \section{Agent 通信（A2A）问题}
@@ -3166,7 +3166,7 @@ Sampling & 服务器 $\to$ 客户端 & 请求 LLM 生成 & 服务器请求 LLM �
 \textbf{架构}：A2A 位于\emph{Agent 间}层；MCP 位于\emph{Agent–工具}层。完整系统两者并用：A2A 用于 Agent 间协调，MCP 用于每个 Agent 的工具访问。
 
 % \emph{\textbf{Review:} Chapters~22 and~24 (MCP; Agent-to-Agent Communication).}
-\emph{\textbf{复习：}第 22 章与第 24 章（MCP；Agent 到 Agent 通信）。}
+\emph{\textbf{复习：}第 23 章与第 25 章（MCP；Agent 到 Agent 通信）。}
 \end{questionbox}
 
 % \begin{questionbox}[Q: What is the Contract Net Protocol and how does it apply to LLM agents?]
@@ -3208,7 +3208,7 @@ Sampling & 服务器 $\to$ 客户端 & 请求 LLM 生成 & 服务器请求 LLM �
 \textbf{LLM 的局限}：LLM 常常高估自身能力（幻觉置信度）。投标应纳入历史记录（相似任务的历史成功率），而不仅是自报置信度。
 
 % \emph{\textbf{Review:} Chapters~24 and~25 (A2A; Multi-Agent Systems).}
-\emph{\textbf{复习：}第 24 章与第 25 章（A2A；多 Agent 系统）。}
+\emph{\textbf{复习：}第 25 章与第 26 章（A2A；多 Agent 系统）。}
 \end{questionbox}
 
 \section{多 Agent 系统问题}
@@ -3255,7 +3255,7 @@ Sampling & 服务器 $\to$ 客户端 & 请求 LLM 生成 & 服务器请求 LLM �
 \textbf{决策框架}：需要可预测性和可审计性时用中心化。需要弹性和创造性时用去中心化。大型（$>$10 个 Agent）系统用层次化。
 
 % \emph{\textbf{Review:} Chapter~25 (Multi-Agent Systems).}
-\emph{\textbf{复习：}第 25 章（多 Agent 系统）。}
+\emph{\textbf{复习：}第 26 章（多 Agent 系统）。}
 \end{questionbox}
 
 % \begin{questionbox}[Q: What is CTDE and why is it important for training multi-agent LLM systems?]
@@ -3282,7 +3282,7 @@ Sampling & 服务器 $\to$ 客户端 & 请求 LLM 生成 & 服务器请求 LLM �
 % \textbf{Practical challenge}: Full CTDE requires all agents to train simultaneously with shared state --- expensive for LLMs. Approximations: train agents in rounds (freeze others and train one) or use population-based training with periodic synchronization.
 \textbf{实际挑战}：完整 CTDE 要求所有 Agent 在共享状态下同时训练——对 LLM 而言代价昂贵。近似方法：分轮训练 Agent（冻结其余 Agent 训练一个），或使用具有周期同步的种群训练。
 
-\emph{\textbf{复习：}第 25 章（多 Agent 系统）。}
+\emph{\textbf{复习：}第 26 章（多 Agent 系统）。}
 \end{questionbox}
 
 \section{Agent 开发框架问题}
@@ -3327,7 +3327,7 @@ Sampling & 服务器 $\to$ 客户端 & 请求 LLM 生成 & 服务器请求 LLM �
 \textbf{都不选（自定义）当}：需要最大性能/控制；不希望被框架锁定；或有非标准的编排模式。
 
 % \emph{\textbf{Review:} Chapter~26 (Agent Development Frameworks).}
-\emph{\textbf{复习：}第 26 章（Agent 开发框架）。}
+\emph{\textbf{复习：}第 27 章（Agent 开发框架）。}
 \end{questionbox}
 
 % \begin{questionbox}[Q: How do you test and evaluate an agent system in production?]
@@ -3389,7 +3389,7 @@ Sampling & 服务器 $\to$ 客户端 & 请求 LLM 生成 & 服务器请求 LLM �
 \textbf{关键指标}：\textbf{任务成功率}（Task Success Rate, TSR）——Agent 在无人干预下正确完成任务的比例。
 
 % \emph{\textbf{Review:} Chapters~14 and~26 (LLM Evaluation; Agent Development Frameworks).}
-\emph{\textbf{复习：}第 14 章与第 26 章（LLM 评估；Agent 开发框架）。}
+\emph{\textbf{复习：}第 14 章与第 27 章（LLM 评估；Agent 开发框架）。}
 \end{questionbox}
 
 \section{Agent 环境问题}
@@ -3431,7 +3431,7 @@ r_{\text{shaped}}(s, a, s') = r(s, a, s') + \gamma \Phi(s') - \Phi(s)
 % \textbf{Challenges}: Partial observability (can’t always tell if you’re closer to goal); stochastic environments (page content changes); reward hacking (agent finds shortcuts that satisfy reward but not user intent).
 \textbf{挑战}：部分可观察（无法总是判断是否更接近目标）；随机环境（页面内容会变）；Reward hacking（Agent 找到满足 Reward 但不满足用户意图的捷径）。
 
-\emph{\textbf{复习：}第 12 章与第 21 章（LLM Agent 训练；Agent 环境）。}
+\emph{\textbf{复习：}第 12 章与第 22 章（LLM Agent 训练；Agent 环境）。}
 \end{questionbox}
 
 % \begin{questionbox}[Q: What makes SWE-bench a particularly challenging agent benchmark?]
@@ -3462,7 +3462,7 @@ r_{\text{shaped}}(s, a, s') = r(s, a, s') + \gamma \Phi(s') - \Phi(s)
 \textbf{对训练的关键洞见}：SWE-bench 揭示了“编程能力”（编写正确函数）与“软件工程能力”（理解系统；导航代码库；做最小改动）之间的差距。在 SWE-bench 风格环境上的 RL 训练教会 Agent 探索和规划策略，而不仅是代码生成。
 
 % \emph{\textbf{Review:} Chapter~21 (Agentic Environments and Benchmarks).}
-\emph{\textbf{复习：}第 21 章（Agent 环境与基准）。}
+\emph{\textbf{复习：}第 22 章（Agent 环境与基准）。}
 \end{questionbox}
 
 \section{Agent UI 框架问题}
@@ -3514,7 +3514,7 @@ r_{\text{shaped}}(s, a, s') = r(s, a, s') + \gamma \Phi(s') - \Phi(s)
 \textbf{对 Agent 训练而言}：UI 范式影响 Reward 信号。画布式 UI 提供显式的编辑反馈（用户修改 artifact），可用于在线学习。
 
 % \emph{\textbf{Review:} Chapter~27 (Agentic UI Frameworks).}
-\emph{\textbf{复习：}第 27 章（Agent UI 框架）。}
+\emph{\textbf{复习：}第 28 章（Agent UI 框架）。}
 \end{questionbox}
 
 % \begin{questionbox}[Q: How do you design approval gates for human-in-the-loop agent systems?]
@@ -3554,7 +3554,7 @@ r_{\text{shaped}}(s, a, s') = r(s, a, s') + \gamma \Phi(s') - \Phi(s)
 \textbf{实现}：工具注解（MCP 的 \texttt{destructiveHint} 和 \texttt{readOnlyHint}）驱动关卡的自动分配。自定义规则可根据上下文覆盖。
 
 % \emph{\textbf{Review:} Chapters~18 and~27 (Agent Harness; Agentic UI Frameworks).}
-\emph{\textbf{复习：}第 18 章与第 27 章（Agent Harness；Agent UI 框架）。}
+\emph{\textbf{复习：}第 18 章与第 28 章（Agent Harness；Agent UI 框架）。}
 \end{questionbox}
 
 \section{RAG 与 Agent 化 RAG 问题}
@@ -3708,6 +3708,318 @@ r_{\text{shaped}}(s, a, s') = r(s, a, s') + \gamma \Phi(s') - \Phi(s)
 \emph{\textbf{复习：}第 16 章（检索增强生成）。}
 \end{questionbox}
 
+\newpage
+\section{循环工程问题}
+\label{loop-engineering-questions}
+
+% \begin{questionbox}[Q: What are the five structural primitives of a production agent loop and what does each do?]
+\begin{questionbox}[Q：生产级 Agent 循环的五个结构性原语是什么？各自起什么作用？]
+% \textbf{Answer}: Every production loop is built from five primitives that together implement inference-time optimization:
+\textbf{答}：每个生产级循环都由五个原语构成，它们共同实现推理时优化：
+
+\begin{enumerate}
+%   \item \textbf{Generator}: Produces a candidate output given the current context. This is the LLM call itself. The generator is the only component that consumes tokens; all others are deterministic.
+  \item \textbf{生成器}：在给定当前上下文的情况下产出一个候选输出。这就是 LLM 调用本身。生成器是唯一消耗 token 的组件；其余组件都是确定性的。
+%   \item \textbf{Verifier}: Evaluates the generator's output against a correctness criterion. Verifiers range from unit tests (binary pass/fail) to LLM-as-judge (scalar score) to tool execution (runtime feedback). The verifier's signal drives the loop.
+  \item \textbf{验证器}：依据正确性判据评估生成器的输出。验证器的范围从单元测试（二值通过/失败），到 LLM-as-judge（标量分数），再到工具执行（运行时反馈）。验证器的信号驱动整个循环。
+%   \item \textbf{Terminator}: Decides when to stop. Termination conditions include: verifier passes, budget exhausted (max steps, max tokens, max wall-clock time), or stagnation detected (no progress in $k$ steps). Without a terminator, loops run forever.
+  \item \textbf{终止器}：决定何时停止。终止条件包括：验证器通过、预算耗尽（最大步数、最大 token 数、最大墙钟时间），或检测到停滞（连续 $k$ 步没有进展）。没有终止器，循环会永远运行。
+%   \item \textbf{State manager}: Maintains the loop's working memory across iterations---what has been tried, what failed, what partial results exist. Persists to external storage for crash recovery.
+  \item \textbf{状态管理器}：跨迭代维护循环的工作记忆——尝试过什么、什么失败了、存在哪些部分结果。持久化到外部存储以支持崩溃恢复。
+%   \item \textbf{Escalator}: Handles cases the loop cannot resolve autonomously. When the terminator fires without success, the escalator saves state and hands off to a human or higher-level orchestrator with a structured summary of what was attempted.
+  \item \textbf{升级器}：处理循环无法自主解决的案例。当终止器在未成功的情况下触发时，升级器保存状态，并带着结构化的“已尝试内容”摘要，移交给人类或更高级别的编排器。
+\end{enumerate}
+
+% \textbf{Why this matters}: These five primitives map directly to the components of a policy optimization algorithm---generator $\approx$ policy, verifier $\approx$ reward function, terminator $\approx$ episode boundary, state manager $\approx$ replay buffer, escalator $\approx$ early stopping. Loop engineering is inference-time RL without weight updates.
+\textbf{为什么这很重要}：这五个原语直接对应策略优化算法的各个组件——生成器 $\approx$ 策略，验证器 $\approx$ 奖励函数，终止器 $\approx$ 回合边界，状态管理器 $\approx$ 回放缓冲区，升级器 $\approx$ 早停。循环工程就是不做权重更新的推理时 RL。
+
+% \emph{\textbf{Review:} Chapter~19 (Loop Engineering).}
+\emph{\textbf{复习：}第 19 章（循环工程）。}
+\end{questionbox}
+
+% \begin{questionbox}[Q: Explain the three parallel subagent fleet execution modes. When do you choose each?]
+\begin{questionbox}[Q：解释并行子 Agent 集群的三种执行模式。各自在什么情况下选用？]
+\textbf{答}：
+
+\begin{enumerate}
+%   \item \textbf{Fan-out / fan-in}: Decompose the task into $N$ independent subtasks, dispatch all simultaneously, wait for all to complete, then synthesize. Best when subtasks are truly independent and the synthesis step can handle partial failures (e.g., $k$-of-$N$ completions). Failure rate: if each agent fails with probability $p$, the fleet fails only if all $N$ fail ($p^N$).
+  \item \textbf{扇出/扇入}：把任务分解为 $N$ 个独立的子任务，同时分派全部任务，等待全部完成，然后综合。最适用于子任务真正独立、且综合步骤能处理部分失败的情形（例如 $N$ 个中完成 $k$ 个）。失败率：若每个 Agent 的失败概率为 $p$，则只有全部 $N$ 个都失败时集群才失败（$p^N$）。
+
+%   \item \textbf{Speculative execution}: Dispatch $N$ agents to attempt the \emph{same} task with different strategies (different prompts, models, or tool sequences), then select the best result. Best for high-stakes single tasks where reliability matters more than cost. If each agent has a 20\% failure rate, three speculative agents reduce failure to $0.2^3 = 0.8\%$.
+  \item \textbf{推测执行}：分派 $N$ 个 Agent，用不同策略（不同 prompt、模型或工具序列）尝试\emph{同一个}任务，然后选出最佳结果。最适用于高风险的单任务，此时可靠性比成本更重要。若每个 Agent 的失败率为 20\%，三个推测 Agent 可把失败率降到 $0.2^3 = 0.8\%$。
+
+%   \item \textbf{Pipeline parallelism}: Tasks form a dependency graph; the harness executes all tasks whose dependencies are satisfied simultaneously. As each task completes, it unlocks downstream tasks. Most general pattern---subsumes fan-out/fan-in as a two-level dependency graph. Best for workflows with known inter-task dependencies.
+  \item \textbf{流水线并行}：任务构成依赖图；harness 同时执行所有依赖已满足的任务。每个任务完成时，它解锁下游任务。这是最通用的模式——把扇出/扇入作为两级依赖图涵盖在内。最适用于任务间依赖关系已知的工作流。
+\end{enumerate}
+
+% \textbf{Isolation requirement}: All three modes require per-agent isolation (git worktrees for file-system, separate context windows for memory) to prevent write conflicts and context contamination.
+\textbf{隔离要求}：三种模式都需要按 Agent 隔离（文件系统用 git worktree，内存用彼此独立的上下文窗口），以防止写入冲突与上下文污染。
+
+% \textbf{Budget management}: Each agent needs an individual cap (steps, tokens, wall-clock) plus a fleet-level budget. When the fleet budget is exhausted, synthesize from completed results rather than waiting.
+\textbf{预算管理}：每个 Agent 都需要单独的配额上限（步数、token、墙钟时间），外加一个集群级预算。当集群预算耗尽时，应从已完成的结果进行综合，而不是继续等待。
+
+% \emph{\textbf{Review:} Chapter~19 (Loop Engineering).}
+\emph{\textbf{复习：}第 19 章（循环工程）。}
+\end{questionbox}
+
+% \begin{questionbox}[Q: What is context engineering and why does it matter more than prompt engineering for long-running loops?]
+\begin{questionbox}[Q：什么是上下文工程？为什么对长时间运行的循环而言，它比提示工程更重要？]
+% \textbf{Answer}: \textbf{Prompt engineering} optimizes the \emph{content} of a single system prompt. \textbf{Context engineering} optimizes \emph{everything that fills the context window} across the entire loop lifetime: the system prompt, retrieved knowledge, tool definitions, conversation history, intermediate results, and reserved output space.
+\textbf{答}：\textbf{提示工程}优化单个系统提示的\emph{内容}。\textbf{上下文工程}优化\emph{在整个循环生命周期内填满上下文窗口的一切}：系统提示、检索到的知识、工具定义、对话历史、中间结果，以及预留的输出空间。
+
+% \textbf{Why it matters more for loops}: A single-turn prompt has a fixed context. A loop accumulates context with every step---tool outputs, error messages, intermediate reasoning, retry attempts. Without active management, the context window fills and quality degrades. The model begins to ``forget'' early instructions, repeat failed actions, or lose track of the original goal.
+\textbf{为什么对循环更重要}：单轮提示的上下文是固定的。循环则随着每一步累积上下文——工具输出、错误消息、中间推理、重试尝试。没有主动管理，上下文窗口会被填满，质量随之下降。模型开始“忘记”早先的指令、重复失败的动作，或偏离最初的目标。
+
+% \textbf{The context budget equation}:
+\textbf{上下文预算方程}：
+\[
+C \geq S_{\text{system}} + M_{\text{memory/RAG}} + T_{\text{tool defs}} + H_{\text{history}} + R_{\text{reserved output}}
+\]
+% Each term competes for the fixed budget $C$. Context engineering decides how to allocate it.
+每一项都在争夺固定预算 $C$。上下文工程决定如何分配它。
+
+% \textbf{Key strategies}:
+\textbf{关键策略}：
+\begin{itemize}
+%   \item \textbf{Periodic compaction}: Every $k$ steps, replace raw history with a structured summary. Lossy but necessary.
+  \item \textbf{周期性压缩}：每 $k$ 步用结构化摘要替换原始历史。有损但必要。
+%   \item \textbf{Importance-weighted retention}: Keep steps that changed state; discard no-ops (tool calls that returned empty results).
+  \item \textbf{按重要性加权保留}：保留改变了状态的步骤；丢弃空操作（返回空结果的工具调用）。
+%   \item \textbf{Sub-agent isolation}: Offload subtasks to fresh-context sub-agents; return only conclusions to the parent loop.
+  \item \textbf{子 Agent 隔离}：把子任务分派给具有全新上下文的子 Agent；只把结论返回给父循环。
+%   \item \textbf{External memory}: Write intermediate results to files; keep only references in context.
+  \item \textbf{外部记忆}：把中间结果写入文件；上下文中只保留引用。
+\end{itemize}
+
+% \emph{\textbf{Review:} Chapter~19 (Loop Engineering).}
+\emph{\textbf{复习：}第 19 章（循环工程）。}
+\end{questionbox}
+
+% \begin{questionbox}[Q: How do you detect and handle stagnation in a production agent loop?]
+\begin{questionbox}[Q：如何检测并处理生产级 Agent 循环中的停滞？]
+% \textbf{Answer}: \textbf{Stagnation} occurs when the loop is running but making no progress toward the goal---the agent is stuck in a local minimum, repeating similar actions without advancing the task.
+\textbf{答}：\textbf{停滞}发生在循环仍在运行、但未朝目标取得任何进展之时——Agent 卡在局部极小值，重复相似动作而没有推进任务。
+
+% \textbf{Detection methods}:
+\textbf{检测方法}：
+\begin{enumerate}
+%   \item \textbf{Action hash window}: Hash each (action, observation) pair. If the current hash matches any hash in the last $w$ steps, stagnation is detected. Catches exact repetition.
+  \item \textbf{动作哈希窗口}：对每个（动作，观测）对计算哈希。如果当前哈希与最近 $w$ 步中的任一哈希匹配，则检测到停滞。可捕捉精确重复。
+%   \item \textbf{Semantic similarity}: Embed recent actions and compute cosine similarity between consecutive steps. Similarity $> 0.95$ indicates near-repetition even if not identical.
+  \item \textbf{语义相似度}：对近期动作做 Embedding，计算相邻步骤间的余弦相似度。相似度 $> 0.95$ 表示近乎重复，即便不完全相同。
+%   \item \textbf{Progress metric monitoring}: Define task-specific progress metrics (e.g., number of tests passing, lines of code changed, subtasks completed). If the metric does not improve in $N$ steps, stagnation is declared.
+  \item \textbf{进展指标监控}：定义任务特定的进展指标（例如通过的测试数、改动的代码行数、已完成的子任务数）。如果该指标在 $N$ 步内没有改善，则判定为停滞。
+%   \item \textbf{Verifier score plateau}: If the verifier score has not improved by more than $\delta$ in the last $k$ iterations, the loop has converged to a local optimum.
+  \item \textbf{验证器分数平台期}：如果验证器分数在最近 $k$ 次迭代中的提升不超过 $\delta$，则循环已收敛到局部最优。
+\end{enumerate}
+
+% \textbf{Recovery strategies} (in order of escalation):
+\textbf{恢复策略}（按升级顺序）：
+\begin{enumerate}
+%   \item \textbf{Hint injection}: Add a system message: ``You have tried similar approaches without success. Consider a fundamentally different strategy.''
+  \item \textbf{提示注入}：添加一条系统消息：“你已经尝试过类似方法但未成功。请考虑一种根本不同的策略。”
+%   \item \textbf{Context reset}: Summarize progress so far and restart the loop with a fresh context, preserving only the goal and key findings.
+  \item \textbf{上下文重置}：总结迄今的进展，用全新上下文重启循环，只保留目标与关键发现。
+%   \item \textbf{Strategy diversification}: Explicitly enumerate what has been tried and instruct the agent to avoid those approaches.
+  \item \textbf{策略多样化}：显式列举已尝试过的方案，并指示 Agent 避开这些方法。
+%   \item \textbf{Escalation}: Save full state and hand off to a human or higher-level orchestrator with a structured summary.
+  \item \textbf{升级}：保存完整状态，带着结构化摘要移交给人类或更高级别的编排器。
+\end{enumerate}
+
+% \textbf{Key principle}: Stagnation is not failure---it is a signal. The correct response is escalation, not continued iteration.
+\textbf{关键原则}：停滞不是失败——它是一个信号。正确的响应是升级，而不是继续迭代。
+
+% \emph{\textbf{Review:} Chapter~19 (Loop Engineering).}
+\emph{\textbf{复习：}第 19 章（循环工程）。}
+\end{questionbox}
+
+% \begin{questionbox}[Q: Compare the nightly maintenance loop, continuous experimentation loop, and always-on orchestrator patterns. When do you use each?]
+\begin{questionbox}[Q：比较夜间维护循环、持续实验循环与常驻编排器三种模式。各自在什么情况下使用？]
+\textbf{答}：
+
+\begin{tabular}{@{}lp{3.5cm}p{3.5cm}p{4cm}@{}}
+\toprule
+% \textbf{Pattern} & \textbf{Trigger} & \textbf{Best for} & \textbf{Key constraint} \\
+\textbf{模式} & \textbf{触发方式} & \textbf{最适用于} & \textbf{关键约束} \\
+\midrule
+% Nightly maintenance & Cron schedule & Accumulated work (CI failures, issues) & Must complete before team wakes \\
+夜间维护 & Cron 计划 & 累积的工作（CI 失败、issue） & 必须在团队醒来前完成 \\
+% Continuous experimentation & Per-hypothesis & Scientific discovery, hyperparameter search & Bounded execution time per run \\
+持续实验 & 按假设触发 & 科学发现、超参数搜索 & 每次运行的执行时间有界 \\
+% Always-on orchestrator & Event-driven & Continuous monitoring, rapid response & Crash recovery; durable state \\
+常驻编排器 & 事件驱动 & 持续监控、快速响应 & 崩溃恢复；持久化状态 \\
+\bottomrule
+\end{tabular}
+
+% \textbf{Nightly maintenance}: Runs once per day, processes accumulated work (CI failures, new issues), spawns parallel sub-agents for auto-fixable items, opens draft PRs. Suitable when the team can tolerate overnight latency and the workload is batch-oriented.
+\textbf{夜间维护}：每天运行一次，处理累积的工作（CI 失败、新 issue），为可自动修复的条目派生并行子 Agent，开启草稿 PR。适用于团队能容忍隔夜延迟、且工作负载是批处理导向的场景。
+
+% \textbf{Continuous experimentation}: Applies the loop to scientific discovery---propose hypothesis, implement change, run bounded experiment, evaluate, commit or rollback. The bounded execution time (hard wall-clock cap) prevents any single failed experiment from consuming excessive compute. Susceptible to conservative exploration (local minimum problem).
+\textbf{持续实验}：把循环应用于科学发现——提出假设、实现改动、运行有界实验、评估、提交或回滚。有界的执行时间（硬性墙钟上限）防止任何单次失败实验消耗过多算力。容易陷入保守探索（局部极小值问题）。
+
+% \textbf{Always-on orchestrator}: A persistent meta-agent with a heartbeat cycle that responds to events within minutes. Requires a durable state database with crash recovery---if the orchestrator fails mid-cycle, it resumes from its last checkpoint. Most complex to operate but provides the lowest latency response to new events.
+\textbf{常驻编排器}：一个持久化的元 Agent，带心跳周期，能在数分钟内响应事件。需要带崩溃恢复的持久化状态数据库——如果编排器在一个周期中途失败，它会从最后一个检查点恢复。运维最复杂，但对新事件的响应延迟最低。
+
+% \emph{\textbf{Review:} Chapter~19 (Loop Engineering).}
+\emph{\textbf{复习：}第 19 章（循环工程）。}
+\end{questionbox}
+
+\newpage
+\section{图工程问题}
+\label{graph-engineering-questions}
+
+% \begin{questionbox}[Q: What is graph engineering and how does it differ from loop engineering?]
+\begin{questionbox}[Q：什么是图工程？它与循环工程有何不同？]
+% \textbf{Answer}: \textbf{Loop engineering} is the discipline of designing iterative control structures---generate--verify--retry cycles that drive an agent toward a goal. A loop is a single cycle with one control flow path.
+\textbf{答}：\textbf{循环工程}是设计迭代控制结构的学科——驱动 Agent 朝目标前进的生成—验证—重试循环。循环是单一周期，只有一条控制流路径。
+
+% \textbf{Graph engineering} is the discipline of designing the \emph{topology} of those structures: specifying which nodes execute, in what order, under what conditions, and with what shared state. A graph is a network of cycles, branches, and parallel paths that can express arbitrarily complex agent workflows.
+\textbf{图工程}是设计这些结构\emph{拓扑}的学科：规定哪些节点执行、以什么顺序、在什么条件下，以及共享什么状态。图是由循环、分支与并行路径构成的网络，可以表达任意复杂的 Agent 工作流。
+
+% \textbf{Key differences}:
+\textbf{关键差异}：
+
+\begin{tabular}{@{}lp{5cm}p{6cm}@{}}
+\toprule
+% \textbf{Dimension} & \textbf{Loop Engineering} & \textbf{Graph Engineering} \\
+\textbf{维度} & \textbf{循环工程} & \textbf{图工程} \\
+\midrule
+% Structure & Single cycle & Network of nodes and edges \\
+结构 & 单一循环 & 节点与边构成的网络 \\
+% Control flow & Sequential iteration & Conditional branching, parallelism \\
+控制流 & 顺序迭代 & 条件分支、并行 \\
+% State & Implicit (context window) & Explicit typed schema \\
+状态 & 隐式（上下文窗口） & 显式类型化 schema \\
+% Composition & Nested loops & Subgraph composition \\
+组合 & 嵌套循环 & 子图组合 \\
+% Testability & Test the full loop & Test individual nodes in isolation \\
+可测试性 & 测试整个循环 & 独立测试单个节点 \\
+% Visualization & Hard to diagram & Renders as a readable flowchart \\
+可视化 & 难以绘制 & 渲染为可读的流程图 \\
+\bottomrule
+\end{tabular}
+
+% \textbf{The progression}: Prompt $\to$ response (single call) $\to$ loop (iteration) $\to$ graph (topology). Each layer adds structure. Graph engineering is the culmination: it makes the relationships between components explicit, visible, and testable.
+\textbf{演进路径}：提示 $\to$ 响应（单次调用）$\to$ 循环（迭代）$\to$ 图（拓扑）。每一层都增加结构。图工程是集大成者：它使组件之间的关系显式、可见、可测试。
+
+% \textbf{When to use graphs over loops}: When the workflow has conditional branching (different paths for different outcomes), parallel subtasks, reusable subgraphs, or human-in-the-loop interrupt points that a simple loop cannot express cleanly.
+\textbf{何时用图而非循环}：当工作流具有条件分支（不同结果走不同路径）、并行子任务、可复用子图，或简单循环无法清晰表达的人机协同中断点时。
+
+% \emph{\textbf{Review:} Chapter~20 (Graph Engineering).}
+\emph{\textbf{复习：}第 20 章（图工程）。}
+\end{questionbox}
+
+% \begin{questionbox}[Q: Explain typed state in graph engineering. Why is state schema design one of the most consequential decisions?]
+\begin{questionbox}[Q：解释图工程中的类型化状态。为什么状态 schema 设计是最具深远影响的决策之一？]
+% \textbf{Answer}: In a graph-based agent, \textbf{typed state} is a shared data structure (typically a \texttt{TypedDict} or Pydantic model) that flows through the graph and is updated by each node. Every node reads from and writes to this state; the graph runtime manages passing it between nodes.
+\textbf{答}：在基于图的 Agent 中，\textbf{类型化状态}是一个共享数据结构（通常是 \texttt{TypedDict} 或 Pydantic 模型），它流经整个图，并由每个节点更新。每个节点都读取并写入该状态；图运行时负责在节点之间传递它。
+
+% \textbf{Why it is consequential}:
+\textbf{为何影响深远}：
+
+\begin{enumerate}
+%   \item \textbf{It is the contract between nodes}: Every node's inputs and outputs are defined by the state schema. A poorly designed schema forces nodes to carry irrelevant data, creates implicit dependencies, or requires nodes to parse unstructured strings.
+  \item \textbf{它是节点之间的契约}：每个节点的输入与输出都由状态 schema 定义。设计糟糕的 schema 会迫使节点携带无关数据、制造隐式依赖，或要求节点解析非结构化字符串。
+%   \item \textbf{Schema drift is a leading failure mode}: If nodes write undeclared keys or assume fields that don't exist, errors propagate silently through the graph and surface far from their origin. Strict schema validation (fail loudly on unexpected fields) catches these early.
+  \item \textbf{Schema 漂移是首要失败模式}：如果节点写入未声明的键，或假定不存在的字段，错误会静默地在图中传播，并在远离源头的地方浮现。严格的 schema 校验（遇到意外字段就大声失败）能尽早捕获这些问题。
+%   \item \textbf{It determines checkpointing granularity}: The state is what gets checkpointed. A state that captures too little cannot support meaningful resume-from-checkpoint. A state that captures too much wastes storage and slows serialization.
+  \item \textbf{它决定检查点的粒度}：被检查点保存的就是状态。捕获过少的状态无法支持有意义的从检查点恢复。捕获过多的状态浪费存储并拖慢序列化。
+%   \item \textbf{It shapes parallelism}: Fields that are written by parallel branches must use reducer functions (e.g., list append) rather than simple assignment to avoid race conditions.
+  \item \textbf{它塑造并行性}：由并行分支写入的字段必须使用 reducer 函数（例如列表追加），而不是简单赋值，以避免竞态条件。
+\end{enumerate}
+
+% \textbf{Design principles}: (1) Include only what nodes need to share---not everything. (2) Use typed fields, not raw dicts. (3) Separate \emph{task inputs} (immutable) from \emph{working state} (mutable) from \emph{outputs} (append-only). (4) Validate at the graph's entry point.
+\textbf{设计原则}：(1) 只包含节点需要共享的内容——而不是全部。(2) 使用类型化字段，而非原始 dict。(3) 把\emph{任务输入}（不可变）、\emph{工作状态}（可变）与\emph{输出}（仅追加）分开。(4) 在图的入口点做校验。
+
+% \emph{\textbf{Review:} Chapter~20 (Graph Engineering).}
+\emph{\textbf{复习：}第 20 章（图工程）。}
+\end{questionbox}
+
+% \begin{questionbox}[Q: What are conditional edges and how do they implement routing, retry loops, and human-in-the-loop patterns?]
+\begin{questionbox}[Q：什么是条件边？它们如何实现路由、重试循环与人机协同模式？]
+% \textbf{Answer}: A \textbf{conditional edge} is a function that inspects the current graph state and returns the name of the next node to execute. Unlike a fixed edge (always goes to node B after node A), a conditional edge makes the execution path dynamic.
+\textbf{答}：\textbf{条件边}是一个函数，它检查当前图状态并返回下一个要执行的节点名称。与固定边（节点 A 之后总是前往节点 B）不同，条件边使执行路径动态化。
+
+% \textbf{Three canonical uses}:
+\textbf{三种典型用途}：
+
+\begin{enumerate}
+%   \item \textbf{Routing}: After a classification node, a conditional edge routes to different specialist nodes based on the classification result. Example: a triage node classifies an issue as ``bug'', ``feature'', or ``question''; the conditional edge routes to the appropriate handler node.
+  \item \textbf{路由}：在分类节点之后，条件边根据分类结果路由到不同的专家节点。示例：一个分诊节点把 issue 分类为“bug”“feature”或“question”；条件边将其路由到相应的处理节点。
+
+%   \item \textbf{Retry loops}: A back-edge from a verification node back to a generation node implements a retry loop. The conditional edge checks the verifier's result: if it passes, proceed to the next stage; if it fails and budget remains, loop back to the generator; if budget is exhausted, route to the escalation node.
+  \item \textbf{重试循环}：从验证节点回到生成节点的回边实现了重试循环。条件边检查验证器的结果：若通过，进入下一阶段；若失败且预算仍有剩余，回到生成器；若预算耗尽，路由到升级节点。
+
+%   \item \textbf{Human-in-the-loop}: An interrupt point is implemented as a conditional edge that routes to a \texttt{WAIT} state when human approval is needed. The graph suspends, serializes its state, and resumes when the human provides input. This is identical to a checkpoint-and-resume pattern.
+  \item \textbf{人机协同}：中断点被实现为一条条件边，在需要人工批准时路由到 \texttt{WAIT} 状态。图挂起、序列化其状态，并在人类提供输入后恢复。这与检查点—恢复模式完全相同。
+\end{enumerate}
+
+% \textbf{Key property}: Conditional edges make control flow \emph{explicit and inspectable}. In a loop, the branching logic is buried in imperative code. In a graph, it is a named function attached to a named edge---readable, testable, and visualizable.
+\textbf{关键性质}：条件边使控制流\emph{显式且可检查}。在循环中，分支逻辑埋没在命令式代码里。在图中，它是附着在具名边上、有名字的函数——可读、可测试、可可视化。
+
+% \emph{\textbf{Review:} Chapter~20 (Graph Engineering).}
+\emph{\textbf{复习：}第 20 章（图工程）。}
+\end{questionbox}
+
+% \begin{questionbox}[Q: How does fan-out/fan-in parallelism work in a graph, and what is the role of reducer functions?]
+\begin{questionbox}[Q：图中的扇出/扇入并行如何工作？reducer 函数起什么作用？]
+% \textbf{Answer}: \textbf{Fan-out} is a node that dispatches multiple parallel tasks simultaneously---each task runs as an independent branch of the graph with its own execution context. \textbf{Fan-in} is the subsequent node that waits for all branches to complete and merges their results.
+\textbf{答}：\textbf{扇出}是一个节点同时分派多个并行任务——每个任务作为图的一条独立分支运行，拥有自己的执行上下文。\textbf{扇入}是随后等待所有分支完成并合并其结果的那个节点。
+
+% \textbf{In LangGraph}: Fan-out is implemented with the \texttt{Send} API, which dispatches a list of tasks to a node in parallel. The fan-in node receives all results once every branch completes.
+\textbf{在 LangGraph 中}：扇出通过 \texttt{Send} API 实现，它把一组任务并行分派给一个节点。扇入节点在每个分支完成后接收所有结果。
+
+% \textbf{The reducer problem}: When parallel branches write to the same state field, simple assignment creates a race condition---the last branch to complete overwrites all others. \textbf{Reducer functions} solve this by defining how to \emph{merge} multiple writes to the same field:
+\textbf{reducer 问题}：当并行分支写入同一状态字段时，简单赋值会产生竞态条件——最后完成的分支会覆盖其他所有分支。\textbf{reducer 函数}通过定义如何\emph{合并}对同一字段的多次写入来解决这个问题：
+
+\begin{itemize}
+%   \item \textbf{List append} (\texttt{operator.add}): Each branch appends its result to a list. The fan-in node receives a list of all results. Most common for collecting parallel outputs.
+  \item \textbf{列表追加}（\texttt{operator.add}）：每个分支把结果追加到一个列表。扇入节点收到所有结果的列表。这是收集并行输出的最常见方式。
+%   \item \textbf{Max/min}: Keep the best result across branches (e.g., highest verifier score).
+  \item \textbf{最大值/最小值}：在各分支间保留最佳结果（例如最高的验证器分数）。
+%   \item \textbf{Custom merge}: Domain-specific logic (e.g., merge partial document sections in order).
+  \item \textbf{自定义合并}：领域特定的逻辑（例如按顺序合并文档的各个部分）。
+\end{itemize}
+
+% \textbf{Practical example}: A research orchestrator fans out to 5 specialist agents (each searching a different domain), then fans in to a synthesis node. Each agent appends its findings to a \texttt{results: list[Finding]} field. The synthesis node receives all 5 findings and produces a unified report.
+\textbf{实践示例}：一个研究编排器扇出到 5 个专家 Agent（各自搜索不同领域），然后扇入到一个综合节点。每个 Agent 把发现追加到 \texttt{results: list[Finding]} 字段。综合节点收到全部 5 份发现并产出统一报告。
+
+% \textbf{Failure handling}: If one branch fails, the fan-in node should handle partial results gracefully---synthesize from $k$-of-$N$ completions rather than failing entirely.
+\textbf{失败处理}：如果某个分支失败，扇入节点应优雅地处理部分结果——从 $N$ 个中完成的 $k$ 个进行综合，而不是整体失败。
+
+% \emph{\textbf{Review:} Chapter~20 (Graph Engineering).}
+\emph{\textbf{复习：}第 20 章（图工程）。}
+\end{questionbox}
+
+% \begin{questionbox}[Q: What is graph checkpointing and how does it enable human-in-the-loop and fault-tolerant agent systems?]
+\begin{questionbox}[Q：什么是图检查点？它如何支持人机协同与容错的 Agent 系统？]
+% \textbf{Answer}: \textbf{Graph checkpointing} captures the complete execution state of a graph at a point in time: the current state values, the execution history (which nodes ran, in what order, with what inputs and outputs), and the pending next steps. This is richer than a simple state snapshot---it is a full audit trail.
+\textbf{答}：\textbf{图检查点}捕获图在某一时刻的完整执行状态：当前的状态值、执行历史（哪些节点运行过、以什么顺序、输入输出是什么），以及待执行的下一步。这比简单的状态快照更丰富——它是一份完整的审计轨迹。
+
+% \textbf{Two key use cases}:
+\textbf{两个关键用例}：
+
+\begin{enumerate}
+%   \item \textbf{Human-in-the-loop}: When the graph reaches an interrupt point (a node that requires human approval), it serializes its checkpoint and suspends. The human reviews the state, provides input, and the graph resumes from the checkpoint---continuing exactly where it left off. Without checkpointing, the graph would have to restart from scratch after human input.
+  \item \textbf{人机协同}：当图到达中断点（需要人工批准的节点）时，它序列化其检查点并挂起。人类审阅状态、提供输入，图从检查点恢复——从离开处精确继续。没有检查点，图在人工输入后只能从头重启。
+
+%   \item \textbf{Fault tolerance}: If the graph process crashes mid-execution (network failure, OOM, timeout), the checkpoint allows resumption from the last saved state rather than restarting the entire task. For long-running tasks (hours of execution), this is the difference between a recoverable incident and a total loss.
+  \item \textbf{容错}：如果图进程在执行中途崩溃（网络故障、OOM、超时），检查点允许从最后保存的状态恢复，而不是重启整个任务。对于长时间运行的任务（数小时执行），这是可恢复事故与全盘损失之间的区别。
+\end{enumerate}
+
+% \textbf{Checkpoint storage}: LangGraph supports in-memory (development), SQLite (single-machine production), and PostgreSQL (distributed production) checkpoint backends. The choice depends on durability requirements and deployment scale.
+\textbf{检查点存储}：LangGraph 支持内存（开发）、SQLite（单机生产）与 PostgreSQL（分布式生产）检查点后端。选择取决于持久性要求与部署规模。
+
+% \textbf{Time-travel debugging}: Because checkpoints capture the full execution history, developers can replay a graph from any prior checkpoint---invaluable for debugging non-deterministic failures. ``What was the state when node X made that wrong decision?'' becomes answerable.
+\textbf{时光回溯调试}：由于检查点捕获完整执行历史，开发者可以从任意先前的检查点重放图——这对调试非确定性失败极有价值。“节点 X 做出那个错误决策时，状态是什么？”变得可以回答。
+
+% \textbf{Design implication}: Checkpointing requires that all state is serializable. Avoid storing non-serializable objects (open file handles, live connections) in the graph state; store references (file paths, connection strings) instead.
+\textbf{设计含义}：检查点要求所有状态都是可序列化的。避免在图状态中存储不可序列化对象（打开的文件句柄、活跃连接）；改为存储引用（文件路径、连接字符串）。
+
+% \emph{\textbf{Review:} Chapter~20 (Graph Engineering).}
+\emph{\textbf{复习：}第 20 章（图工程）。}
+\end{questionbox}
+
 \chapter{速查手册}
 \label{quick-reference}
 
@@ -3733,14 +4045,17 @@ r_{\text{shaped}}(s, a, s') = r(s, a, s') + \gamma \Phi(s') - \Phi(s)
 \section{Transformer 与架构公式}
 \label{transformer-architecture-formulas}
 
+{\small
 \begin{align}
 \text{Self-Attention:}&\quad \text{Attn}(Q,K,V) = \text{softmax}(QK^\top / \sqrt{d_k}) \cdot V \\
 \text{Multi-Head:}&\quad \text{MHA}(X) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)W^O,\quad \text{head}_i = \text{Attn}(XW_i^Q, XW_i^K, XW_i^V) \\
 \text{RoPE:}&\quad f(x_m, m) = x_m e^{im\theta_j}, \quad \theta_j = 10000^{-2j/d} \\
 \text{LoRA:}&\quad W' = W_0 + (\alpha/r) \cdot BA, \quad B \in \mathbb{R}^{d \times r},\; A \in \mathbb{R}^{r \times k} \\
-\text{KD (soft targets):}&\quad L_\text{KD} = (1{-}\alpha)L_\text{CE}(y, \hat{y}) + \alpha\, T^2 \cdot \text{KL}(p_T^\text{teacher} \| p_T^\text{student}) \\
+\text{KD (soft targets):}&\quad L_\text{KD} = (1{-}\alpha)L_\text{CE}(y, \hat{y}) \\
+&\quad + \alpha\, T^2 \cdot \text{KL}(p_T^\text{teacher} \| p_T^\text{student}) \\
 \text{FFN (SwiGLU):}&\quad \text{FFN}(x) = (\text{Swish}(xW_1) \odot xW_3) W_2
 \end{align}
+}
 
 \section{解码方法}
 \label{decoding-methods}
@@ -3862,6 +4177,8 @@ Supervisor & 路由器 $\to$ 专家 Agent & 多领域、子任务边界清晰 \\
 Swarm (handoffs) & Agent 移交控制权 + 上下文 & 客服、问题升级流程 \\
 Hierarchical & 委派 Agent 的树状结构 & 复杂任务分解 \\
 Human-in-the-loop & Agent $\to$ 审批关卡 $\to$ 继续 & 高风险、不可逆动作 \\
+Loop (Validation) & Generate $\to$ Validate $\to$ 循环直至通过 & 质量关键输出；见第~\ref{sec:loop-engineering} 章 \\
+Graph Workflow & 类型化状态 $\to$ 节点 $\to$ 条件边 & 任意多步 Agent；见第~\ref{sec:graph-engineering} 章 \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -3875,6 +4192,7 @@ Human-in-the-loop & Agent $\to$ 审批关卡 $\to$ 继续 & 高风险、不可�
 \midrule
 MCP & 工具集成 & stdio / HTTP+SSE & 服务端暴露工具；客户端发现并调用 \\
 A2A & 智能体到智能体 & HTTP + JSON-RPC & 带生命周期的任务（submitted$\to$working$\to$done） \\
+ACP & 智能体到智能体（REST） & HTTP REST & 无状态请求/响应；同步调用时比 A2A 更简单 \\
 OpenAI Function Calling & 工具使用 & API 负载 & 在 \texttt{tools[]} 数组中以 JSON schema 描述 \\
 \bottomrule
 \end{tabularx}
@@ -3921,6 +4239,9 @@ Agent 永久循环 & 缺少最大迭代守卫 & 设置 \texttt{max\_iterations}�
 工具调用解析失败 & 输出格式不一致 & 少样本示例、约束解码 \\
 RAG 返回无关文档 & embedding / chunking 不佳 & Reranker、混合检索、更小 chunk \\
 多智能体死锁 & 循环依赖 & DAG 约束、每个 Agent 设置超时 \\
+God Node（一个节点包办一切） & 缺少图分解 & 拆分为职责单一的节点 \\
+状态模式漂移 & 节点写入未声明的键 & 使用 \texttt{TypedDict} + 严格模式；见第~\ref{sec:graph-engineering} 章 \\
+并行分支状态冲突 & 两个分支覆盖同一个键 & 使用 reducer 注解（\texttt{Annotated[list, operator.add]}） \\
 \bottomrule
 \end{tabularx}
 
@@ -4110,7 +4431,7 @@ Prompt 注入（间接） & 工具输出 & 将工具输出视为不可信；勿�
 
 \noindent\begin{tabularx}{\linewidth}{@{}l Z{0.88} Z{1.45} Z{0.67}@{}}
 \toprule
-\textbf{基准} & \textbf{领域} & \textbf{指标} & \textbf{SOTA (2025)} \\
+\textbf{基准} & \textbf{领域} & \textbf{指标} & \textbf{SOTA（2026 年中）} \\
 \midrule
 SWE-bench Verified & 软件工程 & 解决 issue 百分比 & $\sim$70\% \\
 WebArena & Web 浏览 & 任务成功率 & $\sim$40\% \\
@@ -4118,6 +4439,7 @@ OSWorld & 桌面计算机使用 & 任务成功率 & $\sim$25\% \\
 GAIA & 通用 AI 助手 & 完全匹配准确率 & $\sim$75\%（L1） \\
 Tau-bench & 工具使用可靠性 & 通过率（5 次试验） & $\sim$65\% \\
 HumanEval / MBPP & 代码生成 & Pass@1 & $>95\%$ \\
+Terminal-Bench & 长时程终端任务 & 任务完成率 & $\sim$38\%（困难任务） \\
 \bottomrule
 \end{tabularx}
 
@@ -4140,7 +4462,9 @@ HumanEval / MBPP & 代码生成 & Pass@1 & $>95\%$ \\
   % \item \textbf{Standards unlock ecosystems.} MCP reduces the tool integration problem from $N \times M$ to $N + M$. A2A enables agents built by different teams to collaborate without shared internals. These protocols are to agentic AI what HTTP was to the web---the enabling infrastructure for an open ecosystem.
   \item \textbf{标准开启生态。} MCP 将工具集成问题从 $N \times M$ 降到 $N + M$。A2A 让不同团队构建的 Agent 在不共享内部实现的前提下协作。这些协议之于智能体 AI，正如 HTTP 之于 Web——是开放生态的基础设施。
   % \item \textbf{Agents are the natural next step.} Once a model is aligned, the frontier shifts from ``how good is a single response?'' to ``can the model solve multi-step problems autonomously?'' This requires new training paradigms (agentic RL with environment rewards), new infrastructure (harnesses, tool protocols, memory systems), and new evaluation methods (trajectory-level benchmarks).
-  \item \textbf{Agent 是自然的下一步。} 一旦模型被对齐，前沿就从“单次回复有多好？”转向“模型能否自主解决多步问题？”这需要新的训练范式（带环境奖励的智能体 RL）、新的基础设施（运行框架、工具协议、记忆系统）以及新的评估方法（轨迹级基准）。
+  \item \textbf{Agent 是自然的下一步。} 一旦模型被对齐，前沿就从“单次回复有多好？”转向“模型能否自主解决多步问题？”这需要新的训练范式（带环境奖励的智能体 RL、面向可靠置信度的校准决策训练、把脚手架“烘焙”进权重的 harness 蒸馏）、新的基础设施（harness、工具协议、记忆系统）以及新的评估方法（轨迹级基准）。
+  % \item \textbf{Engineering discipline matures agentic systems.} The progression from prompt engineering through context management, agent harnesses, loop engineering, and graph engineering represents the maturation of agentic system design. Each layer adds structure that makes systems more understandable, testable, and composable. A well-designed graph---with typed state, single-responsibility nodes, and explicit edges---is as readable as a flowchart and as testable as a pure function.
+  \item \textbf{工程学科使智能体系统走向成熟。} 从 prompt engineering 到上下文管理、Agent harness、循环工程与图工程的演进，标志着智能体系统设计的成熟。每一层都增加了结构，使系统更可理解、更可测试、更可组合。一张设计良好的图——具有类型化状态、职责单一的节点和显式的边——既像流程图一样易读，又像纯函数一样易测。
   % \item \textbf{Evaluation drives everything.} Without rigorous evaluation---from reward model validation to agent task success rates, from contamination detection to LLM-as-Judge calibration---progress is unmeasurable and regressions are invisible. The benchmarks you choose shape the systems you build.
   \item \textbf{评估驱动一切。} 没有严格的评估——从奖励模型验证到 Agent 任务成功率，从污染检测到 LLM-as-Judge 校准——进步无法度量、回退也不可见。你所选择的基准塑造了你所构建的系统。
   % \item \textbf{Simplicity scales.} The most reliable production agents use the simplest architecture that meets requirements---prompt chaining and routing before autonomous loops, single agents before multi-agent swarms. Complexity should be earned through demonstrated need.
@@ -4164,6 +4488,30 @@ HumanEval / MBPP & 代码生成 & Pass@1 & $>95\%$ \\
   % \item Efficient credit assignment over long agent trajectories (hundreds of tool calls).
   \item 在长 Agent 轨迹（数百次工具调用）上的高效信用分配。
 \end{itemize}
+
+\subsection{推理架构与规模之争}
+\label{subsec:reasoning-vs-scale}
+
+% One of the most practically important open questions in LLM development is whether reasoning capability scales predictably with model size---or whether architectural choices matter as much as, or more than, parameter count.
+LLM 开发中最具实际重要性的开放问题之一，是\emph{推理能力是否会随模型规模可预测地扩展}——还是架构选择与参数数量同等重要，甚至更重要。
+
+% The evidence from 2025--2026 is mixed. On one hand, scaling laws predict that larger models trained on more tokens will be more capable across the board, and this holds for many standard benchmarks. On the other hand, the emergence of dedicated reasoning architectures---models trained with extended chain-of-thought via GRPO or process reward models---has shown that a smaller model with the right training recipe can match or exceed a much larger model on reasoning-intensive tasks. DeepSeek-R1 demonstrated this concretely: a 7B reasoning-trained model outperformed much larger base models on mathematical and logical benchmarks.
+2025--2026 年的证据是混合的。一方面，scaling laws~\cite{kaplan2020scaling, hoffmann2022chinchilla} 预测：用更多 token 训练的更大模型会全面更强，这在许多标准基准上成立。另一方面，专用推理架构的出现——通过 GRPO~\cite{shao2024deepseekmath} 或过程奖励模型~\cite{lightman2023lets} 以扩展思维链训练的模型——表明一个更小的模型只要训练配方正确，就能在推理密集型任务上匹敌甚至超过大得多的模型。DeepSeek-R1~\cite{deepseek2025r1} 具体地证明了这一点：一个 7B 的推理训练模型在数学与逻辑基准上超过了更大的基座模型。
+
+% This creates a practical dilemma for practitioners:
+这给从业者带来了一个实际的两难：
+
+\begin{itemize}
+  % \item \textbf{Scale-first}: Train or use the largest available model; reasoning will emerge. Lower engineering complexity, higher cost.
+  \item \textbf{规模优先}：训练或使用可用的最大模型；推理能力会自然涌现。工程复杂度较低，但成本更高。
+  % \item \textbf{Architecture-first}: Use a smaller model with reasoning-specific training (extended thinking, process supervision). Lower cost, but requires more careful training pipeline design.
+  \item \textbf{架构优先}：使用更小的模型，并采用推理专用训练（扩展思考、过程监督）。成本更低，但需要更细致的训练流水线设计。
+  % \item \textbf{Hybrid}: Use a large model for complex reasoning steps and a small model for routine tool calls and routing. Requires a routing layer but optimizes cost-quality trade-offs.
+  \item \textbf{混合}：用大模型处理复杂推理步骤，用小模型处理日常工具调用与路由。需要一层路由，但能优化成本—质量权衡。
+\end{itemize}
+
+% The open challenge is that we lack reliable methods to predict, before training, which approach will win for a given task distribution. Benchmark performance on standard suites does not reliably predict performance on novel reasoning tasks encountered in production. This uncertainty makes model selection for agentic systems more art than science---a gap that better evaluation methodology (Section~\ref{evaluation-beyond-benchmarks}) and interpretability research must close.
+开放挑战在于：我们缺乏可靠方法，在训练之前预测哪种方法会在给定任务分布上胜出。标准基准套件上的表现，并不能可靠预测生产中出现的新颖推理任务上的表现。这种不确定性使智能体系统的模型选择更像艺术而非科学——更好的评估方法论（第~\ref{evaluation-beyond-benchmarks} 节）与可解释性研究必须弥合这一缺口。
 
 \subsection{可扩展监督}
 \label{scalable-oversight}
@@ -4218,7 +4566,7 @@ A2A 协议~\cite{google-a2a-2025} 与多智能体框架预示着这样一种未�
 \label{agent-security-and-trust}
 
 % Autonomous agents inherit every security vulnerability of the LLMs they are built on---plus new attack surfaces created by tool access, multi-agent delegation, and persistent memory (Chapters~19--21). Critical unsolved problems:
-自主 Agent 继承了其底层 LLM 的全部安全漏洞，再加上工具访问、多智能体委派与持久化记忆所带来的新攻击面（第 19--21 章）。关键的未解问题：
+自主 Agent 继承了其底层 LLM 的全部安全漏洞，再加上工具访问、多智能体委派与持久化记忆所带来的新攻击面（第 19--22 章）。关键的未解问题：
 
 \begin{itemize}
   % \item \textbf{Prompt injection at scale}~\cite{greshake2023indirect}: As agents consume untrusted content (web pages, emails, API responses), indirect prompt injection becomes systemic. No robust defense exists today.
@@ -4267,6 +4615,31 @@ A2A 协议~\cite{google-a2a-2025} 与多智能体框架预示着这样一种未�
   \item 在智能体任务上达到闭源质量的开放权重模型~\cite{deepseek2025r1}。
 \end{itemize}
 
+\subsection{监管环境}
+\label{subsec:regulatory-environment}
+
+% Agentic AI systems are increasingly subject to formal regulation, adding a new dimension to deployment decisions that was largely absent from earlier LLM deployments.
+智能体 AI 系统正日益受到正式监管的约束，这为部署决策增加了一个在早期 LLM 部署中基本不存在的维度。
+
+\paragraph{EU AI Act（2024--2026）。}
+EU AI Act~\cite{euaiact2024} 于 2024 年 8 月生效，采用分阶段的合规时间表，并按风险等级对 AI 系统分类。在招聘、信贷、医疗或关键基础设施中做出重大决策的自主智能体，属于\textbf{高风险}类别，必须满足以下要求：部署前的合格评定、人工监督机制、为事后审计保留系统行为日志，以及在欧盟数据库中注册。具有系统性风险的通用 AI 模型（GPAI）——大致指训练算力超过 $10^{25}$ FLOPs 的模型——还面临额外义务，包括对抗测试与事件报告。对于在欧盟市场或面向欧盟市场构建智能体系统的从业者来说，合规不是可选项：违规罚款最高可达全球年营业额的 3\%。
+
+\paragraph{加州 SB 942（《AI 透明度法案》，2024）。}
+加州 SB 942 要求 AI 生成内容可被检测，并要求能够生成合成媒体的系统包含来源元数据。该法主要针对生成式媒体，但对代表用户生成文档、代码或通信内容的智能体系统也有影响：输出可能需要标注为 AI 生成，系统必须为用户提供请求披露的机制。由于加州经常在美国事实上设定全国标准，从业者应将 SB 942 合规视为美国部署的基线。
+
+\paragraph{跨司法辖区的共同主题。}
+尽管在范围与执法上存在差异，若干主题在各监管框架中反复出现：
+\begin{itemize}
+  \item \textbf{人工监督}：监管普遍要求人类始终能够干预、覆盖或关闭自主系统。这直接约束了完全自主的 Agent 设计。
+  \item \textbf{可审计性}：Agent 决策与行动的日志必须被保留且可解释。这与第~\ref{sec:loop-engineering} 章讨论的可观测性要求一致。
+  \item \textbf{透明度}：用户必须知道自己在与 AI 系统而非人类交互。
+  \item \textbf{问责}：必须有法律实体对系统行为负责——对于跨越组织边界的多智能体链路而言，这是一项挑战。
+\end{itemize}
+
+\begin{keybox}[监管合规是工程要求]
+监管要求并不纯粹是法律问题——它们直接转化为工程要求：审计日志、人机协同检查点、输出来源元数据与能力限制。把合规当作事后补救的团队将面临昂贵的改造。最有效的方法是从一开始就为可审计性与人工监督而设计，这同时也能提升系统的可靠性与可调试性。
+\end{keybox}
+
 \section{延伸阅读}
 \label{further-reading}
 
@@ -4312,6 +4685,8 @@ A2A 协议~\cite{google-a2a-2025} 与多智能体框架预示着这样一种未�
 \begin{itemize}
   % \item \textbf{Building Effective Agents}~\cite{anthropic2024buildingagents} --- Design patterns and principles.
   \item \textbf{Building Effective Agents}~\cite{anthropic2024buildingagents} --- 设计模式与原则。
+  % \item \textbf{LangGraph}~\cite{langchain2024langgraph} --- Graph-based agent orchestration framework; reference implementation for graph engineering patterns.
+  \item \textbf{LangGraph}~\cite{langchain2024langgraph} --- 基于图的 Agent 编排框架；图工程模式的参考实现。
   % \item \textbf{Voyager}~\cite{wang2023voyager} --- Open-ended agent with skill library in Minecraft.
   \item \textbf{Voyager}~\cite{wang2023voyager} --- Minecraft 中带有技能库的开放式 Agent。
   % \item \textbf{SWE-bench}~\cite{jimenez2024swebench} --- Benchmark for autonomous software engineering.
@@ -4327,6 +4702,9 @@ A2A 协议~\cite{google-a2a-2025} 与多智能体框架预示着这样一种未�
   % \item \textbf{Agent-to-Agent Protocol}~\cite{google-a2a-2025} --- Inter-agent communication standard.
   \item \textbf{Agent-to-Agent Protocol}~\cite{google-a2a-2025} --- 智能体间通信标准。
 \end{itemize}
+
+\paragraph{模型格局说明（截至 2026 年中）。}
+自本书核心章节写成以来，前沿模型格局已发生显著变化。按发布时间顺序：\textbf{Llama~4} Scout 与 Maverick（Meta，2025 年 4 月）让开放权重模型在标准基准上大幅接近闭源质量。\textbf{Gemini 3.1 Pro}（Google DeepMind，2026 年 2 月）将 Gemini 系列推进到前沿层级。\textbf{Claude Fable~5}（Anthropic，2026 年 6 月）成为 Anthropic 公开可用的带安全护栏模型。\textbf{GPT-5.6}（OpenAI，2026 年 7 月）以三个变体组成的家族形式发布——Luna、Terra 与 \textbf{Sol}（最强变体，被称为 OpenAI“迄今最好的编码模型”，在智能体任务上比此前版本提高 54\% 的 token 效率）。\textbf{Claude Opus~5}（Anthropic，2026 年 7 月）是 Anthropic 最高能力的旗舰模型。\textbf{Qwen~3.8}（阿里巴巴，2026 年 8 月）进一步缩小了开放权重的差距。2026 年 9 月带来一批发布：\textbf{Claude Opus~5.5}（Anthropic）作为增强迭代，改进了智能体与编码性能；\textbf{Claude Fable~5.1} 与 \textbf{Mythos~5.1}（Anthropic）成本比前代低约 25--45\%；以及 \textbf{Gemini 3.8 Flash}（Google DeepMind），一个高吞吐、面向推理优化的模型。尽管取得了这些进展，在最严苛的智能体基准（SWE-bench Verified、Terminal-Bench）上，仍存在约 3--6 个月的\textbf{开放权重滞后}：开放权重模型通常只能达到上一轮发布周期的闭源模型水平，而非当前周期。这一差距正在缩小，但截至 2026 年中尚未闭合。从业者应将本书中的任何具体模型比较视为一个快照；相对排名会随每个重大发布周期而变化。
 
 \subsection{对齐与安全}
 \label{alignment-and-safety}
@@ -4358,6 +4736,10 @@ A2A 协议~\cite{google-a2a-2025} 与多智能体框架预示着这样一种未�
   \item \textbf{DSPy}：\href{https://github.com/stanfordnlp/dspy}{https://github.com/stanfordnlp/dspy} --- 声明式 prompt 优化。
   % \item \textbf{AutoGen}: \href{https://github.com/microsoft/autogen}{https://github.com/microsoft/autogen} --- Multi-agent conversation framework.
   \item \textbf{AutoGen}：\href{https://github.com/microsoft/autogen}{https://github.com/microsoft/autogen} --- 多智能体对话框架。
+  % \item \textbf{Pydantic AI}: \href{https://ai.pydantic.dev}{https://ai.pydantic.dev} --- Type-safe agent framework with structured outputs and dependency injection.
+  \item \textbf{Pydantic AI}：\href{https://ai.pydantic.dev}{https://ai.pydantic.dev} --- 具备结构化输出与依赖注入的类型安全 Agent 框架。
+  % \item \textbf{AG2 (AutoGen 3.0)}: \href{https://github.com/ag2ai/ag2}{https://github.com/ag2ai/ag2} --- Actor-based multi-agent runtime; the community-driven AutoGen rewrite.
+  \item \textbf{AG2 (AutoGen 3.0)}：\href{https://github.com/ag2ai/ag2}{https://github.com/ag2ai/ag2} --- 基于 actor 的多智能体运行时；社区驱动的 AutoGen 重写。
 \end{itemize}
 
 % \emph{``The best way to predict the future is to build it.''}\\
