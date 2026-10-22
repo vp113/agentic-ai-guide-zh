@@ -609,8 +609,8 @@ Q = XW_Q, \quad K = XW_K, \quad V = XW_V \quad (W_Q, W_K, W_V \in \mathbb{R}^{d 
   \item \textbf{稀疏注意力模式}：将局部窗口与周期性的全局 Token 结合（例如，每隔 512 个 Token 关注全部）。BigBird~\cite{zaheer2020bigbird} 和 LongT5~\cite{guo2022longt5} 使用此方法。以 $O(n\sqrt{n})$ 代价保留一些长程连通性。同样，FlashAttention 作为非零注意力块的底层内核。
   % \item \textbf{Linear attention / state-space models}: Replace $\text{softmax}(QK^T)V$ with $\phi(Q)(\phi(K)^T V)$ using associativity, or reformulate as a recurrence (Mamba~\cite{gu2023mamba}, RWKV~\cite{peng2023rwkv}). Theoretically $O(n \cdot d^2)$ total. Unlike approaches 2--3 above, these are \emph{architectural replacements} that alter model expressiveness---softmax-free attention is fundamentally less expressive, and empirically these models still lag behind transformers on tasks requiring precise long-range retrieval or complex reasoning.
   \item \textbf{线性注意力 / 状态空间模型}：利用结合律将 $\text{softmax}(QK^T)V$ 替换为 $\phi(Q)(\phi(K)^T V)$，或重构为递归形式（Mamba~\cite{gu2023mamba}、RWKV~\cite{peng2023rwkv}）。理论上总代价为 $O(n \cdot d^2)$。与上面方法 2--3 不同，这些是\emph{架构上的替换}，改变了模型的表达能力——无 Softmax 的注意力本质上表达力更弱，经验上这些模型在需要精确长程检索或复杂推理的任务上仍然落后于 Transformer。
-  % \item \textbf{KV cache compression}: At inference, compress or evict old KV pairs to bound memory. Techniques include: H$_2$O~\cite{zhang2023h2o} (heavy-hitter oracle---keep only high-attention keys), StreamingLLM~\cite{xiao2024streamingllm} (keep initial ``attention sink'' tokens + recent window), and quantized KV caches~\cite{liu2024kivi}.
-  \item \textbf{KV 缓存压缩}：在推理时，压缩或驱逐旧的 KV 对以限制内存。技术包括：H$_2$O~\cite{zhang2023h2o}（重击者判据——只保留高注意力的 Key）、StreamingLLM~\cite{xiao2024streamingllm}（保留初始``注意力汇点（Attention Sink）''Token + 最近窗口），以及量化 KV 缓存~\cite{liu2024kivi}。
+  % \item \textbf{KV cache compression}: At inference, compress or evict old KV pairs to bound memory. Techniques include: H$_2$O~\cite{zhang2023h2o} (heavy-hitter oracle---keep only high-attention keys), StreamingLLM~\cite{xiao2024efficient} (keep initial ``attention sink'' tokens + recent window), and quantized KV caches~\cite{liu2024kivi}.
+  \item \textbf{KV 缓存压缩}：在推理时，压缩或驱逐旧的 KV 对以限制内存。技术包括：H$_2$O~\cite{zhang2023h2o}（重击者判据——只保留高注意力的 Key）、StreamingLLM~\cite{xiao2024efficient}（保留初始``注意力汇点（Attention Sink）''Token + 最近窗口），以及量化 KV 缓存~\cite{liu2024kivi}。
 \end{enumerate}
 
 \begin{intuitionbox}[FlashAttention + 稀疏模式 = 两全其美]
@@ -1024,8 +1024,8 @@ Liu 等~\cite{liu2024lost} 表明 LLM 表现出 U 形检索曲线：放在长上
   \item \textbf{显式检索}：将相关上下文放在提示的开始或结尾；使用 RAG 来避免依赖中间位置。
   % \item \textbf{Long-context training}: Train on long documents with varied placement of key information~\cite{fu2024data}.
   \item \textbf{长上下文训练}：在关键信息位置多样化的长文档上训练~\cite{fu2024data}。
-  % \item \textbf{Hierarchical attention}: Architectures like Mamba~\cite{gu2024mamba} or RWKV that avoid the $O(n^2)$ attention bottleneck entirely.
-  \item \textbf{层次化注意力}：如 Mamba~\cite{gu2024mamba} 或 RWKV 等完全避免 $O(n^2)$ 注意力瓶颈的架构。
+  % \item \textbf{Hierarchical attention}: Architectures like Mamba~\cite{gu2023mamba} or RWKV that avoid the $O(n^2)$ attention bottleneck entirely.
+  \item \textbf{层次化注意力}：如 Mamba~\cite{gu2023mamba} 或 RWKV 等完全避免 $O(n^2)$ 注意力瓶颈的架构。
   % \item \textbf{Landmark tokens}: Insert retrievable markers in the context that act as ``signposts'' for attention.
   \item \textbf{地标 Token（Landmark tokens）}：在上下文中插入可检索的标记，作为注意力的``路标''。
   % \item \textbf{Temperature scaling}: Some implementations scale the attention logits by $\log n$ to counteract dilution in long sequences.
@@ -1624,8 +1624,8 @@ Muon 声称相对 AdamW 约有 \textbf{2$\times$ 的算力效率}：以大约一
 % The momentum is clearly shifting toward Muon in large-scale pretraining:
 在大型预训练中，天平明显正在向 Muon 倾斜：
 \begin{itemize}
-  % \item \textbf{GLM-4.5 / GLM-5} (Zhipu AI)~\cite{glm45_2025,glm5_2026}: adopted Muon for pretraining
-  \item \textbf{GLM-4.5 / GLM-5}（智谱 AI）~\cite{glm45_2025,glm5_2026}：预训练采用 Muon
+  % \item \textbf{GLM-4.5 / GLM-5} (Zhipu AI)~\cite{glm45_2025, glm5_2026}: adopted Muon for pretraining
+  \item \textbf{GLM-4.5 / GLM-5}（智谱 AI）~\cite{glm45_2025, glm5_2026}：预训练采用 Muon
   % \item \textbf{Kimi K2} (Moonshot AI)~\cite{kimik2_2025}: uses \textbf{MuonClip}, a variant that adds \emph{QK-Clip}---rescaling query and key projections to cap attention logits and prevent loss spikes. Kimi K2 trained over 15.5T tokens with zero loss spikes, a stability record for models at that scale.
   \item \textbf{Kimi K2}（月之暗面）~\cite{kimik2_2025}：使用 \textbf{MuonClip}——一个加入 \emph{QK-Clip} 的变体，通过重新缩放 query 与 key 投影来限制 attention logits 并防止损失尖峰。Kimi K2 在超过 15.5T token 上训练且零损失尖峰，是该规模模型的稳定性纪录。
   % \item \textbf{DeepSeek-V4} (2026)~\cite{deepseekv4_2026}: adopted Muon for its pretraining run
@@ -4139,7 +4139,7 @@ Distilled 8B & 16 GB & 10$\times$ & 80--85\% & 移动、边缘 \\
 \textbf{关键性质}：这一接受/拒绝方案保证最终分布与 $P_{\text{target}}$ 完全一致。
 
 % \textbf{Speedup}: If acceptance rate is $\alpha$, expected tokens per step = $\frac{1 - \alpha^{k+1}}{1 - \alpha}$. At $\alpha=0.8$, $k=5$: expected 3.4 tokens/step vs.~1 for standard decoding.
-\textbf{加速比}：若接受率为 $\alpha$，每步期望 token 数 $= \frac{1 - \alpha^{k+1}}{1 - \alpha}$。在 $\alpha=0.8$、$k=5$ 时：每步期望 3.4 个 token，相较标准解码的 1 个。
+\textbf{加速比}：若接受率为 $\alpha$，每步期望 token 数 $= \frac{1 - \alpha^{k+1}}{1 - \alpha}$。在 $\alpha=0.8$、$k=5$ 时：每步期望约 3.7 个 token，相较标准解码的 1 个。
 \end{keybox}
 
 % \subsection{Methods Comparison}
@@ -4521,7 +4521,7 @@ GPU 和 CPU 代表了根本不同的硬件设计哲学。理解这种差异能�
 \end{itemize}
 
 % Deep learning workloads are dominated by matrix multiplications ($O(n^3)$ operations on $O(n^2)$ data), which are embarrassingly parallel. A single transformer forward pass for a 70B model requires $\sim$140 TFLOP of compute per token -- perfect for GPU throughput.
-深度学习工作负载以矩阵乘法（在 $O(n^2)$ 数据上执行 $O(n^3)$ 操作）为主，这是天然并行的。70B 模型的单次 transformer 前向传播每个 token 需要约 140 TFLOP 计算量——非常适合 GPU 的吞吐能力。
+深度学习工作负载以矩阵乘法（在 $O(n^2)$ 数据上执行 $O(n^3)$ 操作）为主，这是天然并行的。70B 模型的单次 transformer 前向传播每个 token 需要约 140 GFLOP 计算量——非常适合 GPU 的吞吐能力。
 \end{intuitionbox}
 
 \subsection{NVIDIA GPU 微架构代际演进}
@@ -4773,7 +4773,7 @@ I = \frac{4n^2 d}{4 \cdot n \cdot d \cdot 2} = \frac{n}{2} = \frac{4096}{2} = 20
 \]
 
 % This is $13\times$ above the ridge point (156) --- \textbf{deeply compute-bound}. The GPU hits its peak 312 TFLOPS, needing only $312\text{T}/2048 \approx 152$ GB/s of bandwidth (7.6\% of HBM capacity). Memory is no longer the bottleneck.
-这比脊点（156）高出 $13\times$——\textbf{深度计算密集}。GPU 跑满峰值 312 TFLOPS，只需要 $312\text{T}/2048 \approx 152$ GB/s 带宽（HBM 容量的 7.6\%）。内存不再是瓶颈。
+这比脊点（156）高出 $13\times$——\textbf{深度计算密集}。GPU 跑满峰值 312 TFLOPS，只需要 $312\text{T}/2048 \approx 152$ GB/s 带宽（HBM 带宽的 7.6\%）。内存不再是瓶颈。
 \end{examplebox}
 
 \subsection{Attention 是内存密集的；FFN 是计算密集的}

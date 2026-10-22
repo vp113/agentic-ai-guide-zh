@@ -181,8 +181,8 @@ p(y|x) = \sum_{z} p(y|x, z) \cdot p(z|x) \approx p(y|x, z^*) \cdot p(z^*|x)
 \subsection{思维树（ToT）}
 \label{subsec:tot_method}
 
-% Tree-of-Thoughts~\cite{yao2024tree} generalizes CoT from a \textbf{linear chain} to a \textbf{tree structure}, enabling the model to explore multiple reasoning paths, evaluate intermediate states, and backtrack from unpromising branches. This introduces deliberate planning into the reasoning process.
-思维树（Tree-of-Thoughts，ToT）~\cite{yao2024tree} 将 CoT 从\textbf{线性链}推广为\textbf{树形结构}，使模型能够探索多条推理路径、评估中间状态，并从前景不佳的分支回溯。这为推理过程引入了刻意的规划。
+% Tree-of-Thoughts~\cite{yao2023tree} generalizes CoT from a \textbf{linear chain} to a \textbf{tree structure}, enabling the model to explore multiple reasoning paths, evaluate intermediate states, and backtrack from unpromising branches. This introduces deliberate planning into the reasoning process.
+思维树（Tree-of-Thoughts，ToT）~\cite{yao2023tree} 将 CoT 从\textbf{线性链}推广为\textbf{树形结构}，使模型能够探索多条推理路径、评估中间状态，并从前景不佳的分支回溯。这为推理过程引入了刻意的规划。
 
 \paragraph{核心抽象。}
 \label{core-abstraction.}
@@ -550,7 +550,7 @@ CoT~\cite{wei2022chain} & 链 & 1 & N/A & 否 & 简单—中等难度问题 \\
 Self-Consistency~\cite{wang2023selfconsistency} & 并行链 & $N$ & \checkmark{} 完全 & 否（多数投票） & 答案离散的数学题 \\
 Best-of-N + ORM & 并行链 & $N$ + 1 & \checkmark{} 完全 & 是（ORM） & 有良好 RM 的通用任务 \\
 Best-of-N + PRM & 并行链 & $N$ + $N{\cdot}K$ & \checkmark{} 完全 & 是（PRM） & 复杂多步推理 \\
-ToT~\cite{yao2024tree} & 树（BFS/DFS） & $O(kbd)$ & 部分 & LLM 作判官 & 结构化搜索问题 \\
+ToT~\cite{yao2023tree} & 树（BFS/DFS） & $O(kbd)$ & 部分 & LLM 作判官 & 结构化搜索问题 \\
 GoT~\cite{besta2024graph} & DAG & $O(kbd)$ & 部分 & LLM 作判官 & 可分解的问题 \\
 MCTS~\cite{kocsis2006bandit} & 树 + 价值 & $O(N_{\text{sim}} \cdot d)$ & 部分 & 是（价值网络） & 困难证明、编程 \\
 Self-Refine~\cite{madaan2023selfrefine} & 线性（迭代） & $2T$ & 否 & 自我评判 & 开放式生成 \\

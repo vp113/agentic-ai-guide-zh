@@ -790,10 +790,10 @@ PPO 需要在显存中维持 4 个模型（policy、reference、reward 模型、
 DPO 在最小化一个交叉熵 loss，其中“标签”是：被选回答的隐式 reward 应高于被拒回答。Margin 由 $\beta$ 控制：
 
 \begin{itemize}
-  % \item Large $\beta$: need large margin $\rightarrow$ policy moves aggressively $\rightarrow$ risk forgetting
-  \item $\beta$ 较大：需要较大的 margin $\rightarrow$ policy 移动得更激进 $\rightarrow$ 有遗忘风险
-  % \item Small $\beta$: small margin suffices $\rightarrow$ policy stays close to reference $\rightarrow$ conservative
-  \item $\beta$ 较小：较小的 margin 就够了 $\rightarrow$ policy 更靠近 reference $\rightarrow$ 更保守
+  % 勘误（英文 v1.4 原文方向有误）：β 是 KL 约束强度；β 越大，策略越贴近 reference。
+  \item $\beta$ 较大：KL 约束更强 $\rightarrow$ policy 更靠近 reference $\rightarrow$ 更保守，遗忘风险更低
+  % \item Small $\beta$: weaker KL constraint $\rightarrow$ policy can deviate further from reference $\rightarrow$ more aggressive
+  \item $\beta$ 较小：KL 约束更弱 $\rightarrow$ policy 可以偏离 reference 更远 $\rightarrow$ 更激进，遗忘风险更高
 \end{itemize}
 
 % The reference model acts as a regularizer: the policy must ``justify'' any deviation from it by showing preference alignment.
@@ -1613,7 +1613,7 @@ trainer = DPOTrainer(
 
 \begin{intuitionbox}[无参考模型的偏好学习]
 % DPO requires a reference model to compute the implicit reward. This doubles memory usage and adds complexity. SimPO~\cite{meng2024simpo} eliminates the reference model by using the \emph{average log-probability} of the response as an implicit reward, with a length normalisation term to prevent the model from preferring short responses.
-DPO 需要一个 reference 模型来计算隐式 reward，这会让显存翻倍并增加复杂度。SimPO~\cite{meng2024simpo} 取消了 reference 模型，转而用回答的\emph{平均对数概率}作为隐式 reward，并通过长度归一化项防止模型偏好短回答。
+DPO 需要一个 reference 模型来计算隐式 reward，这会让显存翻倍并增加复杂度。SimPO~\cite{meng2024simpo} 取消了 reference 模型，转而用回答的\emph{平均对数概率}作为隐式 reward，并通过长度归一化项抑制模型对长回答的偏好。
 \end{intuitionbox}
 
 % SimPO defines the implicit reward as:

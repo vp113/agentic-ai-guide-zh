@@ -1520,8 +1520,8 @@ print(results.to_pandas())
   \item \textbf{检索遗漏}：相关文档存在于语料库中却未被检索到。原因：分块不佳、Embedding 模型不匹配、查询—文档词汇差距。
   % \item \textbf{Context Poisoning}: Retrieved documents contain misleading or contradictory information that causes the model to generate incorrect answers.
   \item \textbf{上下文污染}：检索到的文档包含误导性或矛盾的信息，导致模型生成错误答案。
-  % \item \textbf{Lost-in-the-Middle}: LLMs attend more strongly to the beginning and end of long contexts; relevant information in the middle may be ignored~\cite{liu2023lost}.
-  \item \textbf{中部迷失（Lost-in-the-Middle）}：LLM 对长上下文的开头和结尾关注更强；中间部分的相关信息可能被忽略~\cite{liu2023lost}。
+  % \item \textbf{Lost-in-the-Middle}: LLMs attend more strongly to the beginning and end of long contexts; relevant information in the middle may be ignored~\cite{liu2024lost}.
+  \item \textbf{中部迷失（Lost-in-the-Middle）}：LLM 对长上下文的开头和结尾关注更强；中间部分的相关信息可能被忽略~\cite{liu2024lost}。
   % \item \textbf{Over-Retrieval}: Too many retrieved chunks dilute the relevant signal and increase latency and cost.
   \item \textbf{过度检索}：检索块过多会稀释相关信号，并增加延迟与成本。
   % \item \textbf{Hallucination Despite Retrieval}: Model ignores retrieved context and generates from parametric memory, especially when context contradicts training data.
@@ -7110,8 +7110,8 @@ GAS 遵循单一职责原则：每个 Agent 函数恰好只承担一项职责。
 \begin{itemize}
   % \item \textbf{Sectioning (fan-out)}: Partition the input into disjoint chunks and process each independently---e.g., run security, performance, and style checks on a codebase simultaneously.
   \item \textbf{分段（Sectioning，fan-out）}：将输入划分为互不相交的块并独立处理——例如对一个代码库同时运行安全、性能和风格检查。
-  % \item \textbf{Voting (redundancy)}: Issue the same prompt $N$ times with different seeds or temperatures, then select the best result via majority vote~\cite{wang2022selfconsistency}, reward-model scoring, or LLM-as-judge.
-  \item \textbf{投票（Voting，冗余）}：用不同随机种子或温度对同一 Prompt 发起 $N$ 次调用，然后通过多数投票~\cite{wang2022selfconsistency}、奖励模型打分或 LLM-as-judge 选出最佳结果。
+  % \item \textbf{Voting (redundancy)}: Issue the same prompt $N$ times with different seeds or temperatures, then select the best result via majority vote~\cite{wang2023selfconsistency}, reward-model scoring, or LLM-as-judge.
+  \item \textbf{投票（Voting，冗余）}：用不同随机种子或温度对同一 Prompt 发起 $N$ 次调用，然后通过多数投票~\cite{wang2023selfconsistency}、奖励模型打分或 LLM-as-judge 选出最佳结果。
 \end{itemize}
 
 \begin{examplebox}[并行化示例：代码评审]
@@ -13609,8 +13609,8 @@ class TraceEvent:
 % \subsubsection{MAS-Specific Benchmarks}
 \subsection{MAS 专用基准}
 
-% Beyond unit and integration tests, multi-agent systems should be evaluated on standardized benchmarks that measure collaborative task completion~\cite{liu2023agentbench,huang2024mlagentbench}:
-除单元测试与集成测试之外，多智能体系统还应在衡量协作任务完成度的标准化基准上接受评估~\cite{liu2023agentbench,huang2024mlagentbench}：
+% Beyond unit and integration tests, multi-agent systems should be evaluated on standardized benchmarks that measure collaborative task completion~\cite{liu2023agentbench, huang2024mlagentbench}:
+除单元测试与集成测试之外，多智能体系统还应在衡量协作任务完成度的标准化基准上接受评估~\cite{liu2023agentbench, huang2024mlagentbench}：
 
 \begin{table}[ht!]
 \centering
@@ -13633,8 +13633,8 @@ ChatDev / MetaGPT~\cite{hong2023metagpt} & 端到端软件生成 & 可执行性�
 GAIA~\cite{mialon2023gaia} & 真实世界助手任务 & 精确匹配 & 测试多步工具使用与协调 \\
 % Multi-Agent Debate~\cite{du2023improving} & Factual accuracy via debate & Accuracy vs.\ single agent & Measures benefit of multi-agent disagreement \\
 Multi-Agent Debate~\cite{du2023improving} & 通过辩论提升事实准确性 & 相对单 Agent 的准确率 & 衡量多 Agent 分歧带来的收益 \\
-% MARL benchmarks~\cite{lowe2017multi,rashid2018qmix} & Cooperative/competitive RL & Episode reward & Tests emergent coordination under reward \\
-MARL 基准~\cite{lowe2017multi,rashid2018qmix} & 合作/竞争 RL & 回合奖励 & 测试 Reward 下的涌现协调 \\
+% MARL benchmarks~\cite{lowe2017multi, rashid2018qmix} & Cooperative/competitive RL & Episode reward & Tests emergent coordination under reward \\
+MARL 基准~\cite{lowe2017multi, rashid2018qmix} & 合作/竞争 RL & 回合奖励 & 测试 Reward 下的涌现协调 \\
 \bottomrule
 \end{tabular}
 \end{table}
