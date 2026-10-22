@@ -610,7 +610,7 @@ Q = XW_Q, \quad K = XW_K, \quad V = XW_V \quad (W_Q, W_K, W_V \in \mathbb{R}^{d 
   % \item \textbf{Linear attention / state-space models}: Replace $\text{softmax}(QK^T)V$ with $\phi(Q)(\phi(K)^T V)$ using associativity, or reformulate as a recurrence (Mamba~\cite{gu2023mamba}, RWKV~\cite{peng2023rwkv}). Theoretically $O(n \cdot d^2)$ total. Unlike approaches 2--3 above, these are \emph{architectural replacements} that alter model expressiveness---softmax-free attention is fundamentally less expressive, and empirically these models still lag behind transformers on tasks requiring precise long-range retrieval or complex reasoning.
   \item \textbf{线性注意力 / 状态空间模型}：利用结合律将 $\text{softmax}(QK^T)V$ 替换为 $\phi(Q)(\phi(K)^T V)$，或重构为递归形式（Mamba~\cite{gu2023mamba}、RWKV~\cite{peng2023rwkv}）。理论上总代价为 $O(n \cdot d^2)$。与上面方法 2--3 不同，这些是\emph{架构上的替换}，改变了模型的表达能力——无 Softmax 的注意力本质上表达力更弱，经验上这些模型在需要精确长程检索或复杂推理的任务上仍然落后于 Transformer。
   % \item \textbf{KV cache compression}: At inference, compress or evict old KV pairs to bound memory. Techniques include: H$_2$O~\cite{zhang2023h2o} (heavy-hitter oracle---keep only high-attention keys), StreamingLLM~\cite{xiao2024streamingllm} (keep initial ``attention sink'' tokens + recent window), and quantized KV caches~\cite{liu2024kivi}.
-  \item \textbf{KV 缓存压缩}：在推理时，压缩或驱逐旧的 KV 对以限制内存。技术包括：H$_2$O~\cite{zhang2023h2o}（重击者预言机——只保留高注意力的 Key）、StreamingLLM~\cite{xiao2024streamingllm}（保留初始``注意力陷阱（Attention Sink）''Token + 最近窗口），以及量化 KV 缓存~\cite{liu2024kivi}。
+  \item \textbf{KV 缓存压缩}：在推理时，压缩或驱逐旧的 KV 对以限制内存。技术包括：H$_2$O~\cite{zhang2023h2o}（重击者判据——只保留高注意力的 Key）、StreamingLLM~\cite{xiao2024streamingllm}（保留初始``注意力汇点（Attention Sink）''Token + 最近窗口），以及量化 KV 缓存~\cite{liu2024kivi}。
 \end{enumerate}
 
 \begin{intuitionbox}[FlashAttention + 稀疏模式 = 两全其美]
@@ -946,7 +946,7 @@ DeepSeek-V3~\cite{deepseekv3} & 671B (37B 活跃) & 61 & 7168 & 128 & MLA & 128K
 % While the attention mechanism is powerful, it exhibits systematic failure modes that practitioners must understand---especially when scaling to long contexts or interpreting model behaviour.
 虽然注意力机制功能强大，但它表现出实践者必须理解的系统性失败模式——特别是在扩展到长上下文或解释模型行为时。
 
-\subsubsection{注意力陷阱（Attention Sink）}
+\subsubsection{注意力汇点（Attention Sink）}
 \label{attention-sink}
 
 \paragraph{现象。}
@@ -959,7 +959,7 @@ Xiao 等~\cite{xiao2024efficient} 发现 Transformer 模型对序列中的\emph{
 \label{why-it-happens.}
 
 % Softmax attention must produce a valid probability distribution ($\sum_j \alpha_j = 1$). When no key is particularly relevant to a query, the model needs a ``dump'' location for unused attention mass. During training, the first token becomes this default sink because it is always present and positionally predictable. It functions as a \emph{no-op attention target}---the model has learned to route irrelevant attention there rather than distributing it unpredictably.
-Softmax 注意力必须产生有效的概率分布（$\sum_j \alpha_j = 1$）。当没有 Key 对 Query 特别相关时，模型需要一个``倾倒''位置来安放未使用的注意力质量。在训练期间，第一个 Token 成为这个默认陷阱，因为它总是存在且在位置上可预测。它作为一个\emph{无操作的注意力目标}——模型已经学会将不相关的注意力路由到那里，而不是不可预测地分配它。
+Softmax 注意力必须产生有效的概率分布（$\sum_j \alpha_j = 1$）。当没有 Key 对 Query 特别相关时，模型需要一个``倾倒''位置来安放未使用的注意力质量。在训练期间，第一个 Token 成为这个默认汇点，因为它总是存在且在位置上可预测。它作为一个\emph{无操作的注意力目标}——模型已经学会将不相关的注意力路由到那里，而不是不可预测地分配它。
 
 \[
 \alpha_{\text{sink}} = \frac{\exp(q^\top k_0 / \sqrt{d})}{\sum_{j} \exp(q^\top k_j / \sqrt{d})} \gg \frac{1}{n} \quad \text{(even when } k_0 \text{ is semantically irrelevant)}
@@ -970,11 +970,11 @@ Softmax 注意力必须产生有效的概率分布（$\sum_j \alpha_j = 1$）。
 
 \begin{itemize}
   % \item \textbf{Streaming inference failure}: When using sliding-window KV caches, evicting the first token causes perplexity to spike catastrophically---the model loses its attention sink.
-  \item \textbf{流式推理失败}：使用滑动窗口 KV 缓存时，驱逐第一个 Token 会导致困惑度灾难性地飙升——模型失去了它的注意力陷阱。
+  \item \textbf{流式推理失败}：使用滑动窗口 KV 缓存时，驱逐第一个 Token 会导致困惑度灾难性地飙升——模型失去了它的注意力汇点。
   % \item \textbf{Misleading interpretability}: Naive attention visualizations suggest the first token is ``important'' when it is merely a mathematical artefact.
   \item \textbf{误导性的可解释性}：朴素的注意力可视化暗示第一个 Token``重要''，而实际上它只是一种数学伪影。
   % \item \textbf{Context window waste}: The sink token occupies a KV cache slot without carrying useful information.
-  \item \textbf{上下文窗口浪费}：陷阱 Token 占用一个 KV 缓存槽位，却不携带有用信息。
+  \item \textbf{上下文窗口浪费}：汇点 Token 占用一个 KV 缓存槽位，却不携带有用信息。
 \end{itemize}
 
 \paragraph{解决方案。}
@@ -982,9 +982,9 @@ Softmax 注意力必须产生有效的概率分布（$\sum_j \alpha_j = 1$）。
 
 \begin{itemize}
   % \item \textbf{StreamingLLM}~\cite{xiao2024efficient}: Always keep the first $k$ tokens (``attention sinks'') in the KV cache alongside the recent sliding window. Enables infinite-length generation with bounded memory.
-  \item \textbf{StreamingLLM}~\cite{xiao2024efficient}：始终在 KV 缓存中保留前 $k$ 个 Token（``注意力陷阱''）以及最近的滑动窗口。在有界内存下实现无限长度生成。
+  \item \textbf{StreamingLLM}~\cite{xiao2024efficient}：始终在 KV 缓存中保留前 $k$ 个 Token（``注意力汇点''）以及最近的滑动窗口。在有界内存下实现无限长度生成。
   % \item \textbf{Sink tokens by design}: Some models (e.g., Mistral) prepend dedicated sink tokens during training that are explicitly meant to absorb residual attention.
-  \item \textbf{设计上的陷阱 Token}：一些模型（如 Mistral）在训练期间预置专门的陷阱 Token，明确用于吸收残余注意力。
+  \item \textbf{设计上的汇点 Token}：一些模型（如 Mistral）在训练期间预置专门的汇点 Token，明确用于吸收残余注意力。
   % \item \textbf{Softmax alternatives}: Replace softmax with ReLU attention or sigmoid gating, where zero attention is representable without requiring a dump target.
   \item \textbf{Softmax 替代}：用 ReLU 注意力或 Sigmoid 门控替换 Softmax，使零注意力可以表示而无需倾倒目标。
 \end{itemize}
@@ -1464,7 +1464,7 @@ reward_score = reward_model(**inputs).logits  # 形状：(batch, 1)
   % \item \textbf{Noise as regularization}: The stochastic noise helps escape sharp local minima, finding flatter regions that generalize better.
   \item \textbf{噪声即正则化}：随机噪声有助于逃离尖锐的局部极小值，找到泛化性更好的平坦区域。
   % \item \textbf{GPU utilization}: Mini-batches are large enough to saturate GPU parallelism (matrix multiplications become compute-bound rather than memory-bound).
-  \item \textbf{GPU 利用率}：小批量足够大，能充分占满 GPU 并行度（矩阵乘法变为计算受限而非显存受限）。
+  \item \textbf{GPU 利用率}：小批量足够大，能充分占满 GPU 并行度（矩阵乘法变为计算受限，而不再受内存带宽限制）。
   % \item \textbf{Convergence}: Theoretically converges to a local minimum at rate $O(1/\sqrt{T})$ (slower than exact GD’s $O(1/T)$, but each step is millions of times cheaper).
   \item \textbf{收敛性}：理论上以 $O(1/\sqrt{T})$ 的速率收敛到局部极小值（比精确 GD 的 $O(1/T)$ 慢，但每步开销便宜数百万倍）。
 \end{itemize}
@@ -1574,7 +1574,7 @@ AdamW（Loshchilov \& Hutter, 2017）将权重衰减\emph{直接}作用于参数
   - \eta \lambda \theta_t
 \]
 % The weight decay term $\eta \lambda \theta_t$ is not divided by $\sqrt{\hat{v}_t}$. This gives uniform regularization across all parameters regardless of their gradient history.
-权重衰减项 $\eta \lambda \theta_t$ 不再被 $\sqrt{\hat{v}_t}$ 缩放。这样无论参数的梯度历史如何，所有参数都能获得均匀的正则化。
+权重衰减项 $\eta \lambda \theta_t$ 不再除以 $\sqrt{\hat{v}_t}$。这样无论参数的梯度历史如何，所有参数都能获得均匀的正则化。
 
 % \textbf{Typical value:} $\lambda = 0.1$ for LLM training.
 \textbf{典型取值：}LLM 训练时 $\lambda = 0.1$。
@@ -2262,7 +2262,7 @@ FA3 在 FP16 Attention 上可达 \textbf{H100 理论峰值的 75\%}，相比之�
 \label{flash-attention-4-blackwell-architecture}
 
 % FlashAttention 4~\cite{zadouri2026flashattention4} targets NVIDIA's Blackwell GPUs (B200/GB200), which double Tensor Core throughput to 2.25 PFLOP/s (BF16) while non-matmul units (exponential, shared memory bandwidth) scale at a slower rate. This \emph{asymmetric hardware scaling} means that the bottleneck shifts: on Blackwell, attention is limited not by matmul but by the softmax exponentials and shared memory traffic surrounding them.
-FlashAttention 4~\cite{zadouri2026flashattention4} 面向 NVIDIA 的 Blackwell GPU（B200/GB200），这类 GPU 将 Tensor Core 吞吐量提高到 2.25 PFLOP/s（BF16），但非矩阵乘法单元（指数运算、共享内存带宽）的扩展速度较慢。这种\emph{非对称的硬件扩展}意味着瓶颈发生了转移：在 Blackwell 上，Attention 的限制因素不再是矩阵乘法，而是 Softmax 指数运算以及围绕它们的共享内存流量。
+FlashAttention 4~\cite{zadouri2026flashattention4} 面向 NVIDIA 的 Blackwell GPU（B200/GB200），这类 GPU 将 Tensor Core 吞吐量翻倍至 2.25 PFLOP/s（BF16），但非矩阵乘法单元（指数运算、共享内存带宽）的扩展速度较慢。这种\emph{非对称的硬件扩展}意味着瓶颈发生了转移：在 Blackwell 上，Attention 的限制因素不再是矩阵乘法，而是 Softmax 指数运算以及围绕它们的共享内存流量。
 
 % FA4 addresses this with four key techniques:
 FA4 通过四项关键技术来应对这一问题：
@@ -2534,7 +2534,7 @@ Meta 的原生 PyTorch 微调库（2025 年开发逐步收尾），其设计围�
 \begin{keybox}[选择效率栈]
 \begin{itemize}
   % \item \textbf{Quick LoRA/QLoRA on $\leq$1 GPU}: Unsloth (fastest time-to-train, minimal setup)
-  \item \textbf{单 GPU（$\leq$1 GPU）上的快速 LoRA/QLoRA}：Unsloth（训练上手最快，配置最少）
+  \item \textbf{单 GPU（$\leq$1 GPU）上的快速 LoRA/QLoRA}：Unsloth（训练耗时最短，配置最少）
   % \item \textbf{Multi-GPU full fine-tune}: TRL/DeepSpeed + Liger Kernel (best throughput at scale)
   \item \textbf{多 GPU 全量微调}：TRL/DeepSpeed + Liger Kernel（大规模下的最佳吞吐）
   % \item \textbf{Research / custom training loops}: torchtune (transparent, hackable, native PyTorch)
@@ -2571,7 +2571,7 @@ Epoch 数 & 大数据集 2--3 个；小型（$<$10K）精选集最多 5 个。�
 % \begin{intuitionbox}[SFT Is Not Enough]
 % SFT teaches format and basic instruction following, but cannot reliably teach: \emph{preference} (which response is better---needs RLHF/DPO), \emph{refusal} (when not to answer---needs safety training), \emph{calibration} (saying ``I don't know''---needs RL with truthfulness rewards), or \emph{complex reasoning} (multi-step chains---needs RL with verifiable rewards). The full pipeline is: Pretrain $\to$ SFT $\to$ RLHF/DPO.
 \begin{intuitionbox}[SFT 还不够]
-SFT 能教会格式和基础的指令遵循，但难以可靠地教会：\emph{偏好}（哪一个回复更好——需要 RLHF/DPO）、\emph{拒绝}（何时不该回答——需要安全训练）、\emph{校准}（说「我不知道」——需要带真实性奖励的 RL）、或\emph{复杂推理}（多步推理链——需要带可验证奖励的 RL）。完整流水线是：Pretrain $\to$ SFT $\to$ RLHF/DPO。
+SFT 能教会格式和基础的指令遵循，但无法可靠地教会：\emph{偏好}（哪一个回复更好——需要 RLHF/DPO）、\emph{拒绝}（何时不该回答——需要安全训练）、\emph{校准}（说「我不知道」——需要带真实性奖励的 RL）、或\emph{复杂推理}（多步推理链——需要带可验证奖励的 RL）。完整流水线是：Pretrain $\to$ SFT $\to$ RLHF/DPO。
 \end{intuitionbox}
 
 \section{LoRA 与参数高效微调}
@@ -4091,7 +4091,7 @@ $T^2$ 因子补偿了软化分布造成的梯度幅度下降。典型取值：$T
   % \item \textbf{Data selection:} Distillation data quality matters; curating diverse, hard examples yields better students than random sampling.
   \item \textbf{数据选择：}蒸馏数据质量很重要；精挑多样化的困难样本比随机采样能产出更好的学生。
   % \item \textbf{Student capacity:} Diminishing returns below $\sim$10\% of teacher parameters; at extreme compression, architecture changes (e.g.~MoE $\to$ dense) may be needed.
-  \item \textbf{学生容量：}学生参数低于教师约 10\% 时收益递减；在极端压缩下可能需要架构变更（例如 MoE $\to$ dense）。
+  \item \textbf{学生容量：}当学生参数量低于教师参数量的约 10\% 时，收益递减；在极端压缩下可能需要架构变更（例如 MoE $\to$ dense）。
   % \item \textbf{Combining with quantization:} Distillation + 4-bit quantization (e.g.~QLoRA-distilled models) achieves near-teacher quality at $20\times$ compression.
   \item \textbf{与量化结合：}蒸馏 + 4-bit 量化（例如 QLoRA 蒸馏模型）能在 $20\times$ 压缩下达到接近教师的质量。
 \end{itemize}
@@ -4291,7 +4291,7 @@ llm = LLM(
 \begin{warningbox}[何时\emph{不}该使用投机解码]
 \begin{itemize}
   % \item \textbf{High batch sizes}: At batch $\geq 64$, generation is already compute-efficient. Speculation adds overhead (draft generation + verification) that doesn't pay off.
-  \item \textbf{高批量}：当 batch $\geq 64$ 时，生成本身已经计算密集。投机解码引入的开销（草稿生成 + 验证）得不偿失。
+  \item \textbf{高批量}：当 batch $\geq 64$ 时，生成本身已经具有很高的计算效率（算力已被充分利用）。投机解码引入的开销（草稿生成 + 验证）得不偿失。
   % \item \textbf{Very different distributions}: If draft model is too dissimilar to target, acceptance rate drops below 50\% and speculation is slower than standard decoding.
   \item \textbf{分布差异过大}：若草稿模型与目标模型差异过大，接受率会跌至 50\% 以下，反而比标准解码更慢。
   % \item \textbf{Short outputs}: For $<$20 token outputs, the setup cost of speculation exceeds savings.

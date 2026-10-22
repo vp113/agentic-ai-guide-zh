@@ -3493,7 +3493,7 @@ RLHF (PPO) & 人类偏好 & 文本 & 弱 & 聊天机器人、助手 \\
 % DPO & Pairwise preference & Text & Weak & Style, safety \\
 DPO & 成对偏好 & 文本 & 弱 & 风格、安全 \\
 % RLVR & Binary correctness & Text & Degrades OOD & Math, code \\
-RLVR & 二值正确性 & 文本 & 降低 OOD & 数学、代码 \\
+RLVR & 二值正确性 & 文本 & 使 OOD 校准退化 & 数学、代码 \\
 % \textbf{RLCR} & Correctness + Brier & Text + confidence & \textbf{Explicitly improved} & Reliable reasoning \\
 \textbf{RLCR} & 正确性 + Brier & 文本 + 置信度 & \textbf{显式改善} & 可靠推理 \\
 % \textbf{RLCD (Jev)} & Calibrated outcomes & Typed distributions & \textbf{Core objective} & Software automation \\
@@ -7099,7 +7099,7 @@ Claude Code & 31.0 & 10.7 & 6.0 & 15.9 \\
 
 \textbf{关键发现}~\cite{ye2026harnesszero}：Harness-Zero 将宏平均任务成功率从 23.3\% 提升到 44.3\%（相对提升 +90\%）。仅在 $h$ 下运行的蒸馏模型（44.3\%）\emph{超过}了仍挂着 $h^*$ 的基础模型（41.7\%）。通用 harness（DeepAgents、Claude Code）实际上\emph{损害}了 9B 模型——它们提供了过多工具与过多上下文，却缺少领域专用指导。
 
-\textbf{消融实验（USPTO）}~\cite{ye2026harnesszero}：在更强教师的 rollout 上直接微调带来 0\% 提升。在 $h^*$ 下收集的轨迹反而有害（动作空间失配）。Oracle 答案访问仅达到 15\%。真正驱动收益的是 $\mathcal{K}$ 中程序化、可复用的行为指导——而不是更强的示范或 oracle 访问。
+\textbf{消融实验（USPTO）}~\cite{ye2026harnesszero}：在更强教师的 rollout 上直接微调带来 0\% 提升。在 $h^*$ 下收集的轨迹反而有害（动作空间失配）。即使提供 Oracle 答案，该消融设置也仅达到 15\%。真正驱动收益的是 $\mathcal{K}$ 中程序化、可复用的行为指导——而不是更强的示范或 oracle 访问。
 
 \textbf{行为恢复}~\cite{ye2026harnesszero}：共识别出 28 种 harness 专属行为模式（即在 $h^*$ 下出现、但在基础模型的 $h$ 下从未出现的行为）。Harness-Zero 平均恢复了其中 \textbf{82.3\%} 的模式，涵盖全部四类 harness 组件（工具、中间件、技能、记忆）。部分示例：“编辑前先检查”（100\%）、“先用 RDKit 解析产物”（100\%）、“用 RDKit 验证”（100\%）、“保护预填充单元格”（92\%）。
 

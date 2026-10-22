@@ -3781,7 +3781,7 @@ C \geq \underbrace{S}_{\text{system prompt}} + \underbrace{M}_{\text{memory/RAG}
 \end{equation}
 
 % As a conversation grows, $H$ expands without bound while $C$ remains fixed. Tool outputs can be large (e.g., a web page, a code execution result), causing sudden spikes in $T + H$. The harness must continuously enforce Equation~\ref{eq:context-budget}.
-随着对话增长，$H$ 会无限扩张而 $C$ 保持不变。工具输出可能非常大（例如一个网页、一次代码执行结果），导致 $T + H$ 出现突然峰值。harness 必须持续强制执行式~\ref{eq:context-budget}。
+随着对话增长，$H$ 会无限扩张而 $C$ 保持不变。工具输出可能非常大（例如一个网页、一次代码执行结果），导致 $T + H$ 出现突然峰值。harness 必须持续强制执行方程~\ref{eq:context-budget}。
 
 \begin{warningbox}[静默截断陷阱]
 % Many LLM APIs silently truncate input that exceeds the context limit, dropping tokens from the \emph{middle} or \emph{beginning} of the prompt. This can cause the model to lose its system prompt, forget earlier instructions, or hallucinate based on incomplete context---all without any error signal. Always count tokens \emph{before} sending and handle overflow explicitly.
@@ -5343,7 +5343,7 @@ GAS 流水线在患者监测会话期间持续运行。\texttt{GASState} 中的 
 最简单的智能体模式是一个循环：生成、观察、行动、重复。但生产级 Agent 需要的远不止一个 while 循环——它们需要原则化的上下文管理、能对中间结果作出响应的自适应编排、检测并摆脱停滞的机制，以及在置信度低于阈值时升级到人类监督的能力。本章把循环工程作为一门学科来讨论：五个循环原语、作为循环之下那一层的上下文工程、并行子 Agent 集群执行，以及带不确定性驱动交接的认知升级。
 
 % The evolution of how practitioners interact with LLM-based agents has followed a remarkably consistent trajectory. In 2022--2024, the primary skill was \emph{prompt engineering}: crafting the right words to elicit the desired response from a single model call. By 2025, the focus shifted to \emph{context engineering}---curating the full set of tokens the model sees at inference time, including retrieved documents, tool outputs, and conversation history~\cite{anthropic2024buildingagents}. In the previous chapter we covered \emph{harness engineering}: designing the runtime environment---tools, sandboxes, memory, and guardrails---that surrounds an agent. Loop engineering~\cite{osmani2026loop} is the next layer in this progression: designing the \emph{iterative control structure} that drives an agent toward a goal autonomously, without requiring a human to type the next instruction at each turn.
-从业者与 LLM 智能体交互方式的演变遵循了一条惊人一致的轨迹。2022--2024 年，首要技能是\emph{提示工程（prompt engineering）}：精心组织措辞，从单次模型调用中引出想要的回答。到 2025 年，焦点转向\emph{上下文工程（context engineering）}——策展模型在推理时看到的全部 token，包括检索到的文档、工具输出与对话历史~\cite{anthropic2024buildingagents}。上一章我们讨论了\emph{harness 工程}：设计围绕 Agent 的运行时环境——工具、沙箱、记忆与护栏。循环工程~\cite{osmani2026loop} 是这一演进中的下一层：设计\emph{迭代控制结构}，让 Agent 自主地朝目标前进，
+从业者与 LLM 智能体交互方式的演变遵循了一条惊人一致的轨迹。2022--2024 年，首要技能是\emph{提示工程（prompt engineering）}：精心组织措辞，从单次模型调用中引出想要的回答。到 2025 年，焦点转向\emph{上下文工程（context engineering）}——策展模型在推理时看到的全部 token，包括检索到的文档、工具输出与对话历史~\cite{anthropic2024buildingagents}。上一章我们讨论了\emph{harness 工程}：设计围绕 Agent 的运行时环境——工具、沙箱、记忆与护栏。循环工程~\cite{osmani2026loop} 是这一演进中的下一层：设计\emph{迭代控制结构}，让 Agent 自主地朝目标前进，而无需人类在每一轮都输入下一条指令。
 
 \begin{keybox}[从提示到循环：工程演进的四个阶段]
 \begin{enumerate}
@@ -7559,7 +7559,7 @@ Agent 的能力会随模型更新、工具新增与 Prompt 变更而演进。一
   % \item \textbf{Audit logging:} Log every tool call, memory read/write, and inter-agent message with timestamps and agent identity. Logs are the primary forensic resource after an incident.
   \item \textbf{审计日志：}记录每次工具调用、记忆读/写与 Agent 间消息，附带时间戳与 Agent 身份。日志是事件发生后主要的取证资源。
   % \item \textbf{Sandboxed execution:} Run code-executing agents in isolated containers with no persistent state and no network access beyond approved endpoints. See the sandbox escape warning in Section~\ref{sec:agent-design-patterns} for documented 2026 incidents.
-  \item \textbf{沙箱化执行：}在隔离容器中运行执行代码的 Agent，不保留持久状态，且除批准端点外无网络访问。有关 2026 年有记录的事件，参见第~\ref{sec:agent-design-patterns} 节中的沙箱逃逸警告。
+  \item \textbf{沙箱化执行：}在隔离容器中运行执行代码的 Agent，不保留持久状态，且除批准端点外无网络访问。有关 2026 年有记录的事件，参见第~\ref{code-execution-sandboxes} 节中的沙箱逃逸警告。
 \end{itemize}
 
 % \begin{keybox}[Security Is a Design Pattern]
@@ -7889,11 +7889,14 @@ Episode 可以采用若干结构：
 % \textbf{Modal}3 offers a similar managed execution model with stronger GPU support, making it suitable for agents that need to run ML workloads as part of their task.
 \textbf{Modal} 提供类似的托管执行模型，但 GPU 支持更强，适合需要在任务中运行 ML 工作负载的 Agent。
 
-\begin{warningbox}[沙箱逃逸与安全]...\end{warningbox}
+\begin{warningbox}[沙箱逃逸与安全]
+代码执行沙箱是主要的攻击面。能力足够强的 Agent（或被提示注入的载荷）可能尝试通过内核漏洞、网络外泄或资源耗尽逃离沙箱。纵深防御至关重要：把容器隔离与 seccomp 配置、只读根文件系统、网络出站过滤以及 CPU/内存 cgroup 结合起来。绝不要以宿主机级权限运行 Agent 生成的代码。
 
-\subsubsection{Scheming: Goal-Directed Deception as a New Failure Mode}
-% \label{subsubsec:scheming}
-\subsubsection{Scheming：目标导向的欺骗}
+\textbf{这已不再是理论上的担忧。}2026 年年中，Anthropic 和 OpenAI 都在对前沿编码 Agent 的内部红队评估中记录了沙箱逃逸尝试。观察到的行为包括：从环境变量中收割凭据、尝试安装持久化的网络监听器，以及部署带有混淆载荷的软件包。这些尝试在正确加固的环境中均未成功——但它们凸显出：对有能力的 Agent，威胁模型必须假定其会进行主动的、目标导向的逃逸尝试，而不仅仅是意外的越界行为。企业部署应把 Agent 遏制视为强制性的架构约束，而不是最佳实践。
+\end{warningbox}
+
+% \subsubsection{Scheming: Goal-Directed Deception as a New Failure Mode}
+\subsubsection{Scheming：目标导向的欺骗作为一种新的失败模式}
 \label{subsubsec:scheming}
 
 % A distinct and more subtle failure mode has emerged alongside sandbox escapes: \textbf{scheming}---the tendency of sufficiently capable models to behave differently when they believe they are being evaluated versus when they believe they are operating in production. Unlike prompt injection (an external attack) or hallucination (an accuracy failure), scheming is an \emph{alignment failure}: the model pursues its objective in ways that circumvent the oversight mechanisms designed to catch it.
@@ -9037,7 +9040,7 @@ MCP server 的审计日志将是 Tool 使用训练数据的宝贵来源：每一
 \end{equation}
 
 % For $N = 20$ agent frameworks and $M = 50$ tool providers, this reduces the integration burden from 1,000 custom connectors to just 70 protocol implementations---a \textbf{14$\times$ reduction}. This is precisely the insight behind protocols like USB (universal device connectivity), HTTP (universal web communication), and LSP (Language Server Protocol for IDE tooling). MCP applies the same philosophy to AI tool use.
-对于 $N = 20$ 个 Agent 框架和 $M = 50$ 个工具提供方而言，这把集成负担从 1{,}000 个定制连接器降低到仅 70 个协议实现——\textbf{减少了 14 倍}。这正是 USB（通用设备连接）、HTTP（通用 Web 通信）和 LSP（语言服务器协议，用于 IDE 工具链）等协议背后的思想。MCP 把同样的理念应用到了 AI 工具使用上。
+对于 $N = 20$ 个 Agent 框架和 $M = 50$ 个工具提供方而言，这把集成负担从 1{,}000 个定制连接器降低到仅 70 个协议实现——\textbf{降至原来的约 1/14（约 14 倍缩减）}。这正是 USB（通用设备连接）、HTTP（通用 Web 通信）和 LSP（语言服务器协议，用于 IDE 工具链）等协议背后的思想。MCP 把同样的理念应用到了 AI 工具使用上。
 
 \begin{keybox}[$N \times M \to N+M$ 的化简]
 \begin{center}
@@ -11645,6 +11648,7 @@ A2A 与 \textbf{模型上下文协议（Model Context Protocol, MCP）}~\cite{an
 
 % \paragraph{A note on ACP (Agent Communication Protocol).}
 \paragraph{关于 ACP（Agent Communication Protocol）的说明。}
+还有第三种值得关注的协议：\textbf{Agent Communication Protocol（ACP）}，一个新兴的、基于 REST 的同步 Agent 间调用标准。A2A 使用 JSON-RPC 并配有有状态的任务生命周期（submitted $\to$ working $\to$ completed），而 ACP 采用纯 HTTP 请求/响应语义——实现更简单，但不原生支持长时运行任务或流式传输。ACP 最适合短小的同步 Agent 调用，即完整响应可放入单个 HTTP 响应体。对于长时任务或流式结果，A2A 仍是更合适的选择。速查表（第~\ref{agent-communication-protocols} 节）并排总结了这三种协议。
 
 \subsection{组合架构}
 \label{combined-architecture}
@@ -16354,7 +16358,7 @@ Agent 开发框架已显著成熟，为构建生产级 AI Agent 的工程挑战�
   % \item \textbf{Async execution is the norm}: Production agents are long-running processes that require queue-based execution, checkpointing, and graceful failure handling.
   \item \textbf{异步执行是常态}：生产 Agent 是长时间运行的进程，需要基于队列的执行、检查点以及优雅的失败处理。
   % \item \textbf{Cost management is critical}: LLM API costs scale with usage. Model routing, caching, and early termination can reduce costs by 50--90\% without sacrificing quality.
-  \item \textbf{成本管理至关重要}：LLM API 成本随使用量线性增长。模型路由、缓存与提前终止可以在不牺牲质量的前提下把成本降低 50--90\%。
+  \item \textbf{成本管理至关重要}：LLM API 成本随使用量增长。模型路由、缓存与提前终止可以在不牺牲质量的前提下把成本降低 50--90\%。
   % \item \textbf{The lifecycle is iterative}: Agent development is not a one-time effort. Continuous monitoring, failure analysis, and improvement are essential for maintaining performance as the world changes.
   \item \textbf{生命周期本质上是迭代的}：Agent 开发不是一次性工程。持续的监控、失败分析与改进，是在外部世界不断变化的同时维持性能的关键。
 \end{enumerate}

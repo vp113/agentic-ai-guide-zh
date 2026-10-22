@@ -483,7 +483,7 @@ Sheinwald 博士留下的遗产，是安静而坚定的奉献。她代表了现�
   \item[贯穿案例——守护天使系统（Guardian Angel System, GAS）：]~
     \begin{itemize}
       % \item \textbf{Guardian Angel System (GAS)} --- a new end-to-end running example woven throughout the book. GAS is a five-agent glucose-monitoring assistant for diabetic patients, built with LangGraph, FAISS-backed RAG, and a safety-critic architecture. Every chapter includes a \emph{GAS Connection} box that maps the chapter's algorithms directly to the GAS implementation in \texttt{capstone\_gas/gas\_system.py}, giving readers a single concrete system to trace from RL foundations all the way to multi-agent deployment.
-      \item \textbf{守护天使系统（GAS）}——一个贯穿全书的全新端到端案例。GAS 是一个面向糖尿病患者的五智能体血糖监测助手，使用 LangGraph、FAISS 检索增强生成（RAG）与安全评审器（safety critic）架构构建。每一章都包含一个\emph{GAS 连接}（GAS Connection）框，把本章算法直接映射到 \texttt{capstone\_gas/gas\_system.py} 中的 GAS 实现，使读者能够沿着一个具体系统，从 RL 基础一路追踪到多智能体部署。
+      \item \textbf{守护天使系统（GAS）}——一个贯穿全书的全新端到端案例。GAS 是一个面向糖尿病患者的五智能体血糖监测助手，使用 LangGraph、FAISS 检索增强生成（RAG）与安全评审器（safety critic）架构构建。每一章都包含一个\emph{GAS 关联（GAS Connection）}框，把本章算法直接映射到 \texttt{capstone\_gas/gas\_system.py} 中的 GAS 实现，使读者能够沿着一个具体系统，从 RL 基础一路追踪到多智能体部署。
     \end{itemize}
 
   % \item[New Chapter 20 --- Graph Engineering:]~
@@ -511,7 +511,7 @@ Sheinwald 博士留下的遗产，是安静而坚定的奉献。她代表了现�
   \item[第 12 章——LLM 智能体训练：]~
     \begin{itemize}
       % \item \textbf{Harness Distillation (Harness-Zero)} --- training a model under a specialized harness $h^*$ then deploying it under a generic harness $h$, baking scaffolding behavior into weights. The distilled model exceeds the base model with $h^*$ still attached, recovering the majority of harness-exclusive behavioral patterns.
-      \item \textbf{Harness 蒸馏（Harness-Zero）}——先在专用 harness $h^*$ 下训练模型，再把它部署到通用 harness $h$ 下，从而把脚手架行为“烘焙”进权重。蒸馏后的模型即使仍然挂载 $h^*$，也优于基座模型，并恢复了大部分 harness 专属的行为模式。
+      \item \textbf{Harness 蒸馏（Harness-Zero）}——先在专用 harness $h^*$ 下训练模型，再把它部署到通用 harness $h$ 下，从而把脚手架行为“烘焙”进权重。蒸馏后的模型优于仍挂载 $h^*$ 的基座模型，并恢复了大部分 harness 专属的行为模式。
     \end{itemize}
 
   % \item[Chapter 14 --- LLM Evaluation:]~
@@ -837,7 +837,7 @@ Sheinwald 博士留下的遗产，是安静而坚定的奉献。她代表了现�
 
 糖尿病影响着全球超过 5 亿人。对于 1 型糖尿病患者以及许多 2 型糖尿病患者来说，管理血糖是一项持续且高利害的任务。连续血糖监测仪（Continuous Glucose Monitor, CGM）每五分钟采样一次组织间液葡萄糖，每天产生约 288 条读数。每一条读数都必须结合上下文来解释：患者吃了什么？注射了多少胰岛素？进行了什么体力活动？当前趋势是上升还是下降？患者是否在睡觉？
 
-决策空间很大，错误的后果很严重（低于 54~mg/dL 的低血糖可导致癫痫或死亡；持续高于 250~mg/dL 的高血糖会造成长期器官损伤），而监护负担却无休无止。照护者——家属、护士、内分泌科医生——不可能全天候盯着一条传感器数据流。
+决策空间很大，错误的后果很严重（低于 54~mg/dL 的低血糖可导致抽搐（惊厥）或死亡；持续高于 250~mg/dL 的高血糖会造成长期器官损伤），而监护负担却无休无止。照护者——家属、护士、内分泌科医生——不可能全天候盯着一条传感器数据流。
 
 这正是智能体 AI 被设计来解决的问题：
 

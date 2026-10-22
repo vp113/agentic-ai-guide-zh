@@ -2473,8 +2473,8 @@ R = 0.5 \cdot R_{\text{tests}} + 0.2 \cdot R_{\text{quality}} + 0.2 \cdot R_{\te
   \item \textbf{效率作弊}：Agent 跳过推理步骤以最大化效率奖励。\emph{修复}：先满足最低质量阈值，再给效率奖励。
 \end{enumerate}
 
-% \emph{\textbf{Review:} Chapters~9, 12, and~21 (Reward Model Training; LLM Agentic Training; Agentic Environments).}
-\emph{\textbf{复习：}第 9、12、21 章（Reward 模型训练；LLM Agent 训练；Agent 环境）。}
+% \emph{\textbf{Review:} Chapters~9, 12, and~22 (Reward Model Training; LLM Agentic Training; Agentic Environments).}
+\emph{\textbf{复习：}第 9、12、22 章（Reward 模型训练；LLM Agent 训练；Agent 环境）。}
 \end{questionbox}
 
 \section{列表式 Reward 与高级 RM 问题}
@@ -4048,10 +4048,11 @@ C \geq S_{\text{system}} + M_{\text{memory/RAG}} + T_{\text{tool defs}} + H_{\te
 {\small
 \begin{align}
 \text{Self-Attention:}&\quad \text{Attn}(Q,K,V) = \text{softmax}(QK^\top / \sqrt{d_k}) \cdot V \\
-\text{Multi-Head:}&\quad \text{MHA}(X) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)W^O,\quad \text{head}_i = \text{Attn}(XW_i^Q, XW_i^K, XW_i^V) \\
+\text{Multi-Head:}&\quad \text{MHA}(X) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)W^O, \notag\\
+&\quad \text{head}_i = \text{Attn}(XW_i^Q, XW_i^K, XW_i^V) \\
 \text{RoPE:}&\quad f(x_m, m) = x_m e^{im\theta_j}, \quad \theta_j = 10000^{-2j/d} \\
 \text{LoRA:}&\quad W' = W_0 + (\alpha/r) \cdot BA, \quad B \in \mathbb{R}^{d \times r},\; A \in \mathbb{R}^{r \times k} \\
-\text{KD (soft targets):}&\quad L_\text{KD} = (1{-}\alpha)L_\text{CE}(y, \hat{y}) \\
+\text{KD (soft targets):}&\quad L_\text{KD} = (1{-}\alpha)L_\text{CE}(y, \hat{y}) \notag\\
 &\quad + \alpha\, T^2 \cdot \text{KL}(p_T^\text{teacher} \| p_T^\text{student}) \\
 \text{FFN (SwiGLU):}&\quad \text{FFN}(x) = (\text{Swish}(xW_1) \odot xW_3) W_2
 \end{align}
@@ -4388,8 +4389,10 @@ Google ADK & 会话 + 事件 & 原生 A2A & 企业级：artifact 管理、多模
 
 \begin{align}
 \text{Trajectory GRPO:}&\quad \hat{A}_i = (R(\tau_i) - \mu_G)/\sigma_G, \quad R(\tau_i) = \sum_{t} r_t^{(\tau_i)} \\
-\text{Agent reward:}&\quad R = w_1 R_\text{task} + w_2 R_\text{efficiency} + w_3 R_\text{safety}, \quad R_\text{eff} = \max(0, 1 - \text{steps}/N_\text{max}) \\
-\text{Masking:}&\quad \mathcal{L} = \sum_{t \in \text{agent tokens}} \min(r_t \hat{A}_t,\; \text{clip}(r_t) \hat{A}_t) \quad \text{(mask env outputs)} \\
+\text{Agent reward:}&\quad R = w_1 R_\text{task} + w_2 R_\text{efficiency} + w_3 R_\text{safety}, \notag\\
+&\quad R_\text{eff} = \max(0, 1 - \text{steps}/N_\text{max}) \\
+\text{Masking:}&\quad \mathcal{L} = \sum_{t \in \text{agent tokens}} \min(r_t \hat{A}_t,\; \text{clip}(r_t) \hat{A}_t) \notag\\
+&\quad \text{(mask env outputs)} \\
 \text{Pass@}k:&\quad 1 - \frac{\binom{n-c}{k}}{\binom{n}{k}}, \quad n = \text{total samples},\; c = \text{correct}
 \end{align}
 
@@ -4429,7 +4432,7 @@ Prompt 注入（间接） & 工具输出 & 将工具输出视为不可信；勿�
 \section{关键智能体基准}
 \label{key-agentic-benchmarks}
 
-\noindent\begin{tabularx}{\linewidth}{@{}l Z{0.88} Z{1.45} Z{0.67}@{}}
+\noindent\begin{tabularx}{\linewidth}{@{}l Z{0.85} Z{1.25} Z{1.0}@{}}
 \toprule
 \textbf{基准} & \textbf{领域} & \textbf{指标} & \textbf{SOTA（2026 年中）} \\
 \midrule
@@ -4607,6 +4610,8 @@ A2A 协议~\cite{google-a2a-2025} 与多智能体框架预示着这样一种未�
 \begin{itemize}
   % \item Distillation of agentic capabilities from large to small models~\cite{hinton2015distilling, kim2024distillation}.
   \item 将智能体能力从大模型蒸馏到小模型~\cite{hinton2015distilling, kim2024distillation}。
+  % \item \textbf{Harness distillation}: baking specialized scaffolding into model weights so runtime overhead can be eliminated at deployment~\cite{ye2026harnesszero} (Section~\ref{sec:harness-distillation}).
+  \item \textbf{Harness 蒸馏}：把专门化脚手架“烘焙”进模型权重，使部署时可以移除运行时开销~\cite{ye2026harnesszero}（第~\ref{sec:harness-distillation} 节）。
   % \item More efficient RL algorithms (fewer samples, lower variance)~\cite{schulman2017proximal}.
   \item 更高效的 RL 算法（更少样本、更低方差）~\cite{schulman2017proximal}。
   % \item On-device agents that operate without cloud round-trips.
