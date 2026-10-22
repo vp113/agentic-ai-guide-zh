@@ -3,8 +3,27 @@
 \chapter{LLM 评估}
 \label{sec:llm-evaluation}
 
-% Evaluation is the backbone of any rigorous machine learning pipeline, yet it is perhaps the most underappreciated component in the development of large language models. Unlike classical supervised learning, where a held-out test set with ground-truth labels provides a clean signal, evaluating LLMs requires grappling with open-ended generation, subjective quality judgments, multi-step reasoning chains, and the ever-present risk of benchmark contamination. This section provides a systematic treatment of the evaluation landscape: from the taxonomy of evaluation types and the mechanics of human annotation, through the mathematics of ranking metrics and the practicalities of LLM-as-judge, to the pitfalls that silently corrupt evaluation pipelines.
-评估是任何严谨机器学习流水线的支柱，但它或许是大语言模型开发中最被低估的组成部分。与经典的监督学习不同——在那里，一个带有真实标签的留出测试集就能提供干净的信号——评估 LLM 需要应对开放式生成、主观质量判断、多步推理链，以及无处不在的基准污染风险。本节系统性地梳理评估领域的全景：从评估类型的分类法、人工标注的机制，到排序指标的数学原理、LLM-as-Judge 的实操要点，再到那些悄无声息地腐蚀评估流水线的陷阱。
+\begin{keybox}[GAS 关联 —— LLM 评估]
+评估 GAS 比评估单个 LLM 更复杂：每个 Agent 都有自己的指标，且系统必须同时进行组件级与端到端评估。本章的评估框架为 \texttt{part4\_evaluation/ch14\_llm\_evaluation/notebook.ipynb} 中演示的 GAS 评估 pipeline 提供了结构。
+
+\textbf{评估方案设计（\hyperref[subsec:eval-scheme]{\S~评估方案设计}）。}
+GAS 使用三级评估方案：（1） \emph{组件评估}——每个 Agent 节点在留出测试集上独立评估；（2） \emph{集成评估}——完整 pipeline 在 \texttt{shared/patient\_data.py} 中的五个脚本化临床场景上评估；（3） \emph{模拟评估}——系统运行多小时的模拟患者 Episode，并依据 Time-in-Range、低血糖发生率以及警报精确率/召回率进行评估。
+
+\textbf{生成任务的指标（\hyperref[subsec:generation-metrics]{\S~生成任务的指标}）。}
+Advisor 的建议通过以下指标评估：（1） \emph{临床准确性}：建议是否与 \texttt{MEDICAL\_KNOWLEDGE}（位于 \texttt{capstone\_gas/gas\_system.py}）中的 15 条 ADA 指南一致？（2） \emph{安全率}：Safety Critic 批准的建议比例（\texttt{safety\_score $\geq$ 0.7}）；（3） \emph{具体性}：建议是否包含具体行动，而不是含糊的建议？
+
+\textbf{Agent 任务的指标（\hyperref[subsec:agentic-metrics]{\S~Agent 任务的指标}）。}
+完整 GAS pipeline 使用智能体指标评估：（1） \emph{任务成功率}：在延迟预算内分配正确警报级别的患者场景比例；（2） \emph{检索准确率}：\texttt{GASKnowledgeBase} 查询中返回相关指南的比例（通过关键词重叠评估）；（3） \emph{升级精确率}：\texttt{caregiver\_notified = True} 事件中真正必要的比例。
+
+\textbf{LLM-as-Judge（\hyperref[subsec:llm-as-judge]{\S~LLM-as-Judge}）。}
+GAS 使用更强的 LLM（例如 GPT-4o）作为评判者，在难以自动打分的维度上评估 Advisor 的建议：临床推理质量、恰当的对冲表述，以及对禁忌症的正确识别。评判 Prompt 遵循本节所述的结构化评分细则格式，并在 \texttt{part4\_evaluation/ch14\_llm\_evaluation/notebook.ipynb} 中演示。
+
+\textbf{红队测试（\hyperref[subsec:eval-pitfalls]{\S~评估陷阱}）。}
+GAS Safety Critic 会接受对抗性输入的红队测试，这些输入旨在诱导危险建议：描述处于困境中的患者、但包含应触发保守行为的微妙线索的 Prompt，以及使用医学术语掩盖危险建议的 Prompt。\texttt{NOTEBOOK\_TEST\_MODE=1} 标志启用确定性 mock 响应，以便进行可复现的红队评估。
+\end{keybox}
+
+% Evaluation is the backbone of any rigorous machine learning pipeline, yet it is perhaps the most underappreciated component in the development of large language models. Unlike classical supervised learning, where a held-out test set with ground-truth labels provides a clean signal, evaluating LLMs requires grappling with open-ended generation, subjective quality judgments, multi-step reasoning chains, and the ever-present risk of benchmark contamination. This chapter provides a systematic treatment of the evaluation landscape: from the taxonomy of evaluation types and the mechanics of human annotation, through the mathematics of ranking metrics and the practicalities of LLM-as-judge, to the pitfalls that silently corrupt evaluation pipelines.
+评估是任何严谨机器学习流水线的支柱，但它或许是大语言模型开发中最被低估的组成部分。与经典的监督学习不同——在那里，一个带有真实标签的留出测试集就能提供干净的信号——评估 LLM 需要应对开放式生成、主观质量判断、多步推理链，以及无处不在的基准污染风险。本章系统性地梳理评估领域的全景：从评估类型的分类法、人工标注的机制，到排序指标的数学原理、LLM-as-Judge 的实操要点，再到那些悄无声息地腐蚀评估流水线的陷阱。
 
 \begin{keybox}[为何 LLM 评估如此困难]
 % \textbf{Three fundamental challenges} distinguish LLM evaluation from classical ML evaluation:
@@ -893,6 +912,49 @@ G-Eval 与人类判断的相关性高于直接提示，尤其在连贯性与一�
 标准提示要求评判者输出单个 Token（例如"4"），这丢弃了模型的不确定性。G-Eval 读取所有分值 Token 上的概率分布，实质上是在评判者的信念下计算期望分数。这类似于使用后验分布的均值而非众数。
 \end{intuitionbox}
 
+\subsection{JEV-as-a-Judge：带置信度级联的仅决策评判}
+\label{subsec:jev-as-a-judge}
+
+生成式 LLM 评判者准确但昂贵：单次 GPT-6 判断的成本可能比简单的基于规则检查高出数百倍，而推理模型还会额外增加延迟。Li 等人~\cite{li2026jevjudge} 研究了\emph{仅决策}评判者——即不生成理由、只返回裁决与标签概率的评判者——能否作为一种经济的第一道筛选，仅将不确定的样本升级给更强的模型。
+
+\paragraph{JEV 评判接口。}
+TypeSafe JEV（§\ref{subsec:system-one-models}）接受自然语言指令与结构化输入，并在单次前向传播中返回指定输出标签上的类型化概率分布。用于评判时，一个 \texttt{Choice} 问题会直接返回 \texttt{\{A, B, tie\}} 上的概率，不涉及任何思维链。\textbf{置信度}信号为 $q = \max_k p_k$——即最大标签概率。
+
+\paragraph{准确率与成本。}
+在 RewardBench、JudgeBench、HaluEval 以及一个答案裁决集上，将 JEV 与十六个生成式及奖励模型评判者（GPT-4.1 至 GPT-6、Claude Sonnet~5、Gemini~3.1 Pro、Skywork-Reward-V2、PairRM）进行比较：
+
+\begin{itemize}
+  \item \textbf{普通偏好（RewardBench）：}JEV 92.2\% vs.\ GPT-6 93.5\%——相差在 1.3 个百分点以内，成本仅为 GPT-6 费用的 0.36\%，中位延迟为 0.15\,s vs.\ 1.9\,s。
+  \item \textbf{基于证据的事实性（HaluEval）：}JEV 87.5\% vs.\ GPT-6 86.7\%——JEV 领先，部分原因是低置信度样本对应标注错误的样本。
+  \item \textbf{困难正确性（JudgeBench）：}JEV 78.6\% vs.\ GPT-6 93.1\%——14.6 个百分点的差距集中在推理（68.4\% vs.\ 95.9\%）与编码上。这里有必要升级。
+  \item \textbf{风格对抗对（RM-Bench hard）：}JEV 74.8\% vs.\ GPT-6 94.6\%——JEV 会被精心撰写的错误答案误导；置信度无法可靠地标记这些错误。
+\end{itemize}
+
+\paragraph{置信度级联。}
+JEV 的关键性质是\textbf{置信度可以预测正确性}：准确率随 $q$ 单调上升，从 $q < 0.6$ 时的 47.7\% 上升到 $q = 1.0$ 时的 99.1\%。这支持一种冻结的级联策略：
+
+\begin{enumerate}
+  \item 对每个样本运行 JEV（廉价、快速）。
+  \item 若 $q \geq \tau$：接受 JEV 的裁决。
+  \item 若 $q < \tau$：升级给更强的 LLM 评判者。
+\end{enumerate}
+
+在 $\tau = 0.9$ 时，级联会升级 34\% 的样本，并以 GPT-6 费用的 57\% 保留了其 99\% 的准确率。对于成对判断，先以两种候选顺序分别运行，并在应用门控前对对齐后的概率取平均，可进一步降低顺序敏感性。
+
+\begin{keybox}[JEV-as-a-Judge 的适用边界]
+\begin{itemize}
+  \item \textbf{直接使用 JEV：}普通偏好排序、基于证据的事实性、最终答案裁决。
+  \item \textbf{使用级联（JEV $\to$ 强 LLM）：}上述任一场景在规模扩大、成本重要但不能牺牲准确率时。
+  \item \textbf{始终升级：}推导检查、多步推理正确性、风格对抗对。
+  \item \textbf{没有评判者可行：}无参考的散文评估——所有受测评判者的表现都接近随机。
+\end{itemize}
+\textbf{实用检查清单：}（1）~以两种顺序评判偏好对，并对对齐后的概率取平均。（2）~在本地留出集上拟合 $\tau$——它不会跨工作负载迁移。（3）~将无效输出计为错误。（4）~在部署前用风格对抗对验证级联。
+\end{keybox}
+
+\begin{warningbox}[置信度不是证书]
+JEV 的置信度信号在其适用边界内表现良好，但在风格对抗对上会失效（错误检测 AUROC 为 0.770，而普通对为 0.869），在无参考散文上则接近随机（AUROC 0.518）。在信任该阈值之前，务必在能代表实际工作负载的样本上验证级联。
+\end{warningbox}
+
 \section{评估陷阱}
 \label{subsec:eval-pitfalls}
 
@@ -1018,3 +1080,26 @@ LLM 的性能可能因评估 Prompt 的微小改动而剧烈变化（例如加�
   \item 评估是否已与人类判断或外在结果进行过验证？
 \end{enumerate}
 \end{questionbox}
+
+\subsection{改写下的推理崩溃}
+\label{subsec:reasoning-collapse}
+
+一种比基准污染更隐蔽的失效模式是\textbf{推理崩溃}：模型在一种表面形式下能正确解决问题，但当同一个问题在逻辑等价而句法不同的形式下出现时却失败。这不是知识缺口——模型“知道”答案——而是推理路径中的一种脆弱性，恰好被评估的表面形式触发。
+
+\paragraph{现象。}
+考虑一个模型：它能正确解答“如果 Alice 有 3 个苹果，给了 Bob 1 个，Alice 还有几个？”，但在“Bob 从 Alice 那里收到 1 个苹果，Alice 一开始有 3 个。Alice 还剩下几个苹果？”上失败。底层算术完全相同，只是叙述框架不同。对前沿模型的系统性研究发现，在语义等价但句法改写的题目上，准确率会下降 10--30 个百分点~\cite{mizrahi2024state}，这表明高基准分数可能反映的是对熟悉表面形式的模式匹配，而非稳健推理。
+
+\paragraph{为什么标准评估会漏掉它。}
+大多数基准以单一规范形式呈现每道题。一个在训练中见过类似表面形式的模型会取得高分，即使其推理很脆弱。第~\ref{benchmark-contamination}~节中的污染检测方法能捕捉逐字重叠，但捕捉不到表面形式过拟合。
+
+\paragraph{检测与缓解。}
+\begin{itemize}
+  \item \textbf{复述压力测试}：自动为每道基准题生成 $k$ 个语义等价的改写（使用另一个 LLM 或模板库），并度量不同形式间的分数方差。高方差意味着推理脆弱。
+  \item \textbf{否定与逆否测试}：对于逻辑推理任务，加入逆否形式与否定形式。真正具备逻辑理解的模型应能一致地处理所有形式。
+  \item \textbf{顺序置换}：对于多步问题，打乱前提的顺序。稳健推理应当对顺序不变；脆弱的模式匹配则不是。
+  \item \textbf{基于过程的评估}：对推理链打分，而不仅是最终答案~\cite{lightman2023lets}。通过有缺陷的推理路径得到正确答案是一个警示信号。
+\end{itemize}
+
+\begin{warningbox}[推理崩溃与智能体系统]
+在智能体场景中，推理崩溃尤其危险。一个在用户改写请求时——或工具以意外格式返回数据时——失败的 Agent，会悄无声息地产生错误结果。智能体评估套件应把复述变体与格式扰动作为标准实践纳入。
+\end{warningbox}

@@ -3,8 +3,30 @@
 \chapter{LLM 架构与优化方法}
 \label{llm-architecture-and-optimization-methods}
 
-% This section covers the foundational architecture of large language models and the key optimization techniques that make training and inference efficient. Topics are ordered as a curriculum: we begin with the transformer itself, then cover how to train it efficiently, how to adapt it cheaply, how to compress it, how to scale it, and how to accelerate its inference.
-本部分覆盖大语言模型的基础架构，以及让训练和推理高效化的关键优化技术。内容按课程顺序组织：先介绍 Transformer 本身，然后讨论如何高效训练、如何低成本适配、如何压缩、如何扩展规模，以及如何加速推理。
+\begin{keybox}[GAS 关联 —— LLM 架构与优化方法]
+守护天使系统（Guardian Angel System, GAS）在其智能体栈的每一层都依赖语言模型，而接下来的章节所讨论的架构选择，直接决定了哪种模型适合承担哪种角色。
+
+\textbf{分词（\hyperref[sec:tokenization]{\S~分词（Tokenization）}）}。
+Monitor 智能体处理以结构化文本 token 编码的连续血糖读数（例如 \texttt{[CGM: 142 mg/dL, trend: rising, delta: +8]}）。选择一个把数值当作单个 token、而不是把各位数字拆开的分词器，对于准确进行趋势推理至关重要。GAS 通过 Ollama 使用 Llama-3 分词器，它能很好地处理小数。
+
+\textbf{Transformer 架构（\hyperref[the-transformer-architecture]{\S~Transformer 架构}）}。
+Advisor 智能体的多头注意力机制，使其能够在一次前向传播中同时关注患者当前的血糖读数、检索到的临床指南和饮食日志——三个不同的信息源。理解注意力头如何专门化（有些追踪近期性，有些追踪幅度），有助于你解释 Advisor 为何有时会忽略一条技术上相关、但在上下文中相距较远的指南。
+
+\textbf{LoRA 微调（\hyperref[lora-and-parameter-efficient-fine-tuning]{\S~LoRA 与参数高效微调}）}。
+GAS 原型通过 Ollama 运行在共享的 \texttt{llama3.2:3b} 基座模型上，没有对每个智能体单独微调。\texttt{part2\_rl\_methods/ch04\_rl\_for\_lms/notebook.ipynb} 中的本章 notebook 演示了如何应用 LoRA 适配器（秩 $r=16$）来让基座模型专门化以处理临床任务——生产部署中微调 GAS 各智能体时也会使用同一技术。
+
+\textbf{模型压缩（\hyperref[model-compression-methods]{\S~模型压缩方法}）}。
+GAS 通过 Ollama 使用 4-bit GGUF 量化（Q4\_K\_M），使所有智能体都能在单块消费级 GPU 上运行。\texttt{capstone\_gas/gas\_system.py} 中的 \texttt{GASLLMClient} 会自动检测可用后端（OpenAI $\to$ Anthropic $\to$ Ollama $\to$ Mock），并优雅回退，因此即使没有 GPU，系统也能运行。
+
+\textbf{Prompt 工程（\hyperref[sec:prompt-engineering]{\S~Prompt 工程}）}。
+\texttt{capstone\_gas/gas\_system.py} 中的每个智能体节点都使用结构化的系统 Prompt，其中定义了该智能体的角色、输出格式（带结构化分节的纯文本）以及升级标准。本节中的 Prompt 工程模式——角色分配、输出约束、思维链诱导——直接应用于 \texttt{monitor\_node()}、\texttt{advisor\_node()}、\texttt{safety\_node()} 和 \texttt{caregiver\_node()}。
+
+\textbf{安全（\hyperref[sec:safety]{\S~LLM 安全与负责任 AI}）}。
+安全评审器（\texttt{capstone\_gas/gas\_system.py} 中的 \texttt{safety\_node()}）实现基于规则的宪法式检查：它按 0.0--1.0 的尺度为 Advisor 的输出评分，并拒绝那些建议危险胰岛素剂量或轻视关键血糖读数的建议。评分 $\geq 0.7$ 才获批；系统最多重试 2 次，之后升级处理。
+\end{keybox}
+
+% This chapter covers the foundational architecture of large language models and the key optimization techniques that make training and inference efficient. Topics are ordered as a curriculum: we begin with the transformer itself, then cover how to train it efficiently, how to adapt it cheaply, how to compress it, how to scale it, and how to accelerate its inference.
+本章覆盖大语言模型的基础架构，以及让训练和推理高效化的关键优化技术。内容按课程顺序组织：先介绍 Transformer 本身，然后讨论如何高效训练、如何低成本适配、如何压缩、如何扩展规模，以及如何加速推理。
 
 \section{LLM 工作原理：直觉概览}
 \label{how-llms-work-an-intuitive-overview}
@@ -14,6 +36,7 @@
 
 \begin{figure}[ht!]
 \centering
+\resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[
   node distance=0.4cm,
   box/.style={draw, rounded corners=3pt, minimum height=0.9cm, minimum width=1.8cm, align=center, font=\small},
@@ -41,7 +64,7 @@
 
 % Autoregressive loop
 \draw[darr, rounded corners=6pt] (out.south) -- ++(0,-0.7) -| node[below, pos=0.25, font=\scriptsize\itshape] {autoregressive loop (append token to input)} (text.south);
-\end{tikzpicture}
+\end{tikzpicture}}
 % \caption{The LLM pipeline: text is tokenized into subword units, converted to integer IDs, embedded as dense vectors, processed through transformer layers, projected to vocabulary logits, and decoded back to text. The dashed loop shows autoregressive generation---each output token is appended to the input for the next forward pass.}
 \caption{LLM 流水线：文本被分词为子词单元，转换为整数 ID，嵌入为稠密向量，经 Transformer 层处理，投影到词表 logits，最后解码回文本。虚线回路展示自回归生成——每个输出 Token 被追加到输入中作为下一次前向传播的输入。}
 \label{fig:llm-pipeline}
@@ -4439,7 +4462,7 @@ Chuang 等人~\cite{chuang2024dola} 观察到事实知识在 Transformer 较深�
 
 \begin{itemize}
   % \item \textbf{Safety benchmarks}: ToxiGen, RealToxicityPrompts, BBQ (bias), CrowS-Pairs
-  \item \textbf{安全基准}：ToxiGen、RealToxicityPrompts、BBQ（偏见）、CrowS-Pairs
+\item \textbf{安全基准}：ToxiGen~\cite{hartvigsen2022toxigen}（隐式仇恨言论）、RealToxicityPrompts~\cite{gehman2020realtoxicityprompts}（毒性退化）、BBQ~\cite{parrish2022bbq}（问答偏见）、CrowS-Pairs~\cite{nangia2020crows}（掩码语言模型中的社会偏见）
   % \item \textbf{Jailbreak robustness}: GCG attacks~\cite{zou2023universal}, multi-turn jailbreaks, encoded prompts
   \item \textbf{越狱鲁棒性}：GCG 攻击~\cite{zou2023universal}、多轮越狱、编码型 Prompt
   % \item \textbf{Over-refusal rate}: Measure false-positive refusals on benign prompts (target $<$5\%)
@@ -4455,6 +4478,27 @@ Chuang 等人~\cite{chuang2024dola} 观察到事实知识在 Transformer 较深�
 
 \chapter{面向 LLM 的系统基础}
 \label{systems-foundations-for-llms}
+
+\begin{keybox}[GAS 关联 —— 面向 LLM 的系统基础]
+GAS 被设计为在单台开发者机器上运行，但它所做的每一项基础设施决策，都是接下来的章节所述生产系统的一个缩影。
+
+\textbf{GPU 显存管理（\hyperref[gpu-architecture-from-silicon-to-llm-training]{\S~GPU 架构}）}。
+运行 GAS 各智能体需要仔细规划显存预算。\texttt{capstone\_gas/gas\_system.py} 中的 \texttt{GASLLMClient} 使用 Ollama 的 \texttt{num\_predict} 参数，为每次智能体调用强制最大 token 数限制。理解 CUDA 内存分配、张量布局以及模型间上下文切换的开销，对于在多患者部署中调优这一配置至关重要。
+
+\textbf{推理吞吐（\hyperref[vllm-pagedattention-and-high-throughput-inference]{\S~vLLM——分页注意力与高吞吐推理}）}。
+在多患者部署中（例如有 50 名患者的医院病区），GAS 会使用 vLLM 的 PagedAttention，以连续批处理服务所有智能体模型。当前原型使用 Ollama 进行本地开发；\texttt{GASLLMClient} 的后端自动检测使切换到 vLLM 端点变得非常简单，只需设置 \texttt{OPENAI\_API\_BASE} 环境变量。
+
+\textbf{量化与服务（\hyperref[memory-optimization-techniques]{\S~显存优化技术}）}。
+本地开发环境使用 Ollama 对 \texttt{llama3.2:3b} 进行 GGUF Q4\_K\_M 量化。这把模型占用降至 $\sim$2 GB，使完整的 GAS 能在笔记本电脑上运行。量化质量与服务速度之间的权衡，可以通过在 \texttt{capstone\_gas/notebook\_capstone.ipynb} 中比较 Mock、Ollama 和 OpenAI 后端直接观察。
+
+\textbf{延迟预算}。
+GAS 有一项硬性延迟要求：从检测到血糖异常起，完整流水线（\texttt{monitor\_node} $\to$ \texttt{advisor\_node} $\to$ \texttt{safety\_node} $\to$ \texttt{caregiver\_node}）必须在 10 秒内完成。该流水线在 \texttt{capstone\_gas/gas\_system.py} 的 \texttt{build\_gas\_graph()} 中使用 LangGraph 的 \texttt{StateGraph} API 组装。
+
+\textbf{容错}。
+GAS 实现了优雅降级：如果 LLM 后端不可用，\texttt{GASLLMClient} 会回退到基于规则的 Mock 响应。环境变量 \texttt{NOTEBOOK\_TEST\_MODE=1} 会强制启用 Mock 模式，从而在没有 LLM 依赖的情况下进行适合 CI 的测试。
+\end{keybox}
+
+训练和服务大语言模型，既是一项机器学习挑战，也是一项系统工程的挑战。一个 70B 参数的模型需要数百 GB 的内存、数千 GPU 小时的训练，以及在数十个加速器之间精心编排的通信。任何一环出错——次优的并行策略、内存泄漏、配置错误的集合通信操作——都可能决定一次训练是收敛，还是在耗费数天算力后崩溃。本章涵盖让 LLM 成为可能的硬件与软件基础设施：GPU 架构与内存层次、分布式训练策略（数据并行、张量并行与流水线并行），以及基于 vLLM 的高吞吐推理。目标不仅是理解这些系统如何工作，还要培养在它们出问题时进行调试所需的直觉。
 
 \section{GPU 架构——从硅片到 LLM 训练}
 \label{gpu-architecture-from-silicon-to-llm-training}
@@ -4787,6 +4831,8 @@ A100 在 108 个 SM 中共有 \textbf{432 个 Tensor Cores}（每个 SM 4 个，
 
 \paragraph{PCIe——主机与设备的链路。}
 \label{pcie-the-host-device-link.}
+
+PCIe（Peripheral Component Interconnect Express）是连接 GPU 与主机 CPU 及系统内存的标准总线。它的带宽直接限制了数据加载到 GPU 的速度，以及结果返回的速度。每一代带宽大约翻一番：
 
 \begin{keybox}[PCIe 各代]
 \begin{center}
@@ -5353,6 +5399,28 @@ Dynamo~\cite{dynamo2025nvidia} 是 NVIDIA 的开源编排层，位于各推理�
 \chapter{强化学习导论}
 \label{sec:rl}
 
+\begin{keybox}[GAS 关联 —— 强化学习导论]
+即便当前原型使用的是基于规则的逻辑而非学习得到的策略，也完全可以借助接下来的章节所引入的 RL 框架来理解 GAS。
+
+\textbf{MDP 建模（\hyperref[the-markov-decision-process-mdp]{\S~马尔可夫决策过程}）}。
+GAS 可以清晰地映射为一个 MDP：
+\begin{itemize}
+  \item \textbf{状态} $s_t$：患者当前的生理上下文——血糖水平（mg/dL）、趋势、近期进食、活动、正在使用的药物，以及过去 30 分钟的 CGM 读数。这就是 \texttt{capstone\_gas/gas\_system.py} 中的 \texttt{GASState} TypedDict。
+  \item \textbf{动作} $a_t$：Supervisor 的路由决策（调用 Monitor、调用 Advisor、发送警报、不做任何事）加上 Advisor 的临床建议（调整基础率、建议加餐、上报医生）。
+  \item \textbf{奖励} $r_t$：一个复合临床奖励——血糖保持在 70--180 mg/dL 目标区间内为正，发生低血糖事件（$<$70 mg/dL）为负，发生严重低血糖（$<$54 mg/dL）为强负值。
+  \item \textbf{转移} $P(s_{t+1}|s_t, a_t)$：患者对所建议动作的生理响应，由 \texttt{shared/patient\_data.py} 中的 \texttt{CGMSimulator} 模拟。
+\end{itemize}
+
+\textbf{奖励塑形（\hyperref[reward-shaping]{\S~奖励塑形（Reward Shaping）}）}。
+原始临床奖励很稀疏——血糖结果只有在干预后 30--60 分钟才能观察到。GAS 使用中间信号：安全评审器的评分（0.0--1.0）提供稠密的逐步反馈。评分 $\geq 0.7$ 才获批，从而给 Advisor 一个连续的奖励信号，而非二值结果。
+
+\textbf{策略梯度直觉（\hyperref[policy-gradient-methods-reinforce]{\S~策略梯度方法}）}。
+Supervisor 的路由逻辑目前是手工编写的策略（LangGraph \texttt{StateGraph} 中的条件边）。RL 框架清楚地指明了改进方向：收集轨迹（路由决策及其结果的序列），计算回报，并更新策略，以提高那些带来良好血糖结果的决策的概率。\texttt{part2\_rl\_methods/} 中的本章 notebook 演示了这一方法。
+
+\textbf{探索与利用}。
+GAS 面临一个临床上的探索-利用困境：它应当推荐已知安全的保守动作（利用），还是尝试可能效果更好的更激进干预（探索）？接下来的章节所述的 $\epsilon$-贪心与 softmax 探索策略，可为 \texttt{GASLLMClient.chat()} 中 Advisor 的温度设置提供依据。
+\end{keybox}
+
 % Reinforcement Learning (RL) is a paradigm where an \textbf{agent} learns to make sequential decisions by interacting with an \textbf{environment}, receiving \textbf{rewards} as feedback, and optimizing its \textbf{policy} to maximize cumulative reward over time~\cite{sutton2018reinforcement}. Unlike supervised learning (which requires labeled input-output pairs), RL discovers optimal behavior through \emph{trial and error}.
 强化学习（Reinforcement Learning，RL）是一种范式，其中\textbf{智能体（agent）}通过与\textbf{环境（environment）}交互、接收\textbf{奖励（rewards）}作为反馈，并优化其\textbf{策略（policy）}以最大化长期累积奖励来学习做出序贯决策~\cite{sutton2018reinforcement}。与监督学习（需要带标签的输入-输出对）不同，RL 通过\emph{试错（trial and error）}来发现最优行为。
 
@@ -5894,6 +5962,7 @@ $\nabla_\theta \log \pi_\theta(a_t|s_t)$ 是提升动作 $a_t$ 概率的方向�
 % \section{Generalized Advantage Estimation (GAE)}
 \section{广义优势估计（Generalized Advantage Estimation，GAE）}
 \label{generalized-advantage-estimation-gae}
+\label{gae-generalised-advantage-estimation}
 
 % \textbf{Motivation}: The Actor-Critic framework needs a good estimate of the advantage $A(s,a) = Q(s,a) - V(s)$ --- how much better was this action than average? But there's a fundamental tension:
 \textbf{动机}：Actor-Critic 框架需要对优势 $A(s,a) = Q(s,a) - V(s)$ 进行良好估计——这个动作比平均水平好多少？但这里存在根本性的张力：
