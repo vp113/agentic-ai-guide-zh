@@ -1035,6 +1035,7 @@ TD 误差（$\gamma=1$）：$\delta_1 = 0 + V_2 - V_1 = 0.05$，$\delta_2 = 0 + 
   % \item \textbf{Scoring}: 8 GPUs (1 node). RM (INT8, TP=4) + Reference model (INT8, TP=4) on same node. Or share 4 GPUs with TP=4 alternating between RM and ref.
   \item \textbf{打分}：8 GPU（1 节点）。RM（INT8，TP=4）+ 参考模型（INT8，TP=4）位于同一节点。或共享 4 GPU，TP=4 在 RM 与 ref 间轮换。
   % \item \textbf{Training}: 32 GPUs (4 nodes). FSDP across all 32. Each GPU holds $\sim$70B/32 = 2.2GB params + optimizer fraction. Plenty of headroom for activations. Gradient checkpointing for safety.
+  % 勘误（英文 v1.4 有误）：70B/32≈2.2B 参数，不是 2.2GB；BF16 下约 4.4GB。
   \item \textbf{训练}：32 GPU（4 节点）。在全部 32 张上做 FSDP。每张 GPU 持有约 $70B/32 \approx 2.2B$ 参数（BF16 下约 4.4GB）+ 优化器状态分片。激活留有充足余量。开启梯度检查点以保险。
 \end{itemize}
 
@@ -1155,6 +1156,7 @@ $G=2$ 加二元 reward（一个对一个错）时：归一化后 $\hat{A}_\text{
 \textbf{为什么大 $G$ 帮助不大}：归一化 advantage $\hat{A}_i = (r_i - \mu)/\sigma$ 本身已制造了好坏之间的对比。更多样本能更准确估计 $\mu$，但梯度方向由最好与最差之间的\emph{对比}主导，而非 $\mu$ 的精度。
 
 % \textbf{Compute savings}: $G=2$ means 8$\times$ less generation compute than $G=16$. Since generation is 60\% of training time, this translates to $\sim$4$\times$ faster training.
+% 勘误（英文 v1.4 有误）：按 Amdahl 定律，1/(0.4+0.6/8)≈2.1×，不是 4×。
 \textbf{算力节省}：$G=2$ 意味着生成算力比 $G=16$ 少 8$\times$。由于生成占训练时间 60\%，按 Amdahl 定律，整体训练加速约 $1/(0.4+0.6/8) \approx 2.1\times$。
 
 % \textbf{Caveat}: Works best when pass rate is 30--70\%. If pass rate is very low ($<$10\%), $G=2$ often gives two failures (no signal). Need larger $G$ for hard problems.

@@ -4139,6 +4139,7 @@ Distilled 8B & 16 GB & 10$\times$ & 80--85\% & 移动、边缘 \\
 \textbf{关键性质}：这一接受/拒绝方案保证最终分布与 $P_{\text{target}}$ 完全一致。
 
 % \textbf{Speedup}: If acceptance rate is $\alpha$, expected tokens per step = $\frac{1 - \alpha^{k+1}}{1 - \alpha}$. At $\alpha=0.8$, $k=5$: expected 3.4 tokens/step vs.~1 for standard decoding.
+% 勘误（英文 v1.4 有误）：α=0.8、k=5 时 (1-0.8^6)/0.2≈3.69，应为约 3.7。
 \textbf{加速比}：若接受率为 $\alpha$，每步期望 token 数 $= \frac{1 - \alpha^{k+1}}{1 - \alpha}$。在 $\alpha=0.8$、$k=5$ 时：每步期望约 3.7 个 token，相较标准解码的 1 个。
 \end{keybox}
 
@@ -4521,6 +4522,7 @@ GPU 和 CPU 代表了根本不同的硬件设计哲学。理解这种差异能�
 \end{itemize}
 
 % Deep learning workloads are dominated by matrix multiplications ($O(n^3)$ operations on $O(n^2)$ data), which are embarrassingly parallel. A single transformer forward pass for a 70B model requires $\sim$140 TFLOP of compute per token -- perfect for GPU throughput.
+% 勘误（英文 v1.4 有误）：前向约 2×70e9=140e9 FLOP，即 140 GFLOP，不是 140 TFLOP。
 深度学习工作负载以矩阵乘法（在 $O(n^2)$ 数据上执行 $O(n^3)$ 操作）为主，这是天然并行的。70B 模型的单次 transformer 前向传播每个 token 需要约 140 GFLOP 计算量——非常适合 GPU 的吞吐能力。
 \end{intuitionbox}
 
@@ -4773,6 +4775,7 @@ I = \frac{4n^2 d}{4 \cdot n \cdot d \cdot 2} = \frac{n}{2} = \frac{4096}{2} = 20
 \]
 
 % This is $13\times$ above the ridge point (156) --- \textbf{deeply compute-bound}. The GPU hits its peak 312 TFLOPS, needing only $312\text{T}/2048 \approx 152$ GB/s of bandwidth (7.6\% of HBM capacity). Memory is no longer the bottleneck.
+% 勘误（英文 v1.4 有误）：152 GB/s 是 A100 HBM 带宽（约 2 TB/s）的 7.6%，与 HBM 容量无关。
 这比脊点（156）高出 $13\times$——\textbf{深度计算密集}。GPU 跑满峰值 312 TFLOPS，只需要 $312\text{T}/2048 \approx 152$ GB/s 带宽（HBM 带宽的 7.6\%）。内存不再是瓶颈。
 \end{examplebox}
 

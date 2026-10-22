@@ -40,7 +40,7 @@ C_{ij} = \sum_{l=1}^{k} A_{il} B_{lj}
   \item \textbf{对角矩阵}：仅主对角线上有非零元素。即缩放操作。
   \item \textbf{对称矩阵}：$\mathbf{A} = \mathbf{A}^\top$。协方差矩阵与 Gram 矩阵都是对称的。
   \item \textbf{正交矩阵}：$\mathbf{Q}^\top\mathbf{Q} = \mathbf{Q}\mathbf{Q}^\top = \mathbf{I}$。各列是标准正交的。正交变换保持长度与角度（旋转、反射）。
-  \item \textbf{半正定（Positive Semi-Definite, PSD）}：若对所有 $\mathbf{x}$ 都有 $\mathbf{x}^\top\mathbf{A}\mathbf{x} \geq 0$，则 $\mathbf{A}$ 为半正定。所有特征值均 $\geq 0$。协方差矩阵与 Gram 矩阵都是对称半正定的；注意力得分矩阵一般不对称，因此通常不具有这一性质。
+  \item \textbf{半正定（Positive Semi-Definite, PSD）}：对于对称矩阵 $\mathbf{A}$，若对所有 $\mathbf{x}$ 都有 $\mathbf{x}^\top\mathbf{A}\mathbf{x} \geq 0$，则 $\mathbf{A}$ 为半正定；等价地，其所有特征值均 $\geq 0$。协方差矩阵与 Gram 矩阵都是对称半正定的；注意力得分矩阵一般不对称，因此通常不具有这一性质。
 \end{itemize}
 
 \paragraph{点积与内积。}
