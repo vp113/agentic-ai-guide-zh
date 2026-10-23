@@ -75,6 +75,7 @@
 % Graphics and figures
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{needspace}
 \usepackage[font=small,labelfont=bf]{caption}
 \usepackage{tikz}
 \usetikzlibrary{positioning, arrows.meta, calc}
@@ -225,6 +226,59 @@
 \DeclareMathOperator{\Tr}{Tr}
 \DeclareMathOperator{\diag}{diag}
 \DeclareMathOperator{\rank}{rank}
+
+% --- Chinese structural labels ---
+% Keep the book-class spacing and TOC machinery, but replace the English
+% structural names with Chinese labels. \chapterlabel is redefined after
+% \appendix so Appendix A prints as "附录 A".
+\renewcommand{\contentsname}{目录}
+\renewcommand{\figurename}{图}
+\renewcommand{\tablename}{表}
+\renewcommand{\appendixname}{附录}
+\renewcommand{\bibname}{参考文献}
+\renewcommand{\lstlistingname}{代码清单}
+\newcommand{\chapterlabel}{第~\thechapter~章}
+
+\makeatletter
+% Copied from book.cls, with "Part I" -> "第 I 部分" in the heading and TOC.
+\def\@part[#1]#2{%
+    \ifnum \c@secnumdepth >-2\relax
+      \refstepcounter{part}%
+      \addcontentsline{toc}{part}{第~\thepart~部分\hspace{1em}#1}%
+    \else
+      \addcontentsline{toc}{part}{#1}%
+    \fi
+    \markboth{}{}%
+    {\centering
+     \interlinepenalty \@M
+     \normalfont
+     \ifnum \c@secnumdepth >-2\relax
+       \huge\bfseries 第~\thepart~部分
+       \par
+       \vskip 20\p@
+     \fi
+     \Huge \bfseries #2\par}%
+    \@endpart}
+% Copied from book.cls, with "Chapter N" -> "第 N 章" via \chapterlabel.
+\def\@makechapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright \normalfont
+    \ifnum \c@secnumdepth >\m@ne
+      \if@mainmatter
+        \huge\bfseries \chapterlabel
+        \par\nobreak
+        \vskip 20\p@
+      \fi
+    \fi
+    \interlinepenalty\@M
+    \Huge \bfseries #1\par\nobreak
+    \vskip 40\p@
+  }}
+\makeatother
+
+% Large unbreakable boxes (questionbox/keybox) otherwise let \flushbottom
+% stretch the only available inter-box glue, creating gaps such as p595.
+\raggedbottom
 
 % --- Title ---
 % \title{\textbf{The Hitchhiker's Guide to Agentic AI}\\[0.5em]\Large From Foundations to Systems}
@@ -1261,6 +1315,7 @@ jupyter lab
 \bibliography{book}
 
 \appendix
+\renewcommand{\chapterlabel}{附录~\thechapter}
 
 \input{contents/appendix-math}
 

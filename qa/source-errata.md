@@ -59,10 +59,20 @@
 - **P2 文档一致性**：`qa/terminology.md` 中“其余 `Agent 化` → `Agentic`”更正为“→ `智能体`”，并补充 `System Prompt`、`context window` 括注与原文引用的例外说明。
 - **P3 排版**：清理第 5 部分 9 处中文与“智能体”之间的多余空格；`Workflows` 类别标签与 `Human in the Loop` 首现括注按原文保留。
 
-未处理的 P3：p110 标题/浮动体分页、p595 空白等排版遗留；CI 固定 TeX Live 版本与字体回退复核。这两项属于排版/构建环境优化，不改变正文技术内容；复验报告中的 OpenRLHF 版本 URL、errata 日期与 GRPO 可选措辞已在本轮关闭。
+## 第六轮：排版与构建优化（2026-10-23）
+
+- **p110 标题孤行**：投机解码 1.15.2 标题与表 1.19 原被浮动体分离；将表改为 `[H]`，配合 `\Needspace` 与 `\footnotesize`，标题和表格同页，p111 从 1.15.3 开始。
+- **p595 大块空白**：`\flushbottom` 会把两个 `questionbox` 之间唯一的可伸缩胶水拉大；加入 `\raggedbottom` 后 Q19/Q20 紧接排列，页面重排至 p594。
+- **同类孤行**：第 28 章 28.5“生成式 UI”标题原在 p567 页底，加入 `\Needspace` 后移至下一页。
+- **结构标签中文化**：目录、第 I 部分、第 N 章、图、表、代码清单、附录 A、参考文献；同时修正正文中硬编码的 `Chapter~\ref` / `Table~\ref`。
+- **术语小修**：`part1.tex` 的“System 消息”改为“系统消息”；`qa/terminology.md` 增加 `时延` 子串替换警告。
+- **CI**：固定 `texlive/texlive:TL2025-historic`，安装 `make`，BibTeX 失败不再被 `-` 忽略，增加字体存在性与构建日志检查；push 触发分支加入 `update-latest-zh`。
+
+复验报告中的 OpenRLHF 版本 URL、errata 日期与 GRPO 可选措辞已在上一轮关闭；上述 p110/p595/CI 项本轮关闭。
 
 ## 说明
 
 - 第 10、11 项是英文 v1.4 自身的语义错误；中文版修正后与英文原文出现有意偏差，后续同步上游时需保留本勘误。
+- 术语替换注意：`时延` 是 `同时延迟` 的子串，后续不得对 `时延` 做无边界全局替换；应匹配“首 Token 时延”等独立词形，并在替换后搜索“延迟迟”“同延迟”复查。详见 `qa/terminology.md` 的“替换操作注意事项”。
 - 第 12 项在英文 `references.bib` 中同样存在重复键；本仓库只清理中文版 `book.bib`，未修改上游。
 - P2-2–P2-4 在英文 `references.bib` 中同样存在；本仓库只修正中文版 `book.bib`，未修改上游。

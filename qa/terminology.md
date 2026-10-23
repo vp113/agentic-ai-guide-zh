@@ -71,8 +71,14 @@
 - `多 Agent` / `单 Agent` → `多智能体` / `单智能体`（第 5、6 部分及代码注释/图表标题）。
 - 第 18 章 `Context` / `Context Window` → `上下文` / `上下文窗口`；保留 `Model Context Protocol` 等专名。
 - `Prompt 工程` → `提示工程`；`Prompt 注入` / `prompt injection` → `提示注入`。
-- `系统提示` / `系统 Prompt` / 正文中的 `system prompt` / `System prompt` → `System Prompt`（代码、公式与引文中的小写原样保留）。
+- `系统提示` / `系统 Prompt` / 正文中的 `system prompt` / `System prompt` → `System Prompt`（代码、公式与引文中的小写原样保留）；`System 消息` → `系统消息`。
 - `提示模板/链/缓存` → `Prompt 模板/链/缓存`。
 - `Agent 化 UI` → `Agentic UI`；`Agent 化 RAG` → `智能体 RAG`；其余 `Agent 化` → `智能体`。
-- `时延` → `延迟`；`人在回路` → `人机协同`；第 18 章正文 `Workflow` → `工作流`。
+- `时延` → `延迟`（只替换独立词形；见下节“替换操作注意事项”）；`人在回路` → `人机协同`；第 18 章正文 `Workflow` → `工作流`。
 - 第 6 部分“提示注入”（hint injection）改为“注入提示（Hint Injection）”，消除与安全术语的歧义。
+
+## 替换操作注意事项
+
+- **禁止无边界短词替换**：`时延` 本身是 `同时延迟` 的子串。若对 `时延` 做全局替换，会把“同时延迟”改成“同延迟迟”；第五轮曾出现该回归。应匹配独立词形（如“首 Token 时延”）或先加边界，替换后搜索 `延迟迟`、`同延迟` 复查。
+- **英文术语加词边界**：替换 `Agent`、`Prompt` 等短词时避免命中 `Agentic`、`Agents`、`Promptflow` 等更长词。
+- **替换后检查 diff**：扫描重复字、中文间空格、跨词断句与异常标点，并核对受影响 PDF 页面。

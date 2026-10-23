@@ -3653,7 +3653,7 @@ in the JSON schema provided.
   % \item \textbf{Schema-as-contract}: Including \texttt{output\_schema} in the input mirrors API design patterns the model has seen extensively during pre-training.
   \item \textbf{Schema 即契约}：在输入中加入 \texttt{output\_schema} 复刻了模型在预训练中大量见过的 API 设计模式。
   % \item \textbf{System prompt still essential}: The system message provides \emph{role}, \emph{tone}, and \emph{behavioral constraints} that don't fit naturally in a JSON payload.
-  \item \textbf{System Prompt 依然不可或缺}：System 消息提供\emph{角色}、\emph{语气}与\emph{行为约束}，这些内容并不适合放进 JSON 负载里。
+  \item \textbf{System Prompt 依然不可或缺}：系统消息提供\emph{角色}、\emph{语气}与\emph{行为约束}，这些内容并不适合放进 JSON 负载里。
 \end{itemize}
 \end{examplebox}
 
@@ -4144,11 +4144,13 @@ Distilled 8B & 16 GB & 10$\times$ & 80--85\% & 移动、边缘 \\
 \end{keybox}
 
 % \subsection{Methods Comparison}
+% Avoid an orphaned subsection heading above the following float.
+\Needspace{12\baselineskip}
 \subsection{方法对比}
 \label{methods-comparison}
 
-\begin{table}[ht!]
-\centering\small
+\begin{table}[H]
+\centering\footnotesize
 % \caption{Speculative decoding methods supported by modern inference engines.}
 \caption{现代推理引擎支持的投机解码方法。}
 \noindent\begin{tabularx}{\linewidth}{@{}l l l Z{1}@{}}

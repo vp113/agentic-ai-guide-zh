@@ -1080,7 +1080,7 @@ REFRAG 通过三阶段解码策略利用这种结构：
 % \begin{intuitionbox}[Router as a Learned Policy]
 \begin{intuitionbox}[路由器即可学习的 Policy]
 % Multi-source routing is a \emph{classification} problem at its simplest and a \emph{planning} problem at its richest. When treated as an RL policy---where the state is the query plus conversation history, the action is the choice of source (and optional query rewrite), and the reward is downstream answer quality---the router can be optimized end-to-end via policy gradient techniques (Chapter~\ref{ch:po-variants}).
-多源路由在最简单的形式下是一个\emph{分类}问题，在最丰富的形式下则是一个\emph{规划}问题。当被建模为 RL Policy——其中状态是查询加上对话历史，动作是来源的选择（以及可选的查询改写），Reward 是下游答案质量——时，路由器可以通过 Policy Gradient 技术（Chapter~\ref{ch:po-variants}）进行端到端优化。
+多源路由在最简单的形式下是一个\emph{分类}问题，在最丰富的形式下则是一个\emph{规划}问题。当被建模为 RL Policy——其中状态是查询加上对话历史，动作是来源的选择（以及可选的查询改写），Reward 是下游答案质量——时，路由器可以通过 Policy Gradient 技术（第~\ref{ch:po-variants}~章）进行端到端优化。
 \end{intuitionbox}
 
 \paragraph{实践考量。}
@@ -1090,7 +1090,7 @@ REFRAG 通过三阶段解码策略利用这种结构：
   % \item \textbf{Fallback chains}: If the primary source returns low-confidence results, try the next-best source.
   \item \textbf{回退链}：若主要来源返回的结果置信度较低，则尝试次优来源。
   % \item \textbf{Parallel fan-out}: For ambiguous queries, retrieve from multiple sources simultaneously and fuse results via Reciprocal Rank Fusion (Table~\ref{tab:retrieval_methods}).
-  \item \textbf{并行扇出}：对于歧义查询，同时从多个来源检索，并通过倒数排名融合（Table~\ref{tab:retrieval_methods}）合并结果。
+  \item \textbf{并行扇出}：对于歧义查询，同时从多个来源检索，并通过倒数排名融合（表~\ref{tab:retrieval_methods}）合并结果。
   % \item \textbf{Cost awareness}: Web search and API calls may have monetary cost or rate limits; the router should factor these in.
   \item \textbf{成本感知}：网页搜索和 API 调用可能存在金钱开销或速率限制；路由器应将其纳入考量。
   % \item \textbf{Observability}: Log every routing decision with its reasoning---essential for debugging and retraining.
@@ -1538,7 +1538,7 @@ print(results.to_pandas())
 \label{embedding-model-selection}
 
 % The embedding model is the single most impactful component choice in a RAG system---it determines the quality ceiling for retrieval. The field has advanced rapidly; Table~\ref{tab:embedding_models} summarizes current options across the cost--quality spectrum.
-Embedding 模型是 RAG 系统中影响最大的单一组件选择——它决定了检索质量的上限。该领域发展迅速；Table~\ref{tab:embedding_models} 汇总了当前在成本—质量光谱上的可选项。
+Embedding 模型是 RAG 系统中影响最大的单一组件选择——它决定了检索质量的上限。该领域发展迅速；表~\ref{tab:embedding_models} 汇总了当前在成本—质量光谱上的可选项。
 
 \begin{table}[ht!]
 \centering
@@ -16929,6 +16929,8 @@ LangGraph Studio & Python/TS & \checkmark{} & \checkmark{} & \checkmark{} & $\ti
 \end{table}
 
 
+% Avoid an orphaned section heading at the bottom of the page.
+\Needspace{12\baselineskip}
 \section{生成式 UI}
 \label{subsec:generative-ui}
 

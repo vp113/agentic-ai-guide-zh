@@ -38,7 +38,12 @@ $(DIST): $(PDF)
 $(PDF): $(TEX) $(BIB) $(PARTS)
 	@rm -f $(INTERMEDIATES)
 	xelatex -interaction=nonstopmode -halt-on-error $(TEX)
-	-bibtex $(MAIN)
+	bibtex $(MAIN)
+	@if grep -Eiq 'There (was|were) [1-9][0-9]* error' $(MAIN).blg; then \
+		echo "BibTeX reported an error; see $(MAIN).blg"; \
+		cat $(MAIN).blg; \
+		exit 1; \
+	fi
 	xelatex -interaction=nonstopmode -halt-on-error $(TEX)
 	xelatex -interaction=nonstopmode -halt-on-error $(TEX)
 	xelatex -interaction=nonstopmode -halt-on-error $(TEX)
