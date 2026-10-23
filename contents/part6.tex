@@ -1676,7 +1676,7 @@ TRL：\texttt{loss\_type=["sigmoid", "sft"], loss\_weights=[1.0, 1.0]}
 % \begin{questionbox}[Q41: Explain completion-only masking for SFT. What happens if you don’t use it?]
 \begin{questionbox}[Q41：解释 SFT 的 completion-only masking。不使用它会怎样？]
 % \textbf{Answer}: In chat-format SFT data: \texttt{[system] + [user message] + [assistant response]}. Standard NLL loss computes loss on all tokens including the system prompt and user message.
-\textbf{答}：在 chat 格式的 SFT 数据中：\texttt{[system] + [user message] + [assistant response]}。标准 NLL loss 会在所有 Token 上计算 loss，包括 system prompt 和用户消息。
+\textbf{答}：在 chat 格式的 SFT 数据中：\texttt{[system] + [user message] + [assistant response]}。标准 NLL loss 会在所有 Token 上计算 loss，包括 System Prompt 和用户消息。
 
 % \textbf{Problem without masking}: The model wastes capacity learning to predict the user’s message (which it will never need to generate at inference). Worse: if the training data has diverse user messages, the model gets confused about ``whose turn is it?''
 \textbf{不掩码的问题}：模型浪费容量去预测用户消息（推理时永远不需要生成）。更糟：若训练数据中用户消息多样，模型会困惑“现在轮到谁说话？”

@@ -3785,7 +3785,7 @@ C \geq \underbrace{S}_{\text{system prompt}} + \underbrace{M}_{\text{memory/RAG}
 
 \begin{warningbox}[静默截断陷阱]
 % Many LLM APIs silently truncate input that exceeds the context limit, dropping tokens from the \emph{middle} or \emph{beginning} of the prompt. This can cause the model to lose its system prompt, forget earlier instructions, or hallucinate based on incomplete context---all without any error signal. Always count tokens \emph{before} sending and handle overflow explicitly.
-许多 LLM API 在输入超出上下文限制时会静默截断，从 Prompt 的\emph{中间}或\emph{开头}丢弃 Token。这会导致模型丢失 system prompt、忘记早期指令，或基于不完整上下文产生幻觉——而且不会有任何错误信号。务必在发送\emph{之前}计算 Token 数，并显式处理溢出。
+许多 LLM API 在输入超出上下文限制时会静默截断，从 Prompt 的\emph{中间}或\emph{开头}丢弃 Token。这会导致模型丢失 System Prompt、忘记早期指令，或基于不完整上下文产生幻觉——而且不会有任何错误信号。务必在发送\emph{之前}计算 Token 数，并显式处理溢出。
 \end{warningbox}
 
 \subsection{上下文分配策略}
@@ -3870,7 +3870,7 @@ H' = \text{Summarize}(H_{1:k}) \;\|\; H_{k+1:n}
   % \item \textbf{FIFO (First-In, First-Out):} Drop the oldest messages when the window fills. Simple but loses early context (e.g., original task description).
   \item \textbf{FIFO（先进先出）：} 当窗口填满时丢弃最旧的消息。简单但会丢失早期上下文（例如最初的任务描述）。
   % \item \textbf{Importance-Ranked Retention:} Keep the system prompt and first user message pinned; apply importance scoring to the rest.
-  \item \textbf{按重要性排序保留：} 将 system prompt 和首条用户消息固定（pinned），对其余消息应用重要性评分。
+  \item \textbf{按重要性排序保留：} 将 System Prompt 和首条用户消息固定（pinned），对其余消息应用重要性评分。
   % \item \textbf{Hierarchical Summarization:} Maintain a multi-level summary pyramid---recent turns verbatim, older turns as paragraph summaries, oldest turns as a single abstract.
   \item \textbf{分层摘要（Hierarchical Summarization）：} 维护一个多层摘要金字塔——最近的轮次原文保留，较旧的轮次以段落摘要保留，最旧的轮次合并为一个抽象摘要。
 \end{itemize}
@@ -3886,7 +3886,7 @@ H' = \text{Summarize}(H_{1:k}) \;\|\; H_{k+1:n}
 \label{recursive-context-decomposition}
 
 % The strategies above---summarization, selective retention, sliding windows---all accept a fundamental constraint: \emph{everything must fit in one context window}. A more radical approach rejects this constraint entirely: let the model \textbf{recursively call itself} (or a sub-model) on partitions of the context, aggregating results across calls~\cite{zhang2025rlm}.
-上述策略——摘要、选择性保留、滑动窗口——都接受一个基本约束：\emph{所有内容都必须装入单个 context window}。一种更激进的方法完全摒弃这一约束：让模型\textbf{递归调用自身}（或子模型）处理上下文的分区，并跨调用聚合结果~\cite{zhang2025rlm}。
+上述策略——摘要、选择性保留、滑动窗口——都接受一个基本约束：\emph{所有内容都必须装入单个上下文窗口}。一种更激进的方法完全摒弃这一约束：让模型\textbf{递归调用自身}（或子模型）处理上下文的分区，并跨调用聚合结果~\cite{zhang2025rlm}。
 
 \begin{keybox}[递归语言模型（Recursive Language Model, RLM）]
 % A \textbf{Recursive Language Model} replaces a single monolithic LLM call $M(q, C)$ with a recursive decomposition:
@@ -3902,7 +3902,7 @@ H' = \text{Summarize}(H_{1:k}) \;\|\; H_{k+1:n}
 \label{why-recursion-helps.}
 
 % Context rot---the empirical degradation of model accuracy as context length grows---means that even models with large context windows (128k+) perform worse on long inputs. By keeping each individual call short and focused, recursive decomposition avoids this degradation entirely. Zhang et al.~\cite{zhang2025rlm} demonstrated that a recursive GPT-5-mini \emph{outperforms} non-recursive GPT-5 on difficult long-context benchmarks, while being cheaper per query.
-上下文腐烂（Context rot）——即模型准确率随上下文长度增长而经验性地下降的现象——意味着即便拥有大 context window（128k+）的模型在长输入上的表现也会更差。通过让每次单独调用保持简短和聚焦，递归分解完全规避了这种退化。Zhang 等~\cite{zhang2025rlm} 证明，递归的 GPT-5-mini 在困难的长上下文基准上\emph{超越}了非递归的 GPT-5，同时每次查询成本更低。
+上下文腐烂（Context rot）——即模型准确率随上下文长度增长而经验性地下降的现象——意味着即便拥有大上下文窗口（128k+）的模型在长输入上的表现也会更差。通过让每次单独调用保持简短和聚焦，递归分解完全规避了这种退化。Zhang 等~\cite{zhang2025rlm} 证明，递归的 GPT-5-mini 在困难的长上下文基准上\emph{超越}了非递归的 GPT-5，同时每次查询成本更低。
 
 \paragraph{实现模式。}
 \label{implementation-pattern.}
@@ -3992,7 +3992,7 @@ Prompt 是 harness 与模型之间的主要接口。一个结构良好的 Prompt
 \label{system-prompt-design}
 
 % A production system prompt typically contains four sections:
-一个生产级 system prompt 通常包含四个部分：
+一个生产级 System Prompt 通常包含四个部分：
 
 \begin{enumerate}
   % \item \textbf{Persona:} Who the agent is, its name, role, and communication style.
@@ -4651,7 +4651,7 @@ Agent 可能陷入无限循环——反复以相同参数调用同一工具，�
 
 \begin{warningbox}[调试鸿沟]
 % LLM agents are notoriously hard to debug because failures are often \emph{semantic} (the model made a wrong decision) rather than \emph{syntactic} (a code exception). Invest in replay tooling: the ability to re-run any past agent trace with a modified prompt or model, and compare outputs side-by-side.
-LLM Agent 出了名地难调试，因为失败通常是\emph{语义性}的（模型做出了错误决策）而非\emph{语法性}的（代码异常）。在 replay（回放）工具上进行投入：能够用修改后的 Prompt 或模型重新运行任何过往 Agent 追踪，并并排比较输出。
+LLM Agent 出了名地难调试，因为失败通常是\emph{语义性}的（模型做出了错误决策）而非\emph{语法性}的（代码异常）。在 replay（回放）工具上进行投入：能够用修改后的 Prompt 或模型重新运行任何过往 Agent 追踪，并排比较输出。
 \end{warningbox}
 
 \section{扩展与生产环境关注点}
@@ -4666,7 +4666,7 @@ LLM Agent 出了名地难调试，因为失败通常是\emph{语义性}的（模
   % \item \textbf{Streaming:} Use streaming APIs to begin processing the model’s response before it is complete. Reduces time-to-first-token for the user.
   \item \textbf{流式（Streaming）：} 使用流式 API，在模型响应完成之前就开始处理。降低用户的首 Token 延迟。
   % \item \textbf{Prompt caching:} Many providers (Anthropic, OpenAI) offer prompt caching for repeated prefixes (e.g., system prompt + tool definitions). Can reduce latency and cost by 50--90\% for the cached portion.
-  \item \textbf{Prompt 缓存：} 许多提供商（Anthropic、OpenAI）为重复前缀（例如 system prompt + 工具定义）提供 Prompt 缓存。可将被缓存部分的延迟与成本降低 50--90\%。
+  \item \textbf{Prompt 缓存：} 许多提供商（Anthropic、OpenAI）为重复前缀（例如 System Prompt + 工具定义）提供 Prompt 缓存。可将被缓存部分的延迟与成本降低 50--90\%。
   % \item \textbf{Speculative execution:} Begin executing the most likely next tool call before the model has finished generating, and cancel if the prediction was wrong.
   \item \textbf{推测执行（Speculative execution）：} 在模型完成生成之前就开始执行最可能的下一次工具调用，如果预测错误则取消。
 \end{itemize}
@@ -10392,7 +10392,7 @@ Anthropic 对 Agent 架构的方法~\cite{anthropic2024buildingagents} 是关于
 
 \begin{enumerate}
   % \item \textbf{Start with the simplest solution.} Don’t reach for agentic patterns until simpler approaches (single LLM call, retrieval + generation) have been tried and found insufficient.
-  \item \textbf{从最简单的方案起步。}在尝试更简单的方案（单次 LLM 调用、检索 + 生成）并确认其不足之前，不要急于使用 智能体模式。
+  \item \textbf{从最简单的方案起步。}在尝试更简单的方案（单次 LLM 调用、检索 + 生成）并确认其不足之前，不要急于使用智能体模式。
   % \item \textbf{Workflows vs.~agents.} Anthropic distinguishes between:
   \item \textbf{工作流与 Agent 的区分。}Anthropic 将以下两者加以区分：
 
@@ -14168,7 +14168,7 @@ Agent 开发遵循如下成熟度演进路径：
 % \textbf{Topology design.} Before writing any code, sketch the agent's execution graph: identify the nodes (computation steps), edges (transitions), cycles (feedback loops), and parallel paths. This graph sketch is the architectural blueprint---it makes control flow explicit, surfaces potential infinite loops early, and guides state schema design. Chapter~\ref{sec:graph-engineering} provides a systematic approach to topology design and the common topologies (linear chain, supervisor-worker, map-reduce, human-in-the-loop) that cover most production use cases.
 \textbf{拓扑设计。}在编写任何代码之前，先勾勒出 Agent 的执行图：识别节点（计算步骤）、边（迁移）、环（反馈回路）与并行路径。这张图草图就是架构蓝图——它让控制流显式化，尽早暴露潜在的死循环，并指导状态 schema 的设计。第~\ref{sec:graph-engineering} 章给出了拓扑设计的系统化方法，以及覆盖大多数生产用例的常见拓扑（线性链、监督者—工作者、map-reduce、人机协同）。
 
-\textbf{Tool 选择。} 每个 Tool 都应有明确的目的、定义良好的输入输出，以及失败模式规范。过度配置 Tool 是常见错误：Tool 过多的 Agent 会因 Tool 选择混乱而表现退化，同延迟迟也会上升。
+\textbf{Tool 选择。} 每个 Tool 都应有明确的目的、定义良好的输入输出，以及失败模式规范。过度配置 Tool 是常见错误：Tool 过多的 Agent 会因 Tool 选择混乱而表现退化，同时延迟也会上升。
 
 % \textbf{Constraint specification.} Production agents require explicit constraints: maximum number of tool calls per request, allowed domains for web browsing, data access permissions, and output format requirements. These constraints should be encoded in the system prompt \emph{and} enforced programmatically.
 \textbf{约束规范。} 生产 Agent 需要显式约束：每次请求允许的最大 Tool 调用次数、网页浏览的允许域名、数据访问权限以及输出格式要求。这些约束应同时编入 System Prompt \emph{并且}以程序方式强制执行。
@@ -16400,7 +16400,7 @@ GAS 仪表盘（\texttt{part5\_agentic/ch28\_agentic\_ui/app.py}）是一个自�
 \end{keybox}
 
 % As large language models transition from passive text generators to active agents capable of planning, tool use, and multi-step reasoning, the interfaces through which humans interact with them must evolve in parallel. Traditional chat interfaces---designed for single-turn or short-context conversations---are ill-suited to the demands of agentic workflows: long-running tasks, branching decision trees, parallel tool invocations, and the need for meaningful human oversight. This section surveys the landscape of \emph{agentic UI frameworks}: the design paradigms, component libraries, and implementation patterns that enable rich, transparent, and trustworthy human-agent collaboration.
-随着大语言模型从被动的文本生成器演进为能够规划、调用工具与进行多步推理的主动 Agent，人类与之交互的界面也必须同步演化。传统聊天界面——为单轮或短上下文对话而设计——无法满足 智能体工作流的要求：长时间运行的任务、分支决策树、并行的工具调用，以及对有效人类监督的需求。本节考察 \emph{Agentic UI 框架}（agentic UI frameworks）的图景：使丰富、透明、可信赖的人机协作成为可能的设计范式、组件库与实现模式。
+随着大语言模型从被动的文本生成器演进为能够规划、调用工具与进行多步推理的主动 Agent，人类与之交互的界面也必须同步演化。传统聊天界面——为单轮或短上下文对话而设计——无法满足智能体工作流的要求：长时间运行的任务、分支决策树、并行的工具调用，以及对有效人类监督的需求。本节考察 \emph{Agentic UI 框架}（agentic UI frameworks）的图景：使丰富、透明、可信赖的人机协作成为可能的设计范式、组件库与实现模式。
 
 \section{动机：超越聊天框}
 \label{subsec:ui-motivation}
@@ -16411,7 +16411,7 @@ GAS 仪表盘（\texttt{part5\_agentic/ch28\_agentic\_ui/app.py}）是一个自�
 \end{intuitionbox}
 
 % The gap between a chat interface and an agentic interface mirrors the gap between a vending machine and a skilled collaborator. When an agent executes a 20-step research task, browses the web, writes and runs code, and synthesizes a report, the user needs answers to questions that a simple text response cannot provide:
-聊天界面与 智能体界面之间的差距，犹如自动售货机与熟练协作者之间的差距。当一个 Agent 执行 20 步研究任务、浏览网页、撰写并运行代码、综合成一份报告时，用户需要解答的问题是简单的文本响应所无法提供的：
+聊天界面与智能体界面之间的差距，犹如自动售货机与熟练协作者之间的差距。当一个 Agent 执行 20 步研究任务、浏览网页、撰写并运行代码、综合成一份报告时，用户需要解答的问题是简单的文本响应所无法提供的：
 
 \begin{itemize}
   % \item \textbf{What is the agent doing right now?} Long-running tasks require progress feedback; silence breeds distrust.
@@ -16451,13 +16451,13 @@ GAS 仪表盘（\texttt{part5\_agentic/ch28\_agentic\_ui/app.py}）是一个自�
 \label{subsec:ui-paradigms}
 
 % No single UI paradigm suits all agentic use cases. The appropriate interface depends on task duration, required human involvement, output type, and user expertise. The spectrum ranges from fully conversational chat interfaces to fully autonomous dashboards with minimal human interaction.
-没有任何单一的 UI 范式能适应所有 智能体用例。合适的界面取决于任务时长、所需的人类介入程度、输出类型以及用户的专业水平。其谱系从完全对话式的聊天界面，跨越到几乎无需人类交互的完全自主仪表盘。
+没有任何单一的 UI 范式能适应所有智能体用例。合适的界面取决于任务时长、所需的人类介入程度、输出类型以及用户的专业水平。其谱系从完全对话式的聊天界面，跨越到几乎无需人类交互的完全自主仪表盘。
 
 \subsection{基于聊天的界面}
 \label{chat-based-interfaces}
 
 % The chat paradigm---message bubbles, a text input, and a scrolling history---remains the most familiar entry point for LLM interaction. Its strengths are low learning curve and natural language flexibility. For agentic use, chat interfaces are augmented with:
-聊天范式——消息气泡、文本输入框和滚动历史——仍然是与 LLM 交互最为熟悉的入口。其优势在于学习曲线平缓与自然语言的灵活性。在 智能体场景下，聊天界面通常会扩展以下能力：
+聊天范式——消息气泡、文本输入框和滚动历史——仍然是与 LLM 交互最为熟悉的入口。其优势在于学习曲线平缓与自然语言的灵活性。在智能体场景下，聊天界面通常会扩展以下能力：
 
 \begin{itemize}
   % \item \textbf{Streaming responses}: Tokens appear as they are generated, providing immediate feedback and reducing perceived latency. Implemented via Server-Sent Events (SSE) or WebSockets.
@@ -16472,7 +16472,7 @@ GAS 仪表盘（\texttt{part5\_agentic/ch28\_agentic\_ui/app.py}）是一个自�
 
 \begin{keybox}[聊天 UI 对 Agent 的局限]
 % Chat interfaces serialize inherently parallel processes. When an agent fans out to five tools simultaneously, a linear message stream misrepresents the actual execution graph. For complex agentic workflows, chat should be augmented with---or replaced by---richer paradigms.
-聊天界面将本质上并行的过程串行化呈现。当一个 Agent 同时分发任务到五个工具时，线性的消息流会错误地表达实际的执行图。对于复杂的 智能体工作流，聊天应被更丰富的范式所扩展——甚至取代。
+聊天界面将本质上并行的过程串行化呈现。当一个 Agent 同时分发任务到五个工具时，线性的消息流会错误地表达实际的执行图。对于复杂的智能体工作流，聊天应被更丰富的范式所扩展——甚至取代。
 \end{keybox}
 
 \subsection{画布与产物式界面}
@@ -16841,7 +16841,7 @@ Gradio~\cite{abid2019gradio} 是一个 Python 库，用于快速搭建 ML demo �
 \label{streamlit}
 
 % Streamlit~\cite{streamlit2024} is a Python framework for data applications that has been widely adopted for agent dashboards and monitoring UIs. Its reactive execution model---the entire script reruns on each interaction---is simple but can be limiting for complex agentic workflows.
-Streamlit~\cite{streamlit2024} 是一个用于数据应用的 Python 框架，被广泛用于 Agent 仪表盘与监控 UI。其响应式执行模型——每次交互整个脚本重跑——简单直观，但对复杂的 智能体工作流可能受限。
+Streamlit~\cite{streamlit2024} 是一个用于数据应用的 Python 框架，被广泛用于 Agent 仪表盘与监控 UI。其响应式执行模型——每次交互整个脚本重跑——简单直观，但对复杂的智能体工作流可能受限。
 
 % \textbf{Agentic use cases:}
 \textbf{智能体用例：}
@@ -17131,7 +17131,7 @@ async def stream_endpoint(prompt: str):
 \label{backpressure-handling}
 
 % In high-throughput agentic scenarios, the rate of incoming data can exceed the UI's rendering capacity. Strategies for managing backpressure:
-在高吞吐量的 智能体场景下，数据到达速率可能超出 UI 的渲染能力。管理背压的策略：
+在高吞吐量的智能体场景下，数据到达速率可能超出 UI 的渲染能力。管理背压的策略：
 
 \begin{itemize}
   % \item \textbf{Token batching}: Buffer tokens for 50--100ms and render in batches rather than one-by-one, reducing DOM update frequency.
@@ -17723,7 +17723,7 @@ Agentic UI 框架代表了人机交互的新前沿，要求我们从第一性原
   % \item \textbf{Paradigm selection matters}: The appropriate UI paradigm (chat, canvas, workflow, dashboard, collaborative, autonomous) depends on task structure, required human involvement, and output type. Most production systems combine multiple paradigms.
   \item \textbf{范式选择至关重要}：合适的 UI 范式（聊天、画布、工作流、仪表盘、协作、自主）取决于任务结构、所需的人类介入与输出类型。大多数生产系统会组合多种范式。
   % \item \textbf{Transparency is non-negotiable}: Users cannot trust what they cannot see. Thought display, tool visualization, and context panels are not optional features---they are the foundation of trustworthy agentic systems.
-  \item \textbf{透明性不可妥协}：用户无法信任他们看不见的东西。思考展示、工具可视化与上下文面板并非可选功能——它们是可信赖 智能体系统的基础。
+  \item \textbf{透明性不可妥协}：用户无法信任他们看不见的东西。思考展示、工具可视化与上下文面板并非可选功能——它们是可信赖智能体系统的基础。
   % \item \textbf{Streaming is the baseline}: Users expect to see agents work in real time. Token streaming, tool call streaming, and multi-agent streaming are table-stakes capabilities.
   \item \textbf{流式是基线}：用户期望实时看到 Agent 在工作。Token 流、工具调用流与多智能体流是入门级必备能力。
   % \item \textbf{Approval gates must be tiered}: Flat approval policies (approve everything or approve nothing) fail in practice. Tiered policies that auto-approve safe actions and gate dangerous ones maintain oversight without creating bottlenecks.

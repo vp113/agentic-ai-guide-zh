@@ -50,6 +50,15 @@
 - **其他**：`时延` 统一为“延迟”；`人在回路` 统一为“人机协同”；第 18 章正文中的 `Workflow` 统一为“工作流”。
 - **歧义消解**：第 6 部分循环工程清单中的“提示注入”（意为向循环注入提示）改为“注入提示（Hint Injection）”，避免与安全术语“提示注入（prompt injection）”混淆。其余“Agent 化”统一为“智能体”（如“智能体模式”“智能体工作流”），`Agentic AI`、`Agentic UI` 等术语保留英文。
 
+## 第五轮复验修复（2026-10-23）
+
+第五轮复验指出的增量问题已修复：
+
+- **P1 文本损坏**：`contents/part5.tex` 中“同延迟迟”恢复为“同时延迟”；全文复查“时延”“延迟迟”，未发现同类跨词替换。顺带修正同一段落扫描到的重复词“并并排比较”→“并排比较”。
+- **P2 术语残留**：正文/表格中 13 处 `system prompt` / `System prompt` 统一为 `System Prompt`；代码注释/字符串、数学 `\text{system prompt}` 与攻击示例引文保留原样。第 18 章两处正文 `context window` 改为“上下文窗口”，首现括注保留。`book.tex` 中 3 处“智能体 UI”改为 `Agentic UI`。
+- **P2 文档一致性**：`qa/terminology.md` 中“其余 `Agent 化` → `Agentic`”更正为“→ `智能体`”，并补充 `System Prompt`、`context window` 括注与原文引用的例外说明。
+- **P3 排版**：清理第 5 部分 9 处中文与“智能体”之间的多余空格；`Workflows` 类别标签与 `Human in the Loop` 首现括注按原文保留。
+
 未处理的 P3：p110 标题/浮动体分页、p595 空白等排版遗留；CI 固定 TeX Live 版本与字体回退复核。这两项属于排版/构建环境优化，不改变正文技术内容；复验报告中的 OpenRLHF 版本 URL、errata 日期与 GRPO 可选措辞已在本轮关闭。
 
 ## 说明

@@ -33,7 +33,7 @@
 | prompt engineering | 提示工程 | 避免“Prompt 工程” |
 | prompt injection | 提示注入 | 避免“Prompt 注入”“prompt injection”；攻击语境专用 |
 | hint injection | 注入提示（Hint Injection） | 与安全术语“提示注入”区分；见第 6 部分循环工程清单 |
-| system prompt | `System Prompt` | 避免“系统提示”“系统 Prompt”“系统 prompt” |
+| system prompt | `System Prompt` | 避免“系统提示”“系统 Prompt”“系统 prompt”；代码/公式/引文中的小写原样保留 |
 | prompt template / chain / cache | `Prompt 模板` / `Prompt 链` / `Prompt 缓存` | 避免“提示模板/链/缓存” |
 | human-in-the-loop | 人机协同 | 避免“人在回路”；首次出现可括注 `Human-in-the-Loop` |
 | approval gate | 审批门控 | “审批”指流程/门控，“批准”指具体动作，二者可并存 |
@@ -58,9 +58,11 @@
 
 ## 歧义与例外
 
-- **`Context`**：正文概念统一为“上下文”；`Model Context Protocol`、`Context Relevancy`、`Context-Free Grammar`、`In-Context Learning`、`Context rot` 括注、代码与指标名保留英文。
+- **`Context`**：正文概念统一为“上下文”；`Model Context Protocol`、`Context Relevancy`、`Context-Free Grammar`、`In-Context Learning`、`Context rot` 括注、代码与指标名保留英文。首次出现的中文括注（如“上下文窗口（context window）”“短期（context window）”）可保留英文。
+- **`System Prompt`**：正文与表格统一为 `System Prompt`；代码注释/字符串、数学 `\text{system prompt}`、以及作为攻击示例引用的原句保留小写 `system prompt`。
 - **`Prompt`**：对象/构件保留英文；已成词的“提示工程”“提示注入”用中文；“提示”作动词（hint/prompt）时保留中文。
 - **`Agentic`**：`Agentic AI`、`Agentic UI` 作为术语保留英文；一般形容词用“智能体模式/工作流/场景/系统”，不再写“Agent 化”或“Agentic 模式”。
+- **原文类别标签/引文**：直接引用英文原文的类别名（如 Anthropic 的 `Workflows`）或首现括注（如 `Human in the Loop`）可保留原形，不强制改写。
 - **“审批”与“批准”**：`审批门控`、`审批流程` 用“审批”；“用户批准/拒绝”“等待批准”用“批准”。
 - **“评估”与“评测”**：一般评估用“评估”；基准测试、评测套件、评测框架可用“评测”，但避免在同一段内来回切换。
 
@@ -69,8 +71,8 @@
 - `多 Agent` / `单 Agent` → `多智能体` / `单智能体`（第 5、6 部分及代码注释/图表标题）。
 - 第 18 章 `Context` / `Context Window` → `上下文` / `上下文窗口`；保留 `Model Context Protocol` 等专名。
 - `Prompt 工程` → `提示工程`；`Prompt 注入` / `prompt injection` → `提示注入`。
-- `系统提示` / `系统 Prompt` / `系统 prompt` → `System Prompt`。
+- `系统提示` / `系统 Prompt` / 正文中的 `system prompt` / `System prompt` → `System Prompt`（代码、公式与引文中的小写原样保留）。
 - `提示模板/链/缓存` → `Prompt 模板/链/缓存`。
-- `Agent 化 UI` → `Agentic UI`；`Agent 化 RAG` → `智能体 RAG`；其余 `Agent 化` → `Agentic`。
+- `Agent 化 UI` → `Agentic UI`；`Agent 化 RAG` → `智能体 RAG`；其余 `Agent 化` → `智能体`。
 - `时延` → `延迟`；`人在回路` → `人机协同`；第 18 章正文 `Workflow` → `工作流`。
 - 第 6 部分“提示注入”（hint injection）改为“注入提示（Hint Injection）”，消除与安全术语的歧义。

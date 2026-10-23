@@ -1260,7 +1260,7 @@ P(x_{t+1} | x_{\leq t}) = \text{softmax}(\mathbf{W}_{\text{head}} \cdot \mathbf{
   % \item \textbf{Loss masking}: Only compute loss on the \emph{response} tokens, not the prompt/instruction. The prompt provides context but no gradient signal.
   \item \textbf{损失掩码}：只在\emph{回复}的 token 上计算损失，不计算 prompt/指令部分。Prompt 仅提供上下文，不提供梯度信号。
   % \item \textbf{Conditioning}: The model learns to generate responses \emph{conditioned on} specific instruction formats (system prompts, user queries, tool calls).
-  \item \textbf{条件化}：模型学会在特定指令格式（system prompt、用户查询、工具调用）的\emph{条件下}生成回复。
+  \item \textbf{条件化}：模型学会在特定指令格式（System Prompt、用户查询、工具调用）的\emph{条件下}生成回复。
   % \item \textbf{Format tokens}: Special tokens (\texttt{<|user|>}, \texttt{<|assistant|>}) guide the model to produce structured outputs.
   \item \textbf{格式 token}：特殊 token（\texttt{<|user|>}、\texttt{<|assistant|>}）引导模型产生结构化输出。
   % \item \textbf{Used during}: SFT on curated instruction-response pairs; also during RL policy generation (the policy head that produces actions/responses).
@@ -3653,7 +3653,7 @@ in the JSON schema provided.
   % \item \textbf{Schema-as-contract}: Including \texttt{output\_schema} in the input mirrors API design patterns the model has seen extensively during pre-training.
   \item \textbf{Schema 即契约}：在输入中加入 \texttt{output\_schema} 复刻了模型在预训练中大量见过的 API 设计模式。
   % \item \textbf{System prompt still essential}: The system message provides \emph{role}, \emph{tone}, and \emph{behavioral constraints} that don't fit naturally in a JSON payload.
-  \item \textbf{System prompt 依然不可或缺}：System 消息提供\emph{角色}、\emph{语气}与\emph{行为约束}，这些内容并不适合放进 JSON 负载里。
+  \item \textbf{System Prompt 依然不可或缺}：System 消息提供\emph{角色}、\emph{语气}与\emph{行为约束}，这些内容并不适合放进 JSON 负载里。
 \end{itemize}
 \end{examplebox}
 
@@ -3850,7 +3850,7 @@ ARQ~\cite{yang2025arq} 解决了标准 Prompting 的一个根本弱点：随着�
 \toprule
 \textbf{失效模式} & \textbf{症状} & \textbf{解决方案} \\
 \midrule
-指令遗忘 & 模型在长 Prompt 中忽略约束 & 把约束放到末尾；重复关键规则；使用 system prompt \\
+指令遗忘 & 模型在长 Prompt 中忽略约束 & 把约束放到末尾；重复关键规则；使用 System Prompt \\
 格式漂移 & 输出开头正确，但在长生成中逐渐崩坏 & 使用约束解码；拆分为多段较短的链式 Prompt \\
 谄媚（Sycophancy） & 模型附和 Prompt 中错误的前提 & 加上 ``若前提不正确请质疑''；使用系统级指令 \\
 细节幻觉 & 模型编造上下文中不存在的事实 & 加上 ``若未知请说不知道''；使用带溯源的 RAG \\

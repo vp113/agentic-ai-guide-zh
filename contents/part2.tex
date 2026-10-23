@@ -4107,7 +4107,7 @@ loss.backward()
 GAS SFT 数据集由临床医生为 \texttt{shared/patient\_data.py} 中五个临床场景撰写的建议组成。本章对数据质量的强调——正确的标签、多样的样本、均衡的类别分布——直接适用：SFT 数据集中一条错误的建议就可能引入系统性偏差，而这种偏差很难通过 RL 微调消除。
 
 \textbf{指令格式。}
-GAS Advisor 的 SFT 数据遵循 \texttt{capstone\_gas/gas\_system.py} 中 \texttt{advisor\_node()} 所使用的指令格式：定义 Agent 角色的 system prompt、包含患者状态与检索到的指南的 user message，以及包含建议的 assistant message。格式一致对于模型学习正确的输入—输出映射至关重要。
+GAS Advisor 的 SFT 数据遵循 \texttt{capstone\_gas/gas\_system.py} 中 \texttt{advisor\_node()} 所使用的指令格式：定义 Agent 角色的 System Prompt、包含患者状态与检索到的指南的 user message，以及包含建议的 assistant message。格式一致对于模型学习正确的输入—输出映射至关重要。
 
 \textbf{用于高效微调的 LoRA（\hyperref[lora-and-parameter-efficient-fine-tuning]{\S~LoRA}）。}
 本章 notebook 演示了对 \texttt{llama3.2:3b} 的 LoRA 微调，秩 $r=16$，仅更新 $\sim$8M 参数，同时保持基础模型冻结。生成的 adapter 保存到 \texttt{part2\_rl\_methods/ch04\_rl\_for\_lms/gas\_sft\_model/}，可由 \texttt{GASLLMClient} 加载用于推理。
@@ -4183,7 +4183,7 @@ trainer.train()
 
 \begin{intuitionbox}[为何 Chat 模板重要]
 % Language models are trained on raw text, but instruction-following models need to distinguish between system prompts, user messages, and assistant responses. Chat templates encode this structure into the token sequence. Using the wrong template (or no template) at inference time causes significant performance degradation.
-语言模型在原始文本上训练，但指令跟随模型需要区分 system prompt、用户消息与 assistant 回应。Chat 模板将这种结构编码进 Token 序列。推理时使用错误模板（或不使用模板）会导致性能显著下降。
+语言模型在原始文本上训练，但指令跟随模型需要区分 System Prompt、用户消息与 assistant 回应。Chat 模板将这种结构编码进 Token 序列。推理时使用错误模板（或不使用模板）会导致性能显著下降。
 \end{intuitionbox}
 
 \subsubsection*{ChatML 格式}
@@ -4256,7 +4256,7 @@ trainer = SFTTrainer(
 
 \begin{intuitionbox}[为何要 mask prompt?]
 % In instruction fine-tuning, the model should learn to generate the assistant's response, not to predict the user's question or the system prompt. Computing loss on the prompt tokens wastes gradient signal and can cause the model to ``memorise'' prompts rather than learning to respond to them. Completion-only masking sets the loss to zero for all non-assistant tokens.
-在指令微调中，模型应该学习生成 assistant 的回应，而非预测用户的问题或 system prompt。在 prompt Token 上计算 Loss 会浪费 Gradient 信号，并可能导致模型“记忆”prompt 而非学会回应它们。Completion-only masking 将所有非 assistant Token 的 Loss 置零。
+在指令微调中，模型应该学习生成 assistant 的回应，而非预测用户的问题或 System Prompt。在 prompt Token 上计算 Loss 会浪费 Gradient 信号，并可能导致模型“记忆”prompt 而非学会回应它们。Completion-only masking 将所有非 assistant Token 的 Loss 置零。
 \end{intuitionbox}
 
 \begin{examplebox}[TRL 中的 Completion-Only Masking]
@@ -4459,7 +4459,7 @@ r_{\text{implicit}}(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{\text{ref}}(y
 \textbf{信息} & \textbf{被摧毁}：权重不再编码该能力 & \textbf{被抑制}：知识仍存在但更难触发 \\
 \textbf{主导阶段} & 顺序 SFT、领域继续预训练 & 偏好优化（PPO、DPO、KTO、RLHF） \\
 \textbf{主要症状} & 基线能力完全崩溃 & 过度拒答、风格僵硬、原始基准分数下降 \\
-\textbf{可逆性} & 不重新从 checkpoint 训练则不可逆 & 部分可逆：调整 $\beta$、system prompt 或微调 \\
+\textbf{可逆性} & 不重新从 checkpoint 训练则不可逆 & 部分可逆：调整 $\beta$、System Prompt 或微调 \\
 \textbf{检测} & 预训练评估集上的困惑度飙升 & 困惑度稳定但能力基准上的胜率下降 \\
 \textbf{随模型规模} & 各尺度相近 & 小模型支付更大的对齐税 \\
 \bottomrule
@@ -5233,7 +5233,7 @@ TP=4, batch=128, INT8 & 128 & 25s & 2621 & 带宽减半 \\
   % \item \textbf{CUDA graphs} (1.1--1.3$\times$): Eliminate kernel launch overhead for fixed-shape operations
   \item \textbf{CUDA graphs}（1.1--1.3$\times$）：消除固定形状操作的 kernel 启动开销
   % \item \textbf{Prefix caching} (1.5$\times$ for shared-prefix prompts): Don’t recompute system prompt KV cache
-  \item \textbf{Prefix caching}（共享前缀 prompt 下 1.5$\times$）：不重新计算 system prompt 的 KV cache
+  \item \textbf{Prefix caching}（共享前缀 prompt 下 1.5$\times$）：不重新计算 System Prompt 的 KV cache
 \end{enumerate}
 
 \begin{lstlisting}[style=pythonstyle]
