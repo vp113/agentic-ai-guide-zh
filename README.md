@@ -153,7 +153,6 @@ make distclean            # 有 make 的环境
 
 - **Haggai Roitman** —— 以 CC BY-SA 4.0 开放了这本极有价值的指南。
 - **Jiancong Zhu（@Chasing1020）** —— 原中文翻译。
-- **@vp113** —— 本修订版的修订与维护。
 - 原书所引用的全部论文作者与开源社区 —— 这本指南站立在他们的肩膀上。
 - 所有提交 Issue / PR 改进本修订版的读者。
 
