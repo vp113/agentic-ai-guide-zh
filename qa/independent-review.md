@@ -134,7 +134,7 @@
 
 ## 五、GitHub Actions run `40052969937`
 
-通过运行页（`https://github.com/vp113/agentic-ai-guide-zh/actions/runs/40052969937`）核实：
+通过运行页（`https://github.com/vp113/agentic-ai-guide-zh-vp113/actions/runs/40052969937`）核实：
 
 - Workflow `Build Book`，run #2，event `push`，branch `update-latest-zh`，head SHA `27f0588`。
 - 状态：**Success**；总时长 3m 20s，build job 3m 17s；release job 0s（非标签触发，按预期跳过）。

@@ -102,4 +102,4 @@ Do not hardcode a single macOS font, and do not reintroduce CI `sed` rewriting o
 
 ## Active branch
 
-Development work currently happens on `update-latest-zh`, pushed to `origin` (`vp113/agentic-ai-guide-zh`). `main` is left untouched unless explicitly requested; do not merge or force-push without instruction.
+Development work currently happens on `update-latest-zh`, pushed to `origin` (`vp113/agentic-ai-guide-zh-vp113`). `main` is left untouched unless explicitly requested; do not merge or force-push without instruction.
