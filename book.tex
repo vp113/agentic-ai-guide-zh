@@ -239,6 +239,14 @@
 \renewcommand{\lstlistingname}{代码清单}
 \newcommand{\chapterlabel}{第~\thechapter~章}
 
+% Wider TOC number boxes so five-character section numbers (e.g. 11.10,
+% 29.10) and seven-character subsection numbers (e.g. 11.10.1) do not
+% collide with their titles.
+\makeatletter
+\renewcommand*\l@section{\@dottedtocline{1}{1.5em}{3.0em}}
+\renewcommand*\l@subsection{\@dottedtocline{2}{4.5em}{4.2em}}
+\makeatother
+
 \makeatletter
 % Copied from book.cls, with "Part I" -> "第 I 部分" in the heading and TOC.
 \def\@part[#1]#2{%

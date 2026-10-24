@@ -4,7 +4,7 @@
 
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
 [![LaTeX](https://img.shields.io/badge/LaTeX-XeLaTeX-green.svg)](https://www.latex-project.org/)
-[![Pages](https://img.shields.io/badge/Pages-680-orange.svg)](#)
+[![Pages](https://img.shields.io/badge/Pages-679-orange.svg)](#)
 [![Version](https://img.shields.io/badge/English%20source-v1.4-blueviolet.svg)](#)
 [![Language](https://img.shields.io/badge/Language-中文-red.svg)](#)
 
@@ -12,7 +12,7 @@
 
 > **本次更新对应英文原书 Version 1.4**，即 arXiv [`2606.24937v3`](https://arxiv.org/abs/2606.24937)（2026-09-29）。中文版在 v1.3 译文基础上增量更新，完整保留原译者成果与署名。
 
-全书 31 章、6 个板块、680 页，并附数学基础附录，系统覆盖了从 Transformer 内部机制、GPU 训练系统、强化学习、对齐方法、推理模型，到智能体编排、图工程、多智能体协作与 Agentic UI 的完整技术栈。v1.4 新增了贯穿全书的**守护天使系统（Guardian Angel System, GAS）**案例、第 20 章「图工程」、数学基础附录、10 道测验题，以及校准决策训练、自进化智能体、智能体安全与网关等专题。中文译本面向希望快速建立"从底层硬件 → 训练算法 → 智能体系统"完整图景的中文读者。
+全书 31 章、6 个板块、679 页，并附数学基础附录，系统覆盖了从 Transformer 内部机制、GPU 训练系统、强化学习、对齐方法、推理模型，到智能体编排、图工程、多智能体协作与 Agentic UI 的完整技术栈。v1.4 新增了贯穿全书的**守护天使系统（Guardian Angel System, GAS）**案例、第 20 章「图工程」、数学基础附录、10 道测验题，以及校准决策训练、自进化智能体、智能体安全与网关等专题。中文译本面向希望快速建立"从底层硬件 → 训练算法 → 智能体系统"完整图景的中文读者。
 
 ---
 

@@ -263,7 +263,7 @@ RAG \emph{不是}微调的替代品。微调教会模型\emph{如何}推理和�
 \label{chunking.}
 
 % Long documents must be split into chunks that fit within the embedding model’s context window (typically 512 tokens) and are semantically coherent. Chunking strategy is one of the highest-impact decisions in RAG system design (see Section~\ref{sec:chunking}).
-长文档必须切分成可放入 Embedding 模型上下文窗口（通常为 512 个 Token）并保持语义连贯的块。分块策略是 RAG 系统设计中影响最大的决策之一（参见 Section~\ref{sec:chunking}）。
+长文档必须切分成可放入 Embedding 模型上下文窗口（通常为 512 个 Token）并保持语义连贯的块。分块策略是 RAG 系统设计中影响最大的决策之一（参见第~\ref{sec:chunking}~节）。
 
 \paragraph{Embedding。}
 \label{embedding.}
@@ -996,7 +996,7 @@ REFRAG 通过三阶段解码策略利用这种结构：
 % \begin{intuitionbox}[Why REFRAG Matters for Agentic RAG]
 \begin{intuitionbox}[REFRAG 为何对智能体 RAG 至关重要]
 % Agentic RAG (Section~\ref{sec:agentic_rag}) requires \emph{multiple} retrieval rounds per query, compounding latency. Efficient decoding methods like REFRAG are essential infrastructure: they make iterative retrieve-reason-generate loops practical at scale by ensuring each round’s decoding cost is sublinear in context length.
-智能体 RAG（Section~\ref{sec:agentic_rag}）需要为每个查询进行\emph{多轮}检索，延迟会累积。REFRAG 这类高效解码方法是必备的基础设施：通过确保每一轮的解码代价相对上下文长度是次线性的，它们使迭代式的检索—推理—生成循环在大规模下具备可行性。
+智能体 RAG（第~\ref{sec:agentic_rag}~节）需要为每个查询进行\emph{多轮}检索，延迟会累积。REFRAG 这类高效解码方法是必备的基础设施：通过确保每一轮的解码代价相对上下文长度是次线性的，它们使迭代式的检索—推理—生成循环在大规模下具备可行性。
 \end{intuitionbox}
 
 \section{智能体 RAG}
@@ -1652,7 +1652,7 @@ pgvector7 & 自托管 & 百万级 & 是 & 是 & 已有 Postgres 用户 \\
 \label{async-parallel-retrieval.}
 
 % Techniques (3) and (4) above compose naturally: cache the query embedding, then fan out retrieval requests to multiple backends concurrently. In a multi-source RAG system (Section~\ref{sec:agentic_rag}), the user query may need results from a vector database, a keyword index, and a web API. Sequential retrieval adds latencies; parallel retrieval pays only the cost of the \emph{slowest} source. Listing~\ref{lst:async_retrieve} demonstrates this pattern using Python’s \texttt{asyncio}---the \texttt{lru\_cache} decorator ensures repeated queries skip the embedding model entirely, while \texttt{asyncio.gather} dispatches all source queries simultaneously.
-上述技术 (3) 和 (4) 天然可组合：缓存查询 Embedding，然后将检索请求扇出（fan out）到多个后端并发执行。在多源 RAG 系统（Section~\ref{sec:agentic_rag}）中，用户查询可能需要同时从向量数据库、关键词索引和 Web API 中获取结果。顺序检索会累加延迟；并行检索仅需支付\emph{最慢}来源的代价。Listing~\ref{lst:async_retrieve} 使用 Python 的 \texttt{asyncio} 展示了这一模式——\texttt{lru\_cache} 装饰器确保重复查询完全跳过 Embedding 模型，而 \texttt{asyncio.gather} 同时分派所有来源的查询。
+上述技术 (3) 和 (4) 天然可组合：缓存查询 Embedding，然后将检索请求扇出（fan out）到多个后端并发执行。在多源 RAG 系统（第~\ref{sec:agentic_rag}~节）中，用户查询可能需要同时从向量数据库、关键词索引和 Web API 中获取结果。顺序检索会累加延迟；并行检索仅需支付\emph{最慢}来源的代价。代码清单~\ref{lst:async_retrieve} 使用 Python 的 \texttt{asyncio} 展示了这一模式——\texttt{lru\_cache} 装饰器确保重复查询完全跳过 Embedding 模型，而 \texttt{asyncio.gather} 同时分派所有来源的查询。
 
 \begin{lstlisting}[style=pythonstyle, caption={面向低延迟的异步并行检索}, label=lst:async_retrieve]
 import asyncio
@@ -1715,7 +1715,7 @@ async def parallel_retrieve(
 \label{implementation.}
 
 % Listing~\ref{lst:incremental_index} shows a minimal \texttt{RAGIndexManager} class that encapsulates upsert and expiration logic, suitable for wrapping any vector store with metadata filtering support.
-Listing~\ref{lst:incremental_index} 展示了一个最小化的 \texttt{RAGIndexManager} 类，封装了 upsert 与过期逻辑，适合包装任何支持元数据过滤的向量存储。
+代码清单~\ref{lst:incremental_index} 展示了一个最小化的 \texttt{RAGIndexManager} 类，封装了 upsert 与过期逻辑，适合包装任何支持元数据过滤的向量存储。
 
 \begin{lstlisting}[style=pythonstyle, caption={带版本管理的增量索引更新}, label={lst:incremental_index}]
 class RAGIndexManager:

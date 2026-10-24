@@ -63,12 +63,21 @@
 
 - **p110 标题孤行**：投机解码 1.15.2 标题与表 1.19 原被浮动体分离；将表改为 `[H]`，配合 `\Needspace` 与 `\footnotesize`，标题和表格同页，p111 从 1.15.3 开始。
 - **p595 大块空白**：`\flushbottom` 会把两个 `questionbox` 之间唯一的可伸缩胶水拉大；加入 `\raggedbottom` 后 Q19/Q20 紧接排列，页面重排至 p594。
-- **同类孤行**：第 28 章 28.5“生成式 UI”标题原在 p567 页底，加入 `\Needspace` 后移至下一页。
+- **同类孤行**：第 28 章 28.5“生成式 UI”标题原在 p568 页底，加入 `\Needspace` 后移至下一页。
 - **结构标签中文化**：目录、第 I 部分、第 N 章、图、表、代码清单、附录 A、参考文献；同时修正正文中硬编码的 `Chapter~\ref` / `Table~\ref`。
 - **术语小修**：`part1.tex` 的“System 消息”改为“系统消息”；`qa/terminology.md` 增加 `时延` 子串替换警告。
 - **CI**：固定 `texlive/texlive:TL2025-historic`，安装 `make`，BibTeX 失败不再被 `-` 忽略，增加字体存在性与构建日志检查；push 触发分支加入 `update-latest-zh`。
 
 复验报告中的 OpenRLHF 版本 URL、errata 日期与 GRPO 可选措辞已在上一轮关闭；上述 p110/p595/CI 项本轮关闭。
+
+## 第七轮：发布前收尾（2026-10-24）
+
+- **README**：页数 badge 与正文由 680 改为 679。
+- **结构引用**：正文残留的 5 处 `Section~\ref` 改为“第~\ref~节”，2 处 `Listing~\ref` 改为“代码清单~\ref”。
+- **目录间距**：加宽 `\l@section` / `\l@subsection` 的编号盒（3.0em / 4.2em），修复 `11.10网络…`、`29.10系统…` 等五位章节号与标题粘连。
+- **文档**：修正 `CLAUDE.md` 的字体回退、overfull 位置与勘误文档指向，更新 CI/build 说明；`qa/source-errata.md` 的 28.5 页码改为 p568。
+- **build.py**：增加 `book.blg` 错误门禁；普通构建后保留 `book.log`/`book.blg`，其余中间文件仍清理；`--keep` 额外保留 `.aux`/`.toc`。
+- **入库**：`CLAUDE.md`、`qa/independent-review.md` 纳入版本控制。
 
 ## 说明
 
