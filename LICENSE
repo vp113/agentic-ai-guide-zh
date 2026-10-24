@@ -12,20 +12,32 @@ Chinese translation:
     Copyright (c) 2026 Chasing1020 (Jiancong Zhu)
     Licensed under CC BY-SA 4.0 (the same license as the original work).
 
-This translation was produced with the assistance of large language
-models and reviewed by the translator. Any translation errors are the
-responsibility of the translator, not the original author. The original
-author has not officially endorsed or reviewed this translation.
+Revised edition:
+    Copyright (c) 2026 Rhys Lin (@vp113)
+    Independently maintained; licensed under CC BY-SA 4.0.
+
+This translation and revised edition were produced with the assistance of
+large language models. Quality is controlled through independent review,
+automated checks, and targeted manual review of key pages; this revision
+does not claim that all 679 pages were manually proofread, and errors may
+remain. Revision errors are the responsibility of the revision maintainer,
+not the original author or translator. Neither the original author nor the
+original translator has officially endorsed or reviewed this revised
+edition.
 
 If you redistribute or build upon this translation, you must:
-  1. Give appropriate credit to BOTH the original author (Haggai Roitman)
-     and the translator (Chasing1020 / Jiancong Zhu).
+  1. Give appropriate credit to the original author (Haggai Roitman), the
+     translator (Chasing1020 / Jiancong Zhu), and the revision maintainer
+     (Rhys Lin / @vp113).
   2. Provide a link to this license.
   3. Indicate if any changes were made.
   4. Distribute your derivative work under the same CC BY-SA 4.0 license.
 
-Source repository:
+Original source repository:
     https://github.com/Chasing1020/agentic-ai-guide-zh
+
+Revised edition repository:
+    https://github.com/vp113/agentic-ai-guide-zh-vp113
 
 =======================================================================
 Full license text (CC BY-SA 4.0)

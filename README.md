@@ -10,14 +10,19 @@
 
 ## 版本与署名
 
-- **原著**：Haggai Roitman，*The Hitchhiker's Guide to Agentic AI: From Foundations to Systems*
-- **原中文翻译**：Jiancong Zhu（[@Chasing1020](https://github.com/Chasing1020)）
-- **修订与维护**：[@vp113](https://github.com/vp113)
+- **原著 / Original author**：Haggai Roitman，*The Hitchhiker's Guide to Agentic AI: From Foundations to Systems*
+- **原中文翻译 / Original Chinese translation**：Jiancong Zhu（[@Chasing1020](https://github.com/Chasing1020)）
+- **修订与维护 / Revision and maintenance**：Rhys Lin（[@vp113](https://github.com/vp113)）
 - **项目仓库**：[vp113/agentic-ai-guide-zh-vp113](https://github.com/vp113/agentic-ai-guide-zh-vp113)
+- **原中文项目**：[Chasing1020/agentic-ai-guide-zh](https://github.com/Chasing1020/agentic-ai-guide-zh)
 
-本项目是 @vp113 基于原中文译本独立维护的**中文修订版**，不是官方版本。修订内容、观点与表述不代表原作者 Haggai Roitman 或原译者 Jiancong Zhu 的认可；原作者的著作权、原译者的署名与 CC BY-SA 4.0 许可继续保留。
+本项目是 Rhys Lin（@vp113）基于原中文译本独立维护的**中文修订版**，不是官方版本，也不代表原作者 Haggai Roitman 或原译者 Jiancong Zhu 对本修订版的认可。原作者的著作权、原译者的署名与 CC BY-SA 4.0 许可继续保留。
 
-本修订版作为原作的衍生作品，依据 **CC BY-SA 4.0** 许可证发布。原中文译本见 [Chasing1020/agentic-ai-guide-zh](https://github.com/Chasing1020/agentic-ai-guide-zh)。
+本修订版依据 **CC BY-SA 4.0** 发布。
+
+### 质量与 AI 辅助
+
+本项目在翻译、勘误与开发过程中使用 AI 辅助。质量通过独立复验、自动检查（构建日志、引用与字体检查）以及重点页面人工审阅控制；**未对全书 679 页逐字人工校对**，仍可能存在错误，欢迎通过 Issues 反馈。
 
 > **本次修订对应英文原书 Version 1.4**，即 arXiv [`2606.24937v3`](https://arxiv.org/abs/2606.24937)（2026-09-29）。中文文本在原 v1.3 译文基础上增量更新，并经过术语、勘误、结构标签与排版修订；原译者成果与署名完整保留。
 
@@ -125,8 +130,6 @@ make distclean            # 有 make 的环境
 - 推送 `v*` 标签（例如 `v1.4-zh.1`）时，自动创建 GitHub Release 并附上 `agentic-ai-guide-zh.pdf`，读者可直接下载。
 - 构建使用 TeX Live 容器 + Noto CJK 字体，与本地 `make dist` 使用同一套源码和构建顺序。
 
-本修订版由 [@vp113](https://github.com/vp113) 基于原中文项目独立维护，原译者 **Jiancong Zhu（@Chasing1020）** 的译文与署名完整保留。本修订版不是官方版本，不代表原作者或原译者的认可。
-
 ---
 
 ## 📜 版权与许可
@@ -143,9 +146,9 @@ make distclean            # 有 make 的环境
 - **署名**：必须给出**原作者 Haggai Roitman**、**原中文翻译 Jiancong Zhu（@Chasing1020）** 与**修订维护 @vp113** 的署名，提供本许可证的链接，并指明是否做了修改。
 - **相同方式共享**（ShareAlike）：如果您再分发或基于本材料创作新作品，必须以**相同的 CC BY-SA 4.0** 许可证发布。
 
-📌 **关于原作权利**：原作《The Hitchhiker's Guide to Agentic AI: From Foundations to Systems》的全部版权归原作者 **Haggai Roitman** 所有。本修订版未受到原作者或原译者的官方背书或审定；修订内容由 @vp113 负责，与原作者、原译者无关。
+📌 **关于原作权利**：原作《The Hitchhiker's Guide to Agentic AI: From Foundations to Systems》的全部版权归原作者 **Haggai Roitman** 所有；修订内容由 Rhys Lin（@vp113）负责。
 
-📌 **关于 AI 辅助**：本修订版在原中文翻译的基础上修订；翻译与修订过程使用大语言模型作为辅助工具，所有内容尽最大努力做了人工审校。
+完整许可证文本见 [LICENSE](LICENSE)。
 
 ---
 
