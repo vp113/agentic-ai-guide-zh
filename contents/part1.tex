@@ -3,8 +3,30 @@
 \chapter{LLM 架构与优化方法}
 \label{llm-architecture-and-optimization-methods}
 
-% This section covers the foundational architecture of large language models and the key optimization techniques that make training and inference efficient. Topics are ordered as a curriculum: we begin with the transformer itself, then cover how to train it efficiently, how to adapt it cheaply, how to compress it, how to scale it, and how to accelerate its inference.
-本部分覆盖大语言模型的基础架构，以及让训练和推理高效化的关键优化技术。内容按课程顺序组织：先介绍 Transformer 本身，然后讨论如何高效训练、如何低成本适配、如何压缩、如何扩展规模，以及如何加速推理。
+\begin{keybox}[GAS 关联 —— LLM 架构与优化方法]
+守护天使系统（Guardian Angel System, GAS）在其智能体栈的每一层都依赖语言模型，而接下来的章节所讨论的架构选择，直接决定了哪种模型适合承担哪种角色。
+
+\textbf{分词（\hyperref[sec:tokenization]{\S~分词（Tokenization）}）}。
+Monitor 智能体处理以结构化文本 token 编码的连续血糖读数（例如 \texttt{[CGM: 142 mg/dL, trend: rising, delta: +8]}）。选择一个把数值当作单个 token、而不是把各位数字拆开的分词器，对于准确进行趋势推理至关重要。GAS 通过 Ollama 使用 Llama-3 分词器，它能很好地处理小数。
+
+\textbf{Transformer 架构（\hyperref[the-transformer-architecture]{\S~Transformer 架构}）}。
+Advisor 智能体的多头注意力机制，使其能够在一次前向传播中同时关注患者当前的血糖读数、检索到的临床指南和饮食日志——三个不同的信息源。理解注意力头如何专门化（有些追踪近期性，有些追踪幅度），有助于你解释 Advisor 为何有时会忽略一条技术上相关、但在上下文中相距较远的指南。
+
+\textbf{LoRA 微调（\hyperref[lora-and-parameter-efficient-fine-tuning]{\S~LoRA 与参数高效微调}）}。
+GAS 原型通过 Ollama 运行在共享的 \texttt{llama3.2:3b} 基座模型上，没有对每个智能体单独微调。\texttt{part2\_rl\_methods/ch04\_rl\_for\_lms/notebook.ipynb} 中的本章 notebook 演示了如何应用 LoRA 适配器（秩 $r=16$）来让基座模型专门化以处理临床任务——生产部署中微调 GAS 各智能体时也会使用同一技术。
+
+\textbf{模型压缩（\hyperref[model-compression-methods]{\S~模型压缩方法}）}。
+GAS 通过 Ollama 使用 4-bit GGUF 量化（Q4\_K\_M），使所有智能体都能在单块消费级 GPU 上运行。\texttt{capstone\_gas/gas\_system.py} 中的 \texttt{GASLLMClient} 会自动检测可用后端（OpenAI $\to$ Anthropic $\to$ Ollama $\to$ Mock），并优雅回退，因此即使没有 GPU，系统也能运行。
+
+\textbf{提示工程（\hyperref[sec:prompt-engineering]{\S~提示工程}）}。
+\texttt{capstone\_gas/gas\_system.py} 中的每个智能体节点都使用结构化的 System Prompt，其中定义了该智能体的角色、输出格式（带结构化分节的纯文本）以及升级标准。本节中的提示工程模式——角色分配、输出约束、思维链诱导——直接应用于 \texttt{monitor\_node()}、\texttt{advisor\_node()}、\texttt{safety\_node()} 和 \texttt{caregiver\_node()}。
+
+\textbf{安全（\hyperref[sec:safety]{\S~LLM 安全与负责任 AI}）}。
+安全评审器（\texttt{capstone\_gas/gas\_system.py} 中的 \texttt{safety\_node()}）实现基于规则的宪法式检查：它按 0.0--1.0 的尺度为 Advisor 的输出评分，并拒绝那些建议危险胰岛素剂量或轻视关键血糖读数的建议。评分 $\geq 0.7$ 才获批；系统最多重试 2 次，之后升级处理。
+\end{keybox}
+
+% This chapter covers the foundational architecture of large language models and the key optimization techniques that make training and inference efficient. Topics are ordered as a curriculum: we begin with the transformer itself, then cover how to train it efficiently, how to adapt it cheaply, how to compress it, how to scale it, and how to accelerate its inference.
+本章覆盖大语言模型的基础架构，以及让训练和推理高效化的关键优化技术。内容按课程顺序组织：先介绍 Transformer 本身，然后讨论如何高效训练、如何低成本适配、如何压缩、如何扩展规模，以及如何加速推理。
 
 \section{LLM 工作原理：直觉概览}
 \label{how-llms-work-an-intuitive-overview}
@@ -14,6 +36,7 @@
 
 \begin{figure}[ht!]
 \centering
+\resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[
   node distance=0.4cm,
   box/.style={draw, rounded corners=3pt, minimum height=0.9cm, minimum width=1.8cm, align=center, font=\small},
@@ -41,7 +64,7 @@
 
 % Autoregressive loop
 \draw[darr, rounded corners=6pt] (out.south) -- ++(0,-0.7) -| node[below, pos=0.25, font=\scriptsize\itshape] {autoregressive loop (append token to input)} (text.south);
-\end{tikzpicture}
+\end{tikzpicture}}
 % \caption{The LLM pipeline: text is tokenized into subword units, converted to integer IDs, embedded as dense vectors, processed through transformer layers, projected to vocabulary logits, and decoded back to text. The dashed loop shows autoregressive generation---each output token is appended to the input for the next forward pass.}
 \caption{LLM 流水线：文本被分词为子词单元，转换为整数 ID，嵌入为稠密向量，经 Transformer 层处理，投影到词表 logits，最后解码回文本。虚线回路展示自回归生成——每个输出 Token 被追加到输入中作为下一次前向传播的输入。}
 \label{fig:llm-pipeline}
@@ -586,8 +609,8 @@ Q = XW_Q, \quad K = XW_K, \quad V = XW_V \quad (W_Q, W_K, W_V \in \mathbb{R}^{d 
   \item \textbf{稀疏注意力模式}：将局部窗口与周期性的全局 Token 结合（例如，每隔 512 个 Token 关注全部）。BigBird~\cite{zaheer2020bigbird} 和 LongT5~\cite{guo2022longt5} 使用此方法。以 $O(n\sqrt{n})$ 代价保留一些长程连通性。同样，FlashAttention 作为非零注意力块的底层内核。
   % \item \textbf{Linear attention / state-space models}: Replace $\text{softmax}(QK^T)V$ with $\phi(Q)(\phi(K)^T V)$ using associativity, or reformulate as a recurrence (Mamba~\cite{gu2023mamba}, RWKV~\cite{peng2023rwkv}). Theoretically $O(n \cdot d^2)$ total. Unlike approaches 2--3 above, these are \emph{architectural replacements} that alter model expressiveness---softmax-free attention is fundamentally less expressive, and empirically these models still lag behind transformers on tasks requiring precise long-range retrieval or complex reasoning.
   \item \textbf{线性注意力 / 状态空间模型}：利用结合律将 $\text{softmax}(QK^T)V$ 替换为 $\phi(Q)(\phi(K)^T V)$，或重构为递归形式（Mamba~\cite{gu2023mamba}、RWKV~\cite{peng2023rwkv}）。理论上总代价为 $O(n \cdot d^2)$。与上面方法 2--3 不同，这些是\emph{架构上的替换}，改变了模型的表达能力——无 Softmax 的注意力本质上表达力更弱，经验上这些模型在需要精确长程检索或复杂推理的任务上仍然落后于 Transformer。
-  % \item \textbf{KV cache compression}: At inference, compress or evict old KV pairs to bound memory. Techniques include: H$_2$O~\cite{zhang2023h2o} (heavy-hitter oracle---keep only high-attention keys), StreamingLLM~\cite{xiao2024streamingllm} (keep initial ``attention sink'' tokens + recent window), and quantized KV caches~\cite{liu2024kivi}.
-  \item \textbf{KV 缓存压缩}：在推理时，压缩或驱逐旧的 KV 对以限制内存。技术包括：H$_2$O~\cite{zhang2023h2o}（重击者预言机——只保留高注意力的 Key）、StreamingLLM~\cite{xiao2024streamingllm}（保留初始``注意力陷阱（Attention Sink）''Token + 最近窗口），以及量化 KV 缓存~\cite{liu2024kivi}。
+  % \item \textbf{KV cache compression}: At inference, compress or evict old KV pairs to bound memory. Techniques include: H$_2$O~\cite{zhang2023h2o} (heavy-hitter oracle---keep only high-attention keys), StreamingLLM~\cite{xiao2024efficient} (keep initial ``attention sink'' tokens + recent window), and quantized KV caches~\cite{liu2024kivi}.
+  \item \textbf{KV 缓存压缩}：在推理时，压缩或驱逐旧的 KV 对以限制内存。技术包括：H$_2$O~\cite{zhang2023h2o}（重击者判据——只保留高注意力的 Key）、StreamingLLM~\cite{xiao2024efficient}（保留初始``注意力汇点（Attention Sink）''Token + 最近窗口），以及量化 KV 缓存~\cite{liu2024kivi}。
 \end{enumerate}
 
 \begin{intuitionbox}[FlashAttention + 稀疏模式 = 两全其美]
@@ -923,7 +946,7 @@ DeepSeek-V3~\cite{deepseekv3} & 671B (37B 活跃) & 61 & 7168 & 128 & MLA & 128K
 % While the attention mechanism is powerful, it exhibits systematic failure modes that practitioners must understand---especially when scaling to long contexts or interpreting model behaviour.
 虽然注意力机制功能强大，但它表现出实践者必须理解的系统性失败模式——特别是在扩展到长上下文或解释模型行为时。
 
-\subsubsection{注意力陷阱（Attention Sink）}
+\subsubsection{注意力汇点（Attention Sink）}
 \label{attention-sink}
 
 \paragraph{现象。}
@@ -936,7 +959,7 @@ Xiao 等~\cite{xiao2024efficient} 发现 Transformer 模型对序列中的\emph{
 \label{why-it-happens.}
 
 % Softmax attention must produce a valid probability distribution ($\sum_j \alpha_j = 1$). When no key is particularly relevant to a query, the model needs a ``dump'' location for unused attention mass. During training, the first token becomes this default sink because it is always present and positionally predictable. It functions as a \emph{no-op attention target}---the model has learned to route irrelevant attention there rather than distributing it unpredictably.
-Softmax 注意力必须产生有效的概率分布（$\sum_j \alpha_j = 1$）。当没有 Key 对 Query 特别相关时，模型需要一个``倾倒''位置来安放未使用的注意力质量。在训练期间，第一个 Token 成为这个默认陷阱，因为它总是存在且在位置上可预测。它作为一个\emph{无操作的注意力目标}——模型已经学会将不相关的注意力路由到那里，而不是不可预测地分配它。
+Softmax 注意力必须产生有效的概率分布（$\sum_j \alpha_j = 1$）。当没有 Key 对 Query 特别相关时，模型需要一个``倾倒''位置来安放未使用的注意力质量。在训练期间，第一个 Token 成为这个默认汇点，因为它总是存在且在位置上可预测。它作为一个\emph{无操作的注意力目标}——模型已经学会将不相关的注意力路由到那里，而不是不可预测地分配它。
 
 \[
 \alpha_{\text{sink}} = \frac{\exp(q^\top k_0 / \sqrt{d})}{\sum_{j} \exp(q^\top k_j / \sqrt{d})} \gg \frac{1}{n} \quad \text{(even when } k_0 \text{ is semantically irrelevant)}
@@ -947,11 +970,11 @@ Softmax 注意力必须产生有效的概率分布（$\sum_j \alpha_j = 1$）。
 
 \begin{itemize}
   % \item \textbf{Streaming inference failure}: When using sliding-window KV caches, evicting the first token causes perplexity to spike catastrophically---the model loses its attention sink.
-  \item \textbf{流式推理失败}：使用滑动窗口 KV 缓存时，驱逐第一个 Token 会导致困惑度灾难性地飙升——模型失去了它的注意力陷阱。
+  \item \textbf{流式推理失败}：使用滑动窗口 KV 缓存时，驱逐第一个 Token 会导致困惑度灾难性地飙升——模型失去了它的注意力汇点。
   % \item \textbf{Misleading interpretability}: Naive attention visualizations suggest the first token is ``important'' when it is merely a mathematical artefact.
   \item \textbf{误导性的可解释性}：朴素的注意力可视化暗示第一个 Token``重要''，而实际上它只是一种数学伪影。
   % \item \textbf{Context window waste}: The sink token occupies a KV cache slot without carrying useful information.
-  \item \textbf{上下文窗口浪费}：陷阱 Token 占用一个 KV 缓存槽位，却不携带有用信息。
+  \item \textbf{上下文窗口浪费}：汇点 Token 占用一个 KV 缓存槽位，却不携带有用信息。
 \end{itemize}
 
 \paragraph{解决方案。}
@@ -959,9 +982,9 @@ Softmax 注意力必须产生有效的概率分布（$\sum_j \alpha_j = 1$）。
 
 \begin{itemize}
   % \item \textbf{StreamingLLM}~\cite{xiao2024efficient}: Always keep the first $k$ tokens (``attention sinks'') in the KV cache alongside the recent sliding window. Enables infinite-length generation with bounded memory.
-  \item \textbf{StreamingLLM}~\cite{xiao2024efficient}：始终在 KV 缓存中保留前 $k$ 个 Token（``注意力陷阱''）以及最近的滑动窗口。在有界内存下实现无限长度生成。
+  \item \textbf{StreamingLLM}~\cite{xiao2024efficient}：始终在 KV 缓存中保留前 $k$ 个 Token（``注意力汇点''）以及最近的滑动窗口。在有界内存下实现无限长度生成。
   % \item \textbf{Sink tokens by design}: Some models (e.g., Mistral) prepend dedicated sink tokens during training that are explicitly meant to absorb residual attention.
-  \item \textbf{设计上的陷阱 Token}：一些模型（如 Mistral）在训练期间预置专门的陷阱 Token，明确用于吸收残余注意力。
+  \item \textbf{设计上的汇点 Token}：一些模型（如 Mistral）在训练期间预置专门的汇点 Token，明确用于吸收残余注意力。
   % \item \textbf{Softmax alternatives}: Replace softmax with ReLU attention or sigmoid gating, where zero attention is representable without requiring a dump target.
   \item \textbf{Softmax 替代}：用 ReLU 注意力或 Sigmoid 门控替换 Softmax，使零注意力可以表示而无需倾倒目标。
 \end{itemize}
@@ -1001,8 +1024,8 @@ Liu 等~\cite{liu2024lost} 表明 LLM 表现出 U 形检索曲线：放在长上
   \item \textbf{显式检索}：将相关上下文放在提示的开始或结尾；使用 RAG 来避免依赖中间位置。
   % \item \textbf{Long-context training}: Train on long documents with varied placement of key information~\cite{fu2024data}.
   \item \textbf{长上下文训练}：在关键信息位置多样化的长文档上训练~\cite{fu2024data}。
-  % \item \textbf{Hierarchical attention}: Architectures like Mamba~\cite{gu2024mamba} or RWKV that avoid the $O(n^2)$ attention bottleneck entirely.
-  \item \textbf{层次化注意力}：如 Mamba~\cite{gu2024mamba} 或 RWKV 等完全避免 $O(n^2)$ 注意力瓶颈的架构。
+  % \item \textbf{Hierarchical attention}: Architectures like Mamba~\cite{gu2023mamba} or RWKV that avoid the $O(n^2)$ attention bottleneck entirely.
+  \item \textbf{层次化注意力}：如 Mamba~\cite{gu2023mamba} 或 RWKV 等完全避免 $O(n^2)$ 注意力瓶颈的架构。
   % \item \textbf{Landmark tokens}: Insert retrievable markers in the context that act as ``signposts'' for attention.
   \item \textbf{地标 Token（Landmark tokens）}：在上下文中插入可检索的标记，作为注意力的``路标''。
   % \item \textbf{Temperature scaling}: Some implementations scale the attention logits by $\log n$ to counteract dilution in long sequences.
@@ -1237,7 +1260,7 @@ P(x_{t+1} | x_{\leq t}) = \text{softmax}(\mathbf{W}_{\text{head}} \cdot \mathbf{
   % \item \textbf{Loss masking}: Only compute loss on the \emph{response} tokens, not the prompt/instruction. The prompt provides context but no gradient signal.
   \item \textbf{损失掩码}：只在\emph{回复}的 token 上计算损失，不计算 prompt/指令部分。Prompt 仅提供上下文，不提供梯度信号。
   % \item \textbf{Conditioning}: The model learns to generate responses \emph{conditioned on} specific instruction formats (system prompts, user queries, tool calls).
-  \item \textbf{条件化}：模型学会在特定指令格式（system prompt、用户查询、工具调用）的\emph{条件下}生成回复。
+  \item \textbf{条件化}：模型学会在特定指令格式（System Prompt、用户查询、工具调用）的\emph{条件下}生成回复。
   % \item \textbf{Format tokens}: Special tokens (\texttt{<|user|>}, \texttt{<|assistant|>}) guide the model to produce structured outputs.
   \item \textbf{格式 token}：特殊 token（\texttt{<|user|>}、\texttt{<|assistant|>}）引导模型产生结构化输出。
   % \item \textbf{Used during}: SFT on curated instruction-response pairs; also during RL policy generation (the policy head that produces actions/responses).
@@ -1441,7 +1464,7 @@ reward_score = reward_model(**inputs).logits  # 形状：(batch, 1)
   % \item \textbf{Noise as regularization}: The stochastic noise helps escape sharp local minima, finding flatter regions that generalize better.
   \item \textbf{噪声即正则化}：随机噪声有助于逃离尖锐的局部极小值，找到泛化性更好的平坦区域。
   % \item \textbf{GPU utilization}: Mini-batches are large enough to saturate GPU parallelism (matrix multiplications become compute-bound rather than memory-bound).
-  \item \textbf{GPU 利用率}：小批量足够大，能充分占满 GPU 并行度（矩阵乘法变为计算受限而非显存受限）。
+  \item \textbf{GPU 利用率}：小批量足够大，能充分占满 GPU 并行度（矩阵乘法变为计算受限，而不再受内存带宽限制）。
   % \item \textbf{Convergence}: Theoretically converges to a local minimum at rate $O(1/\sqrt{T})$ (slower than exact GD’s $O(1/T)$, but each step is millions of times cheaper).
   \item \textbf{收敛性}：理论上以 $O(1/\sqrt{T})$ 的速率收敛到局部极小值（比精确 GD 的 $O(1/T)$ 慢，但每步开销便宜数百万倍）。
 \end{itemize}
@@ -1551,7 +1574,7 @@ AdamW（Loshchilov \& Hutter, 2017）将权重衰减\emph{直接}作用于参数
   - \eta \lambda \theta_t
 \]
 % The weight decay term $\eta \lambda \theta_t$ is not divided by $\sqrt{\hat{v}_t}$. This gives uniform regularization across all parameters regardless of their gradient history.
-权重衰减项 $\eta \lambda \theta_t$ 不再被 $\sqrt{\hat{v}_t}$ 缩放。这样无论参数的梯度历史如何，所有参数都能获得均匀的正则化。
+权重衰减项 $\eta \lambda \theta_t$ 不再除以 $\sqrt{\hat{v}_t}$。这样无论参数的梯度历史如何，所有参数都能获得均匀的正则化。
 
 % \textbf{Typical value:} $\lambda = 0.1$ for LLM training.
 \textbf{典型取值：}LLM 训练时 $\lambda = 0.1$。
@@ -1601,8 +1624,8 @@ Muon 声称相对 AdamW 约有 \textbf{2$\times$ 的算力效率}：以大约一
 % The momentum is clearly shifting toward Muon in large-scale pretraining:
 在大型预训练中，天平明显正在向 Muon 倾斜：
 \begin{itemize}
-  % \item \textbf{GLM-4.5 / GLM-5} (Zhipu AI)~\cite{glm45_2025,glm5_2026}: adopted Muon for pretraining
-  \item \textbf{GLM-4.5 / GLM-5}（智谱 AI）~\cite{glm45_2025,glm5_2026}：预训练采用 Muon
+  % \item \textbf{GLM-4.5 / GLM-5} (Zhipu AI)~\cite{glm45_2025, glm5_2026}: adopted Muon for pretraining
+  \item \textbf{GLM-4.5 / GLM-5}（智谱 AI）~\cite{glm45_2025, glm5_2026}：预训练采用 Muon
   % \item \textbf{Kimi K2} (Moonshot AI)~\cite{kimik2_2025}: uses \textbf{MuonClip}, a variant that adds \emph{QK-Clip}---rescaling query and key projections to cap attention logits and prevent loss spikes. Kimi K2 trained over 15.5T tokens with zero loss spikes, a stability record for models at that scale.
   \item \textbf{Kimi K2}（月之暗面）~\cite{kimik2_2025}：使用 \textbf{MuonClip}——一个加入 \emph{QK-Clip} 的变体，通过重新缩放 query 与 key 投影来限制 attention logits 并防止损失尖峰。Kimi K2 在超过 15.5T token 上训练且零损失尖峰，是该规模模型的稳定性纪录。
   % \item \textbf{DeepSeek-V4} (2026)~\cite{deepseekv4_2026}: adopted Muon for its pretraining run
@@ -2239,7 +2262,7 @@ FA3 在 FP16 Attention 上可达 \textbf{H100 理论峰值的 75\%}，相比之�
 \label{flash-attention-4-blackwell-architecture}
 
 % FlashAttention 4~\cite{zadouri2026flashattention4} targets NVIDIA's Blackwell GPUs (B200/GB200), which double Tensor Core throughput to 2.25 PFLOP/s (BF16) while non-matmul units (exponential, shared memory bandwidth) scale at a slower rate. This \emph{asymmetric hardware scaling} means that the bottleneck shifts: on Blackwell, attention is limited not by matmul but by the softmax exponentials and shared memory traffic surrounding them.
-FlashAttention 4~\cite{zadouri2026flashattention4} 面向 NVIDIA 的 Blackwell GPU（B200/GB200），这类 GPU 将 Tensor Core 吞吐量提高到 2.25 PFLOP/s（BF16），但非矩阵乘法单元（指数运算、共享内存带宽）的扩展速度较慢。这种\emph{非对称的硬件扩展}意味着瓶颈发生了转移：在 Blackwell 上，Attention 的限制因素不再是矩阵乘法，而是 Softmax 指数运算以及围绕它们的共享内存流量。
+FlashAttention 4~\cite{zadouri2026flashattention4} 面向 NVIDIA 的 Blackwell GPU（B200/GB200），这类 GPU 将 Tensor Core 吞吐量翻倍至 2.25 PFLOP/s（BF16），但非矩阵乘法单元（指数运算、共享内存带宽）的扩展速度较慢。这种\emph{非对称的硬件扩展}意味着瓶颈发生了转移：在 Blackwell 上，Attention 的限制因素不再是矩阵乘法，而是 Softmax 指数运算以及围绕它们的共享内存流量。
 
 % FA4 addresses this with four key techniques:
 FA4 通过四项关键技术来应对这一问题：
@@ -2511,7 +2534,7 @@ Meta 的原生 PyTorch 微调库（2025 年开发逐步收尾），其设计围�
 \begin{keybox}[选择效率栈]
 \begin{itemize}
   % \item \textbf{Quick LoRA/QLoRA on $\leq$1 GPU}: Unsloth (fastest time-to-train, minimal setup)
-  \item \textbf{单 GPU（$\leq$1 GPU）上的快速 LoRA/QLoRA}：Unsloth（训练上手最快，配置最少）
+  \item \textbf{单 GPU（$\leq$1 GPU）上的快速 LoRA/QLoRA}：Unsloth（训练耗时最短，配置最少）
   % \item \textbf{Multi-GPU full fine-tune}: TRL/DeepSpeed + Liger Kernel (best throughput at scale)
   \item \textbf{多 GPU 全量微调}：TRL/DeepSpeed + Liger Kernel（大规模下的最佳吞吐）
   % \item \textbf{Research / custom training loops}: torchtune (transparent, hackable, native PyTorch)
@@ -2548,7 +2571,7 @@ Epoch 数 & 大数据集 2--3 个；小型（$<$10K）精选集最多 5 个。�
 % \begin{intuitionbox}[SFT Is Not Enough]
 % SFT teaches format and basic instruction following, but cannot reliably teach: \emph{preference} (which response is better---needs RLHF/DPO), \emph{refusal} (when not to answer---needs safety training), \emph{calibration} (saying ``I don't know''---needs RL with truthfulness rewards), or \emph{complex reasoning} (multi-step chains---needs RL with verifiable rewards). The full pipeline is: Pretrain $\to$ SFT $\to$ RLHF/DPO.
 \begin{intuitionbox}[SFT 还不够]
-SFT 能教会格式和基础的指令遵循，但难以可靠地教会：\emph{偏好}（哪一个回复更好——需要 RLHF/DPO）、\emph{拒绝}（何时不该回答——需要安全训练）、\emph{校准}（说「我不知道」——需要带真实性奖励的 RL）、或\emph{复杂推理}（多步推理链——需要带可验证奖励的 RL）。完整流水线是：Pretrain $\to$ SFT $\to$ RLHF/DPO。
+SFT 能教会格式和基础的指令遵循，但无法可靠地教会：\emph{偏好}（哪一个回复更好——需要 RLHF/DPO）、\emph{拒绝}（何时不该回答——需要安全训练）、\emph{校准}（说「我不知道」——需要带真实性奖励的 RL）、或\emph{复杂推理}（多步推理链——需要带可验证奖励的 RL）。完整流水线是：Pretrain $\to$ SFT $\to$ RLHF/DPO。
 \end{intuitionbox}
 
 \section{LoRA 与参数高效微调}
@@ -3371,11 +3394,11 @@ P'(v | x_{<t}) = \begin{cases}
 \end{keybox}
 
 % \section{Prompt Engineering}
-\section{Prompt 工程}
+\section{提示工程}
 \label{sec:prompt-engineering}
 
 % Prompt engineering is the discipline of designing inputs to LLMs that reliably elicit desired behaviour---without changing model weights. While fine-tuning modifies the model, prompt engineering exploits the model's \emph{existing} capabilities through careful framing, examples, and structure. It is the fastest, cheapest, and most accessible lever for improving LLM outputs, and remains essential even when using fine-tuned models.
-Prompt 工程是一门设计 LLM 输入的学科，目标是在不修改模型权重的情况下可靠地激发预期行为。微调修改的是模型本身，而 Prompt 工程则通过精心的框架、示例与结构来挖掘模型\emph{已有}的能力。它是改善 LLM 输出最快、最便宜、也最易获得的杠杆，即使在使用微调模型时也依然不可或缺。
+提示工程是一门设计 LLM 输入的学科，目标是在不修改模型权重的情况下可靠地激发预期行为。微调修改的是模型本身，而提示工程则通过精心的框架、示例与结构来挖掘模型\emph{已有}的能力。它是改善 LLM 输出最快、最便宜、也最易获得的杠杆，即使在使用微调模型时也依然不可或缺。
 
 % \subsection{In-Context Learning (ICL)}
 \subsection{上下文学习（In-Context Learning，ICL）}
@@ -3532,7 +3555,7 @@ Abstract: [...]
 \label{system-prompts-vs.-user-prompts.}
 
 % Modern chat APIs separate the \emph{system} prompt (persistent instructions, role definition) from the \emph{user} message (per-turn input). System prompts are processed with higher attention priority in most models and provide a natural place for role definitions, constraints, and output format specifications~\cite{openai2023gpt4}.
-现代聊天 API 将\emph{系统} Prompt（持久指令、角色定义）与\emph{用户}消息（每轮输入）分离。多数模型对 system prompt 赋予更高的 attention 优先级，是放置角色定义、约束和输出格式说明的天然位置~\cite{openai2023gpt4}。
+现代聊天 API 将 \emph{System Prompt}（持久指令、角色定义）与\emph{用户}消息（每轮输入）分离。多数模型对 System Prompt 赋予更高的 attention 优先级，是放置角色定义、约束和输出格式说明的天然位置~\cite{openai2023gpt4}。
 
 % \subsection{Structured Output Prompts (JSON/XML)}
 \subsection{结构化输出 Prompt（JSON/XML）}
@@ -3630,7 +3653,7 @@ in the JSON schema provided.
   % \item \textbf{Schema-as-contract}: Including \texttt{output\_schema} in the input mirrors API design patterns the model has seen extensively during pre-training.
   \item \textbf{Schema 即契约}：在输入中加入 \texttt{output\_schema} 复刻了模型在预训练中大量见过的 API 设计模式。
   % \item \textbf{System prompt still essential}: The system message provides \emph{role}, \emph{tone}, and \emph{behavioral constraints} that don't fit naturally in a JSON payload.
-  \item \textbf{System prompt 依然不可或缺}：System 消息提供\emph{角色}、\emph{语气}与\emph{行为约束}，这些内容并不适合放进 JSON 负载里。
+  \item \textbf{System Prompt 依然不可或缺}：系统消息提供\emph{角色}、\emph{语气}与\emph{行为约束}，这些内容并不适合放进 JSON 负载里。
 \end{itemize}
 \end{examplebox}
 
@@ -3794,7 +3817,7 @@ ARQ~\cite{yang2025arq} 解决了标准 Prompting 的一个根本弱点：随着�
 % Based on empirical findings across the literature and practitioner experience, the following principles reliably improve prompt quality:
 基于文献中的实证发现与从业者经验，以下原则能够稳定地提升 Prompt 质量：
 
-\begin{keybox}[Prompt 工程检查清单]
+\begin{keybox}[提示工程检查清单]
 \begin{enumerate}
   % \item \textbf{Be specific and unambiguous}: Replace ``summarize this'' with ``summarize in 2--3 bullet points, each under 20 words, focusing on actionable findings.''
   \item \textbf{具体且无歧义}：把 ``总结一下'' 替换为 ``用 2--3 个要点总结，每条不超过 20 字，聚焦可操作的发现''。
@@ -3827,7 +3850,7 @@ ARQ~\cite{yang2025arq} 解决了标准 Prompting 的一个根本弱点：随着�
 \toprule
 \textbf{失效模式} & \textbf{症状} & \textbf{解决方案} \\
 \midrule
-指令遗忘 & 模型在长 Prompt 中忽略约束 & 把约束放到末尾；重复关键规则；使用 system prompt \\
+指令遗忘 & 模型在长 Prompt 中忽略约束 & 把约束放到末尾；重复关键规则；使用 System Prompt \\
 格式漂移 & 输出开头正确，但在长生成中逐渐崩坏 & 使用约束解码；拆分为多段较短的链式 Prompt \\
 谄媚（Sycophancy） & 模型附和 Prompt 中错误的前提 & 加上 ``若前提不正确请质疑''；使用系统级指令 \\
 细节幻觉 & 模型编造上下文中不存在的事实 & 加上 ``若未知请说不知道''；使用带溯源的 RAG \\
@@ -3836,9 +3859,9 @@ ARQ~\cite{yang2025arq} 解决了标准 Prompting 的一个根本弱点：随着�
 \end{tabularx}
 \end{table}
 
-\begin{intuitionbox}[Prompt 工程的心智模型]
+\begin{intuitionbox}[提示工程的心智模型]
 % Think of prompt engineering as \emph{programming in natural language}. The model is a powerful but literal interpreter---it will do exactly what you ask, interpreted in the most likely way given its training distribution. Common principles from software engineering apply:
-把 Prompt 工程想象成\emph{用自然语言编程}。模型是一个强大但字面化的解释器——它会严格按照你的要求执行，并按其训练分布中最可能的方式去理解。软件工程的常见原则同样适用：
+把提示工程想象成\emph{用自然语言编程}。模型是一个强大但字面化的解释器——它会严格按照你的要求执行，并按其训练分布中最可能的方式去理解。软件工程的常见原则同样适用：
 
 \begin{itemize}
   % \item \textbf{DRY (Don't Repeat Yourself)}: Unless fighting attention decay in long contexts
@@ -4068,7 +4091,7 @@ $T^2$ 因子补偿了软化分布造成的梯度幅度下降。典型取值：$T
   % \item \textbf{Data selection:} Distillation data quality matters; curating diverse, hard examples yields better students than random sampling.
   \item \textbf{数据选择：}蒸馏数据质量很重要；精挑多样化的困难样本比随机采样能产出更好的学生。
   % \item \textbf{Student capacity:} Diminishing returns below $\sim$10\% of teacher parameters; at extreme compression, architecture changes (e.g.~MoE $\to$ dense) may be needed.
-  \item \textbf{学生容量：}学生参数低于教师约 10\% 时收益递减；在极端压缩下可能需要架构变更（例如 MoE $\to$ dense）。
+  \item \textbf{学生容量：}当学生参数量低于教师参数量的约 10\% 时，收益递减；在极端压缩下可能需要架构变更（例如 MoE $\to$ dense）。
   % \item \textbf{Combining with quantization:} Distillation + 4-bit quantization (e.g.~QLoRA-distilled models) achieves near-teacher quality at $20\times$ compression.
   \item \textbf{与量化结合：}蒸馏 + 4-bit 量化（例如 QLoRA 蒸馏模型）能在 $20\times$ 压缩下达到接近教师的质量。
 \end{itemize}
@@ -4116,15 +4139,18 @@ Distilled 8B & 16 GB & 10$\times$ & 80--85\% & 移动、边缘 \\
 \textbf{关键性质}：这一接受/拒绝方案保证最终分布与 $P_{\text{target}}$ 完全一致。
 
 % \textbf{Speedup}: If acceptance rate is $\alpha$, expected tokens per step = $\frac{1 - \alpha^{k+1}}{1 - \alpha}$. At $\alpha=0.8$, $k=5$: expected 3.4 tokens/step vs.~1 for standard decoding.
-\textbf{加速比}：若接受率为 $\alpha$，每步期望 token 数 $= \frac{1 - \alpha^{k+1}}{1 - \alpha}$。在 $\alpha=0.8$、$k=5$ 时：每步期望 3.4 个 token，相较标准解码的 1 个。
+% 勘误（英文 v1.4 有误）：α=0.8、k=5 时 (1-0.8^6)/0.2≈3.69，应为约 3.7。
+\textbf{加速比}：若接受率为 $\alpha$，每步期望 token 数 $= \frac{1 - \alpha^{k+1}}{1 - \alpha}$。在 $\alpha=0.8$、$k=5$ 时：每步期望约 3.7 个 token，相较标准解码的 1 个。
 \end{keybox}
 
 % \subsection{Methods Comparison}
+% Avoid an orphaned subsection heading above the following float.
+\Needspace{12\baselineskip}
 \subsection{方法对比}
 \label{methods-comparison}
 
-\begin{table}[ht!]
-\centering\small
+\begin{table}[H]
+\centering\footnotesize
 % \caption{Speculative decoding methods supported by modern inference engines.}
 \caption{现代推理引擎支持的投机解码方法。}
 \noindent\begin{tabularx}{\linewidth}{@{}l l l Z{1}@{}}
@@ -4268,7 +4294,7 @@ llm = LLM(
 \begin{warningbox}[何时\emph{不}该使用投机解码]
 \begin{itemize}
   % \item \textbf{High batch sizes}: At batch $\geq 64$, generation is already compute-efficient. Speculation adds overhead (draft generation + verification) that doesn't pay off.
-  \item \textbf{高批量}：当 batch $\geq 64$ 时，生成本身已经计算密集。投机解码引入的开销（草稿生成 + 验证）得不偿失。
+  \item \textbf{高批量}：当 batch $\geq 64$ 时，生成本身已经具有很高的计算效率（算力已被充分利用）。投机解码引入的开销（草稿生成 + 验证）得不偿失。
   % \item \textbf{Very different distributions}: If draft model is too dissimilar to target, acceptance rate drops below 50\% and speculation is slower than standard decoding.
   \item \textbf{分布差异过大}：若草稿模型与目标模型差异过大，接受率会跌至 50\% 以下，反而比标准解码更慢。
   % \item \textbf{Short outputs}: For $<$20 token outputs, the setup cost of speculation exceeds savings.
@@ -4439,7 +4465,7 @@ Chuang 等人~\cite{chuang2024dola} 观察到事实知识在 Transformer 较深�
 
 \begin{itemize}
   % \item \textbf{Safety benchmarks}: ToxiGen, RealToxicityPrompts, BBQ (bias), CrowS-Pairs
-  \item \textbf{安全基准}：ToxiGen、RealToxicityPrompts、BBQ（偏见）、CrowS-Pairs
+\item \textbf{安全基准}：ToxiGen~\cite{hartvigsen2022toxigen}（隐式仇恨言论）、RealToxicityPrompts~\cite{gehman2020realtoxicityprompts}（毒性退化）、BBQ~\cite{parrish2022bbq}（问答偏见）、CrowS-Pairs~\cite{nangia2020crows}（掩码语言模型中的社会偏见）
   % \item \textbf{Jailbreak robustness}: GCG attacks~\cite{zou2023universal}, multi-turn jailbreaks, encoded prompts
   \item \textbf{越狱鲁棒性}：GCG 攻击~\cite{zou2023universal}、多轮越狱、编码型 Prompt
   % \item \textbf{Over-refusal rate}: Measure false-positive refusals on benign prompts (target $<$5\%)
@@ -4455,6 +4481,27 @@ Chuang 等人~\cite{chuang2024dola} 观察到事实知识在 Transformer 较深�
 
 \chapter{面向 LLM 的系统基础}
 \label{systems-foundations-for-llms}
+
+\begin{keybox}[GAS 关联 —— 面向 LLM 的系统基础]
+GAS 被设计为在单台开发者机器上运行，但它所做的每一项基础设施决策，都是接下来的章节所述生产系统的一个缩影。
+
+\textbf{GPU 显存管理（\hyperref[gpu-architecture-from-silicon-to-llm-training]{\S~GPU 架构}）}。
+运行 GAS 各智能体需要仔细规划显存预算。\texttt{capstone\_gas/gas\_system.py} 中的 \texttt{GASLLMClient} 使用 Ollama 的 \texttt{num\_predict} 参数，为每次智能体调用强制最大 token 数限制。理解 CUDA 内存分配、张量布局以及模型间上下文切换的开销，对于在多患者部署中调优这一配置至关重要。
+
+\textbf{推理吞吐（\hyperref[vllm-pagedattention-and-high-throughput-inference]{\S~vLLM——分页注意力与高吞吐推理}）}。
+在多患者部署中（例如有 50 名患者的医院病区），GAS 会使用 vLLM 的 PagedAttention，以连续批处理服务所有智能体模型。当前原型使用 Ollama 进行本地开发；\texttt{GASLLMClient} 的后端自动检测使切换到 vLLM 端点变得非常简单，只需设置 \texttt{OPENAI\_API\_BASE} 环境变量。
+
+\textbf{量化与服务（\hyperref[memory-optimization-techniques]{\S~显存优化技术}）}。
+本地开发环境使用 Ollama 对 \texttt{llama3.2:3b} 进行 GGUF Q4\_K\_M 量化。这把模型占用降至 $\sim$2 GB，使完整的 GAS 能在笔记本电脑上运行。量化质量与服务速度之间的权衡，可以通过在 \texttt{capstone\_gas/notebook\_capstone.ipynb} 中比较 Mock、Ollama 和 OpenAI 后端直接观察。
+
+\textbf{延迟预算}。
+GAS 有一项硬性延迟要求：从检测到血糖异常起，完整流水线（\texttt{monitor\_node} $\to$ \texttt{advisor\_node} $\to$ \texttt{safety\_node} $\to$ \texttt{caregiver\_node}）必须在 10 秒内完成。该流水线在 \texttt{capstone\_gas/gas\_system.py} 的 \texttt{build\_gas\_graph()} 中使用 LangGraph 的 \texttt{StateGraph} API 组装。
+
+\textbf{容错}。
+GAS 实现了优雅降级：如果 LLM 后端不可用，\texttt{GASLLMClient} 会回退到基于规则的 Mock 响应。环境变量 \texttt{NOTEBOOK\_TEST\_MODE=1} 会强制启用 Mock 模式，从而在没有 LLM 依赖的情况下进行适合 CI 的测试。
+\end{keybox}
+
+训练和服务大语言模型，既是一项机器学习挑战，也是一项系统工程的挑战。一个 70B 参数的模型需要数百 GB 的内存、数千 GPU 小时的训练，以及在数十个加速器之间精心编排的通信。任何一环出错——次优的并行策略、内存泄漏、配置错误的集合通信操作——都可能决定一次训练是收敛，还是在耗费数天算力后崩溃。本章涵盖让 LLM 成为可能的硬件与软件基础设施：GPU 架构与内存层次、分布式训练策略（数据并行、张量并行与流水线并行），以及基于 vLLM 的高吞吐推理。目标不仅是理解这些系统如何工作，还要培养在它们出问题时进行调试所需的直觉。
 
 \section{GPU 架构——从硅片到 LLM 训练}
 \label{gpu-architecture-from-silicon-to-llm-training}
@@ -4477,7 +4524,8 @@ GPU 和 CPU 代表了根本不同的硬件设计哲学。理解这种差异能�
 \end{itemize}
 
 % Deep learning workloads are dominated by matrix multiplications ($O(n^3)$ operations on $O(n^2)$ data), which are embarrassingly parallel. A single transformer forward pass for a 70B model requires $\sim$140 TFLOP of compute per token -- perfect for GPU throughput.
-深度学习工作负载以矩阵乘法（在 $O(n^2)$ 数据上执行 $O(n^3)$ 操作）为主，这是天然并行的。70B 模型的单次 transformer 前向传播每个 token 需要约 140 TFLOP 计算量——非常适合 GPU 的吞吐能力。
+% 勘误（英文 v1.4 有误）：前向约 2×70e9=140e9 FLOP，即 140 GFLOP，不是 140 TFLOP。
+深度学习工作负载以矩阵乘法（在 $O(n^2)$ 数据上执行 $O(n^3)$ 操作）为主，这是天然并行的。70B 模型的单次 transformer 前向传播每个 token 需要约 140 GFLOP 计算量——非常适合 GPU 的吞吐能力。
 \end{intuitionbox}
 
 \subsection{NVIDIA GPU 微架构代际演进}
@@ -4729,7 +4777,8 @@ I = \frac{4n^2 d}{4 \cdot n \cdot d \cdot 2} = \frac{n}{2} = \frac{4096}{2} = 20
 \]
 
 % This is $13\times$ above the ridge point (156) --- \textbf{deeply compute-bound}. The GPU hits its peak 312 TFLOPS, needing only $312\text{T}/2048 \approx 152$ GB/s of bandwidth (7.6\% of HBM capacity). Memory is no longer the bottleneck.
-这比脊点（156）高出 $13\times$——\textbf{深度计算密集}。GPU 跑满峰值 312 TFLOPS，只需要 $312\text{T}/2048 \approx 152$ GB/s 带宽（HBM 容量的 7.6\%）。内存不再是瓶颈。
+% 勘误（英文 v1.4 有误）：152 GB/s 是 A100 HBM 带宽（约 2 TB/s）的 7.6%，与 HBM 容量无关。
+这比脊点（156）高出 $13\times$——\textbf{深度计算密集}。GPU 跑满峰值 312 TFLOPS，只需要 $312\text{T}/2048 \approx 152$ GB/s 带宽（HBM 带宽的 7.6\%）。内存不再是瓶颈。
 \end{examplebox}
 
 \subsection{Attention 是内存密集的；FFN 是计算密集的}
@@ -4787,6 +4836,8 @@ A100 在 108 个 SM 中共有 \textbf{432 个 Tensor Cores}（每个 SM 4 个，
 
 \paragraph{PCIe——主机与设备的链路。}
 \label{pcie-the-host-device-link.}
+
+PCIe（Peripheral Component Interconnect Express）是连接 GPU 与主机 CPU 及系统内存的标准总线。它的带宽直接限制了数据加载到 GPU 的速度，以及结果返回的速度。每一代带宽大约翻一番：
 
 \begin{keybox}[PCIe 各代]
 \begin{center}
@@ -5044,15 +5095,15 @@ vLLM~\cite{kwon2023efficient} 引入了分页注意力（PagedAttention），它
 \label{prefix-sharing-copy-on-write.}
 
 % Multiple sequences sharing a common prefix (e.g., a system prompt) can share the \emph{same physical blocks} for that prefix. The block table simply points multiple sequences to the same physical blocks. When a sequence needs to write to a shared block (diverging from the prefix), a copy-on-write is triggered.
-多条共享同一前缀（例如同一系统提示）的序列可以\emph{共享相同的物理块}来表示该前缀。块表只需让多条序列指向相同的物理块。当某条序列需要写入共享块（与前缀分叉）时，会触发写时复制（Copy-on-Write）。
+多条共享同一前缀（例如同一 System Prompt）的序列可以\emph{共享相同的物理块}来表示该前缀。块表只需让多条序列指向相同的物理块。当某条序列需要写入共享块（与前缀分叉）时，会触发写时复制（Copy-on-Write）。
 
 \begin{intuitionbox}[前缀共享带来的节约]
 % In a chatbot with a 1000-token system prompt serving 128 concurrent users:
-在一个拥有 1000-token 系统提示、服务 128 位并发用户的聊天机器人中：
+在一个拥有 1000-token System Prompt、服务 128 位并发用户的聊天机器人中：
 
 \begin{itemize}
   % \item Without prefix sharing: $128 \times 1000 \times 327{,}680 / 10^9 \approx 42$ GB just for system prompt KV cache
-  \item 无前缀共享：仅系统提示 KV cache 就需 $128 \times 1000 \times 327{,}680 / 10^9 \approx 42$ GB
+  \item 无前缀共享：仅 System Prompt KV cache 就需 $128 \times 1000 \times 327{,}680 / 10^9 \approx 42$ GB
   % \item With prefix sharing: $1 \times 1000 \times 327{,}680 / 10^9 \approx 0.33$ GB
   \item 有前缀共享：$1 \times 1000 \times 327{,}680 / 10^9 \approx 0.33$ GB
   % \item Savings: $\sim$128$\times$ for the shared prefix portion
@@ -5229,7 +5280,7 @@ vLLM 将 PagedAttention 封装在一整套服务栈中：连续批处理（Conti
 \label{prefix-caching-automatic-prompt-caching}
 
 % When multiple requests share a common prefix (system prompt, few-shot examples):
-当多个请求共享相同前缀（系统 prompt、few-shot 示例）时：
+当多个请求共享相同前缀（System Prompt、few-shot 示例）时：
 
 \begin{enumerate}
   % \item Hash the token content of each logical block.
@@ -5243,13 +5294,13 @@ vLLM 将 PagedAttention 封装在一整套服务栈中：连续批处理（Conti
 \end{enumerate}
 
 % \textbf{Impact}: For chat applications with long system prompts (2K+ tokens shared across all users), prefix caching reduces TTFT by 60--80\%.
-\textbf{影响}：对于具有长系统提示（2K+ token、所有用户共享）的聊天应用，前缀缓存可降低 TTFT 60--80\%。
+\textbf{影响}：对于具有长 System Prompt（2K+ token、所有用户共享）的聊天应用，前缀缓存可降低 TTFT 60--80\%。
 
 \subsection{vLLM 中的引导（受约束）解码}
 \label{sec:vllm-guided-decoding}
 
 % vLLM natively supports constrained decoding (Section~\ref{sec:constrained-decoding}) through pluggable backends, enabling \emph{guaranteed} structured output at serving time with minimal performance overhead.
-vLLM 通过可插拔的后端原生支持受约束解码（参见 Section~\ref{sec:constrained-decoding}），可以在服务期间以极小的性能开销\emph{保证}结构化输出。
+vLLM 通过可插拔的后端原生支持受约束解码（参见第~\ref{sec:constrained-decoding}~节），可以在服务期间以极小的性能开销\emph{保证}结构化输出。
 
 \paragraph{支持的约束类型。}
 \label{supported-constraint-types.}
@@ -5339,7 +5390,7 @@ vLLM 将掩码计算委托给后端引擎：
 吞吐（tok/s） & 2,500--4,000 & 300--600 & 连续批处理 + PagedAttention \\
 显存利用率 & 90--95\% & 50--60\% & 零碎片，动态块分配 \\
 最大并发序列数 & 200--500 & 16--32 & 分页 KV 消除每序列预留 \\
-首 token 延迟 & 100--300ms & 500--2000ms & 对重复系统提示启用前缀缓存 \\
+首 token 延迟 & 100--300ms & 500--2000ms & 对重复 System Prompt 启用前缀缓存 \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -5352,6 +5403,28 @@ Dynamo~\cite{dynamo2025nvidia} 是 NVIDIA 的开源编排层，位于各推理�
 % \chapter{Introduction to Reinforcement Learning}
 \chapter{强化学习导论}
 \label{sec:rl}
+
+\begin{keybox}[GAS 关联 —— 强化学习导论]
+即便当前原型使用的是基于规则的逻辑而非学习得到的策略，也完全可以借助接下来的章节所引入的 RL 框架来理解 GAS。
+
+\textbf{MDP 建模（\hyperref[the-markov-decision-process-mdp]{\S~马尔可夫决策过程}）}。
+GAS 可以清晰地映射为一个 MDP：
+\begin{itemize}
+  \item \textbf{状态} $s_t$：患者当前的生理上下文——血糖水平（mg/dL）、趋势、近期进食、活动、正在使用的药物，以及过去 30 分钟的 CGM 读数。这就是 \texttt{capstone\_gas/gas\_system.py} 中的 \texttt{GASState} TypedDict。
+  \item \textbf{动作} $a_t$：Supervisor 的路由决策（调用 Monitor、调用 Advisor、发送警报、不做任何事）加上 Advisor 的临床建议（调整基础率、建议加餐、上报医生）。
+  \item \textbf{奖励} $r_t$：一个复合临床奖励——血糖保持在 70--180 mg/dL 目标区间内为正，发生低血糖事件（$<$70 mg/dL）为负，发生严重低血糖（$<$54 mg/dL）为强负值。
+  \item \textbf{转移} $P(s_{t+1}|s_t, a_t)$：患者对所建议动作的生理响应，由 \texttt{shared/patient\_data.py} 中的 \texttt{CGMSimulator} 模拟。
+\end{itemize}
+
+\textbf{奖励塑形（\hyperref[reward-shaping]{\S~奖励塑形（Reward Shaping）}）}。
+原始临床奖励很稀疏——血糖结果只有在干预后 30--60 分钟才能观察到。GAS 使用中间信号：安全评审器的评分（0.0--1.0）提供稠密的逐步反馈。评分 $\geq 0.7$ 才获批，从而给 Advisor 一个连续的奖励信号，而非二值结果。
+
+\textbf{策略梯度直觉（\hyperref[policy-gradient-methods-reinforce]{\S~策略梯度方法}）}。
+Supervisor 的路由逻辑目前是手工编写的策略（LangGraph \texttt{StateGraph} 中的条件边）。RL 框架清楚地指明了改进方向：收集轨迹（路由决策及其结果的序列），计算回报，并更新策略，以提高那些带来良好血糖结果的决策的概率。\texttt{part2\_rl\_methods/} 中的本章 notebook 演示了这一方法。
+
+\textbf{探索与利用}。
+GAS 面临一个临床上的探索-利用困境：它应当推荐已知安全的保守动作（利用），还是尝试可能效果更好的更激进干预（探索）？接下来的章节所述的 $\epsilon$-贪心与 softmax 探索策略，可为 \texttt{GASLLMClient.chat()} 中 Advisor 的温度设置提供依据。
+\end{keybox}
 
 % Reinforcement Learning (RL) is a paradigm where an \textbf{agent} learns to make sequential decisions by interacting with an \textbf{environment}, receiving \textbf{rewards} as feedback, and optimizing its \textbf{policy} to maximize cumulative reward over time~\cite{sutton2018reinforcement}. Unlike supervised learning (which requires labeled input-output pairs), RL discovers optimal behavior through \emph{trial and error}.
 强化学习（Reinforcement Learning，RL）是一种范式，其中\textbf{智能体（agent）}通过与\textbf{环境（environment）}交互、接收\textbf{奖励（rewards）}作为反馈，并优化其\textbf{策略（policy）}以最大化长期累积奖励来学习做出序贯决策~\cite{sutton2018reinforcement}。与监督学习（需要带标签的输入-输出对）不同，RL 通过\emph{试错（trial and error）}来发现最优行为。
@@ -5894,6 +5967,7 @@ $\nabla_\theta \log \pi_\theta(a_t|s_t)$ 是提升动作 $a_t$ 概率的方向�
 % \section{Generalized Advantage Estimation (GAE)}
 \section{广义优势估计（Generalized Advantage Estimation，GAE）}
 \label{generalized-advantage-estimation-gae}
+\label{gae-generalised-advantage-estimation}
 
 % \textbf{Motivation}: The Actor-Critic framework needs a good estimate of the advantage $A(s,a) = Q(s,a) - V(s)$ --- how much better was this action than average? But there's a fundamental tension:
 \textbf{动机}：Actor-Critic 框架需要对优势 $A(s,a) = Q(s,a) - V(s)$ 进行良好估计——这个动作比平均水平好多少？但这里存在根本性的张力：

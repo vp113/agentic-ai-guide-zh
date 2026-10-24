@@ -1,0 +1,257 @@
+\chapter{数学基础}
+\label{app:math-background}
+
+本附录汇集了全书所假定的数学预备知识。这里不给出推导；目标在于提供一份紧凑的参考，使读者能够在进入正文之前识别自己的知识缺口并加以补齐。每一节都指出了该概念使用最密集的章节。
+
+%% ---------------------------------------------------------------
+\section{线性代数}
+\label{app:linear-algebra}
+
+\emph{用于：第 1--3 章（注意力、嵌入、权重矩阵），第 2 章（GPU 显存），第 4--12 章（策略梯度推导）。}
+
+\paragraph{向量。}
+一个\textbf{向量} $\mathbf{x} \in \mathbb{R}^n$ 是 $n$ 个实数的有序列表，写作列向量：
+\[
+\mathbf{x} = \begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{bmatrix}
+\]
+向量支持逐元素加法（$\mathbf{x} + \mathbf{y}$）与标量乘法（$c\mathbf{x}$）。在 LLM 中，Token 嵌入、隐藏状态以及注意力的查询/键/值都是向量。
+
+\paragraph{矩阵。}
+一个\textbf{矩阵} $\mathbf{A} \in \mathbb{R}^{m \times n}$ 有 $m$ 行 $n$ 列。元素 $A_{ij}$ 位于第 $i$ 行、第 $j$ 列。\textbf{转置} $\mathbf{A}^\top \in \mathbb{R}^{n \times m}$ 交换行与列：$(\mathbf{A}^\top)_{ij} = A_{ji}$。Transformer 层中的权重矩阵（$\mathbf{W}_Q$、$\mathbf{W}_K$、$\mathbf{W}_V$、$\mathbf{W}_O$、$\mathbf{W}_{\mathrm{ff}}$）都是矩阵。
+
+\paragraph{矩阵乘法。}
+乘积 $\mathbf{C} = \mathbf{A}\mathbf{B}$ 要求 $\mathbf{A} \in \mathbb{R}^{m \times k}$ 且 $\mathbf{B} \in \mathbb{R}^{k \times n}$，得到 $\mathbf{C} \in \mathbb{R}^{m \times n}$：
+\[
+C_{ij} = \sum_{l=1}^{k} A_{il} B_{lj}
+\]
+矩阵—向量乘法 $\mathbf{A}\mathbf{x}$（其中 $\mathbf{A} \in \mathbb{R}^{m \times k}$、$\mathbf{x} \in \mathbb{R}^k$）是把 $\mathbf{x}$ 视为 $k \times 1$ 矩阵（即乘积记号中 $n=1$）的特例，产生 $\mathbb{R}^m$ 中的向量。这是每个线性层中的核心运算：$\mathbf{h} = \mathbf{W}\mathbf{x} + \mathbf{b}$。
+
+\textbf{关键恒等式：}
+\begin{align}
+(\mathbf{A}\mathbf{B})^\top &= \mathbf{B}^\top\mathbf{A}^\top \\
+(\mathbf{A}\mathbf{B})\mathbf{C} &= \mathbf{A}(\mathbf{B}\mathbf{C}) \quad \text{（结合律）} \\
+(\mathbf{A}\mathbf{B})^{-1} &= \mathbf{B}^{-1}\mathbf{A}^{-1} \quad \text{（当逆存在时）}
+\end{align}
+注意：矩阵乘法一般\emph{不}满足交换律（$\mathbf{A}\mathbf{B} \neq \mathbf{B}\mathbf{A}$）。
+
+\paragraph{特殊矩阵。}
+\begin{itemize}
+  \item \textbf{单位矩阵} $\mathbf{I}_n$：对角元素为 1，其余元素均为 0。$\mathbf{A}\mathbf{I} = \mathbf{I}\mathbf{A} = \mathbf{A}$。
+  \item \textbf{对角矩阵}：仅主对角线上有非零元素。即缩放操作。
+  \item \textbf{对称矩阵}：$\mathbf{A} = \mathbf{A}^\top$。协方差矩阵与 Gram 矩阵都是对称的。
+  \item \textbf{正交矩阵}：$\mathbf{Q}^\top\mathbf{Q} = \mathbf{Q}\mathbf{Q}^\top = \mathbf{I}$。各列是标准正交的。正交变换保持长度与角度（旋转、反射）。
+  \item \textbf{半正定（Positive Semi-Definite, PSD）}：对于对称矩阵 $\mathbf{A}$，若对所有 $\mathbf{x}$ 都有 $\mathbf{x}^\top\mathbf{A}\mathbf{x} \geq 0$，则 $\mathbf{A}$ 为半正定；等价地，其所有特征值均 $\geq 0$。协方差矩阵与 Gram 矩阵都是对称半正定的；注意力得分矩阵一般不对称，因此通常不具有这一性质。
+\end{itemize}
+
+\paragraph{点积与内积。}
+两个向量 $\mathbf{x}, \mathbf{y} \in \mathbb{R}^n$ 的\textbf{点积}：
+\[
+\mathbf{x} \cdot \mathbf{y} = \mathbf{x}^\top \mathbf{y} = \sum_{i=1}^n x_i y_i
+\]
+它度量对齐程度：两向量方向相同时为正，正交时为零，方向相反时为负。Transformer 中的\textbf{缩放点积注意力}计算 $\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}}$，这是一个由所有查询—键对之间的点积构成的矩阵。
+
+\paragraph{范数。}
+一个\textbf{范数} $\|\cdot\|$ 度量向量的大小。最常见的几种：
+\begin{itemize}
+  \item $\ell_1$ 范数：$\|\mathbf{x}\|_1 = \sum_i |x_i|$（绝对值之和；促进稀疏性）
+  \item $\ell_2$ 范数（欧几里得范数）：$\|\mathbf{x}\|_2 = \sqrt{\sum_i x_i^2} = \sqrt{\mathbf{x}^\top\mathbf{x}}$（几何长度）
+  \item $\ell_\infty$ 范数：$\|\mathbf{x}\|_\infty = \max_i |x_i|$（绝对值最大的元素）
+\end{itemize}
+$\ell_2$ 范数出现在权重衰减正则化（$\lambda\|\theta\|_2^2$）、梯度裁剪以及 RMS 归一化中（RMSNorm 除以 $\|\mathbf{x}\|_2 / \sqrt{n}$）。
+
+\paragraph{余弦相似度。}
+\[
+\cos(\mathbf{x}, \mathbf{y}) = \frac{\mathbf{x}^\top \mathbf{y}}{\|\mathbf{x}\|_2 \|\mathbf{y}\|_2} \in [-1, 1]
+\]
+取值 $+1$：方向相同。取值 $0$：正交。取值 $-1$：方向相反。用于嵌入检索（RAG，第~16 章）与相似度搜索。
+
+\paragraph{线性无关性与秩。}
+若向量 $\mathbf{v}_1, \ldots, \mathbf{v}_k$ 中没有任何一个可以写成其余向量的线性组合，则它们是\textbf{线性无关}的。矩阵 $\mathbf{A}$ 的\textbf{秩}是线性无关的行（或列）的最大数目。若 $\mathrm{rank}(\mathbf{A}) = \min(m, n)$，则矩阵是\textbf{满秩}的。低秩结构是 LoRA（第~1 章）的核心：权重更新 $\Delta\mathbf{W} = \mathbf{B}\mathbf{A}$ 被约束为秩 $r \ll \min(m,n)$，从而大幅减少可训练参数。
+
+\paragraph{特征值与特征向量。}
+对于方阵 $\mathbf{A} \in \mathbb{R}^{n \times n}$，若非零向量 $\mathbf{v}$ 满足下式，则它是\textbf{特征值}为 $\lambda$ 的\textbf{特征向量}：
+\[
+\mathbf{A}\mathbf{v} = \lambda\mathbf{v}
+\]
+直观地说，$\mathbf{A}$ 只缩放 $\mathbf{v}$，而不旋转它。对称矩阵有 $n$ 个实特征值和相互正交的特征向量。\textbf{特征分解} $\mathbf{A} = \mathbf{Q}\boldsymbol{\Lambda}\mathbf{Q}^\top$（对对称矩阵 $\mathbf{A}$）用其特征向量（$\mathbf{Q}$ 的列）与特征值（$\boldsymbol{\Lambda}$ 的对角线）来表示该矩阵。特征值支配梯度流的稳定性：若损失函数的 Hessian 矩阵具有较大的特征值，训练就会对学习率敏感。
+
+\paragraph{奇异值分解（SVD）。}
+任意矩阵 $\mathbf{A} \in \mathbb{R}^{m \times n}$（不必是方阵）都可以分解为：
+\[
+\mathbf{A} = \mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^\top
+\]
+其中 $\mathbf{U} \in \mathbb{R}^{m \times m}$ 与 $\mathbf{V} \in \mathbb{R}^{n \times n}$ 是正交矩阵，$\boldsymbol{\Sigma} \in \mathbb{R}^{m \times n}$ 是对角矩阵，其非负对角元素 $\sigma_1 \geq \sigma_2 \geq \cdots \geq 0$ 称为\textbf{奇异值}。$\mathbf{U}$ 的各列是\textbf{左奇异向量}；$\mathbf{V}$ 的各列是\textbf{右奇异向量}。
+
+这是 LoRA 的数学基础：预训练权重矩阵具有近似低秩的结构，因此其更新可以被高效地参数化为 $\Delta\mathbf{W} = \mathbf{B}\mathbf{A}$，且 $\mathrm{rank}(\Delta\mathbf{W}) = r$。
+
+\paragraph{张量。}
+\textbf{张量}是向量（1D）与矩阵（2D）的多维推广。三维张量 $\mathcal{X} \in \mathbb{R}^{a \times b \times c}$ 有三个轴。在深度学习中，激活值通常是形状为 $(\text{batch}, \text{sequence}, \text{hidden})$ 的三维张量。注意力得分是四维的：$(\text{batch}, \text{heads}, \text{seq}, \text{seq})$。PyTorch 的 \texttt{torch.Tensor} 与 NumPy 的 \texttt{ndarray} 实现了带有自动广播的张量运算。
+
+\paragraph{广播。}
+当对不同形状的张量进行运算时，\textbf{广播}会自动将大小为 1 的维度扩展至与另一个操作数匹配。例如，将偏置向量 $\mathbf{b} \in \mathbb{R}^d$ 加到一批激活值 $\mathbf{H} \in \mathbb{R}^{B \times d}$ 上，会把 $\mathbf{b}$ 沿 batch 维度广播。理解广播对于阅读和编写高效的 PyTorch 代码至关重要。
+
+\paragraph{迹与行列式。}
+对于方阵 $\mathbf{A} \in \mathbb{R}^{n \times n}$：
+\begin{itemize}
+  \item \textbf{迹}：$\mathrm{tr}(\mathbf{A}) = \sum_i A_{ii}$（对角元素之和 $=$ 特征值之和）。
+  \item \textbf{行列式}：$\det(\mathbf{A})$ 度量线性变换的体积缩放因子。$\det(\mathbf{A}) = 0$ 当且仅当 $\mathbf{A}$ 奇异（不可逆）。$\det(\mathbf{A}) = \prod_i \lambda_i$（特征值之积）。
+\end{itemize}
+
+\paragraph{线性方程组与最小二乘。}
+当 $\mathbf{A}$ 为方阵且满秩时，\textbf{线性方程组} $\mathbf{A}\mathbf{x} = \mathbf{b}$ 有唯一解：$\mathbf{x} = \mathbf{A}^{-1}\mathbf{b}$。当方程组超定（$m > n$）且 $\mathbf{A}$ 列满秩时，\textbf{最小二乘解}最小化 $\|\mathbf{A}\mathbf{x} - \mathbf{b}\|_2^2$：
+\[
+\mathbf{x}^* = (\mathbf{A}^\top\mathbf{A})^{-1}\mathbf{A}^\top\mathbf{b}
+\]
+这就是\textbf{正规方程}。对于线性模型，在平方损失上做梯度下降会收敛到该解。
+
+\paragraph{与注意力的联系。}
+Transformer 中的自注意力机制本质上是一系列线性代数运算：
+\begin{enumerate}
+  \item 投影输入：$\mathbf{Q} = \mathbf{X}\mathbf{W}_Q$，$\mathbf{K} = \mathbf{X}\mathbf{W}_K$，$\mathbf{V} = \mathbf{X}\mathbf{W}_V$ \quad（矩阵乘法）
+  \item 计算得分：$\mathbf{S} = \frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}}$ \quad（缩放点积）
+  \item 归一化：$\mathbf{P} = \mathrm{softmax}(\mathbf{S})$ \quad（逐行 softmax）
+  \item 聚合：$\mathbf{O} = \mathbf{P}\mathbf{V}$ \quad（值向量的加权和）
+\end{enumerate}
+每一步都是线性代数运算。理解矩阵形状以及每个投影矩阵的作用，对于推理注意力头的行为、显存开销，以及 GQA（分组查询注意力）等架构选择的影响，至关重要。
+
+%% ---------------------------------------------------------------
+\section{微积分与自动微分}
+\label{app:calculus}
+
+\emph{用于：第 1--3 章（反向传播），第 4--12 章（策略梯度、损失函数）。}
+
+\emph{第~1 章“优化理论”完整覆盖了梯度下降、SGD、梯度消失/爆炸、混合精度训练与梯度裁剪，并配有图表和代码。本节讨论该章未涉及的两个主题。}
+
+\paragraph{导数、梯度、链式法则与自动微分。}
+梯度 $\nabla_{\mathbf{x}} f \in \mathbb{R}^n$ 是偏导数构成的向量；它指向最速上升方向。反向传播是在计算图上反复应用链式法则；\texttt{loss.backward()} 在一次反向遍历中计算出所有 $\partial\mathcal{L}/\partial\theta_i$。\emph{参见第~1 章“梯度下降与 Adam”。}
+
+\paragraph{对数空间运算与数值稳定性。}
+长序列的概率是许多小数的乘积，这些小数在浮点运算中会下溢为零。解决办法是在\textbf{对数空间}中运算：
+\[
+\log p(\mathbf{x}) = \sum_t \log p(x_t \mid x_{<t})
+\]
+这就是为什么策略梯度目标使用 $\log \pi_\theta(a_t \mid s_t)$，而不是直接使用 $\pi_\theta(a_t \mid s_t)$。\textbf{log-sum-exp 技巧}通过减去最大值来稳定地计算 $\log\sum_i e^{z_i}$：
+\[
+\log \sum_i e^{z_i} = c + \log \sum_i e^{z_i - c}, \quad c = \max_i z_i
+\]
+它被用于每一次 softmax 计算内部，以防止溢出。
+
+\paragraph{Hessian 矩阵与二阶方法。}
+\textbf{Hessian 矩阵} $\mathbf{H} \in \mathbb{R}^{n \times n}$ 的元素为 $H_{ij} = \frac{\partial^2 \mathcal{L}}{\partial \theta_i \partial \theta_j}$。它描述损失曲面的曲率：大特征值表示尖锐曲率（对学习率敏感）；小特征值表示平坦区域。完整的二阶优化需要计算 $\mathbf{H}^{-1}$，这对十亿参数级模型不可行。实际中采用的近似包括对角 Hessian 估计（Adafactor）与 Kronecker 因子化曲率（K-FAC）。
+
+%% ---------------------------------------------------------------
+\section{概率与统计学}
+\label{app:probability}
+
+\emph{用于：第 3--12 章（损失函数、采样、奖励建模），第 13 章（不确定性下的推理），第 15--28 章（智能体决策）。}
+
+\paragraph{概率分布。}
+一个\textbf{概率分布} $p(x)$ 为各结果赋予非负权重，且这些权重之和为 1。与本书最相关的三种分布是：
+\begin{itemize}
+  \item \textbf{类别分布}（Categorical）：$p(x = k) = \pi_k$，$\sum_k \pi_k = 1$。语言模型在每一步的输出都是词表上的一个类别分布。
+  \item \textbf{高斯分布}（正态分布）：$p(x) = \frac{1}{\sigma\sqrt{2\pi}}\exp\!\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)$。出现在奖励模型的噪声假设与连续动作空间中。
+  \item \textbf{伯努利分布}：$p(x=1) = p$，$p(x=0) = 1-p$。二元结果；用于偏好建模（偏好 vs.\ 拒绝）。
+\end{itemize}
+
+\paragraph{期望与方差。}
+\[
+\mathbb{E}[X] = \sum_x x\, p(x), \qquad \mathrm{Var}(X) = \mathbb{E}[(X - \mathbb{E}[X])^2]
+\]
+策略梯度方法最大化 $\mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]$。通过基线与优势估计进行方差缩减是核心关切，因为高方差的梯度估计会减慢收敛。
+
+\paragraph{条件概率与贝叶斯定理。}
+$p(A \mid B) = p(A \cap B)/p(B)$。\textbf{贝叶斯定理}：$p(\theta \mid \mathcal{D}) = p(\mathcal{D} \mid \theta)\,p(\theta) / p(\mathcal{D})$，它将后验、似然与先验联系起来。用于认知升级中的贝叶斯置信度跟踪（第~19 章），以及从 Bradley--Terry 偏好模型推导 DPO 的过程（第~6 章）。
+
+\paragraph{对数似然与最大似然估计。}
+给定数据 $\{x_1,\ldots,x_N\}$ 时，参数 $\theta$ 的\textbf{对数似然}为：
+\[
+\log \mathcal{L}(\theta) = \sum_i \log p_\theta(x_i)
+\]
+\textbf{最大似然估计（MLE）}求 $\theta^* = \arg\max_\theta \log\mathcal{L}(\theta)$。基于下一 Token 预测的预训练就是 MLE：$\theta^* = \arg\max_\theta \sum_t \log p_\theta(x_t \mid x_{<t})$。
+
+\paragraph{KL 散度。}
+\begin{equation}
+D_{\mathrm{KL}}(p \| q) = \mathbb{E}_{x \sim p}\!\left[\log \frac{p(x)}{q(x)}\right] \geq 0
+\end{equation}
+当且仅当 $p = q$ 时 $D_{\mathrm{KL}} = 0$；它不具有对称性。KL 散度是 RLHF 中的核心正则项：PPO 惩罚 $D_{\mathrm{KL}}(\pi_\theta \| \pi_{\mathrm{ref}})$ 以防止策略漂移（第~5 章）；DPO 则通过闭式求解 KL 约束下的奖励最大化推导而来（第~6 章）。
+
+\paragraph{交叉熵损失。}
+$H(p, q) = -\sum_x p(x)\log q(x) = H(p) + D_{\mathrm{KL}}(p\|q)$。对于独热（one-hot）的 $p$，它简化为 $-\log q(x^*)$。最小化交叉熵等价于最大化对数似然，也等价于最小化与数据分布之间的 KL 散度。
+
+\paragraph{Softmax 与温度。}
+$\mathrm{softmax}(\mathbf{z})_i = e^{z_i}/\sum_j e^{z_j}$；温度缩放使用 $\mathbf{z}/T$。\emph{关于所有采样策略（top-$k$、top-$p$、min-$p$、对比解码）的完整论述见第~1 章“文本生成”。}
+
+\paragraph{重要性采样与蒙特卡洛估计。}
+$\mathbb{E}_{x\sim p}[f(x)] = \mathbb{E}_{x\sim q}[(p(x)/q(x))f(x)]$；比值 $p/q$ 即重要性权重。在 PPO 中，$r_t(\theta) = \pi_\theta/\pi_{\theta_{\mathrm{old}}}$ 被裁剪到 $[1-\epsilon,1+\epsilon]$。蒙特卡洛估计在 $N$ 个样本上对 $f$ 取平均；方差按 $O(1/N)$ 下降，这促使人们对每个 prompt 执行多次 rollout（GRPO）。\emph{PPO 的完整推导见第~5 章；GRPO 见第~6 章。}
+
+%% ---------------------------------------------------------------
+\section{信息论}
+\label{app:information-theory}
+
+\emph{用于：第 4--12 章（熵正则化），第 14 章（评估指标）。}
+
+\paragraph{熵。}
+分布 $p$ 的\textbf{香农熵}度量其不确定性：
+\begin{equation}
+H(p) = -\sum_x p(x) \log p(x) \geq 0
+\end{equation}
+确定性分布的 $H = 0$；对于 $V$ 个结果上的均匀分布，$H = \log V$。RL 中的\textbf{熵正则化}将 $\alpha H(\pi_\theta)$ 加入奖励，防止策略过早坍缩到单一动作（第~5 章）。
+
+\paragraph{KL 散度与交叉熵的关系。}
+这三个量通过下式联系起来：
+\[
+H(p, q) = H(p) + D_{\mathrm{KL}}(p \| q)
+\]
+由于 $H(p)$ 固定不变（仅取决于数据），最小化交叉熵等价于最小化 KL 散度。这一恒等式将预训练目标（最小化交叉熵）与 RLHF 目标（KL 约束下的奖励最大化）联系起来。
+
+\paragraph{困惑度（perplexity）。}
+$\mathrm{PPL} = \exp\!\left(-\frac{1}{N}\sum_t \log p(x_t \mid x_{<t})\right)$：即每个 Token 的平均负对数似然取指数。越低越好。\emph{包括跨分词器比较以及用作合理性检查的完整讨论，见第~14 章“困惑度”。}
+
+%% ---------------------------------------------------------------
+\newpage
+\section{关键符号汇总}
+\label{app:notation}
+
+\begin{table}[ht!]
+\centering
+\caption{全书使用的符号。}
+\label{tab:notation}
+\begin{tabular}{@{}lp{9cm}@{}}
+\toprule
+\textbf{符号} & \textbf{含义} \\
+\midrule
+$\theta$ & 模型参数（所有权重与偏置构成的向量） \\
+$\pi_\theta$ & 由 $\theta$ 参数化的策略（语言模型） \\
+$\pi_{\mathrm{ref}}$ & 参考策略（用作 KL 锚点的冻结预训练模型） \\
+$\mathcal{L}(\theta)$ & 损失函数 \\
+$\nabla_\theta \mathcal{L}$ & 损失关于 $\theta$ 的梯度 \\
+$\eta$ & 学习率 \\
+$\lambda$ & 权重衰减系数或 GAE 参数（视上下文而定） \\
+$\gamma$ & 折扣因子 \\
+$\epsilon$ & PPO 裁剪范围或微小数值常数（视上下文而定） \\
+$\mathbb{E}[\cdot]$ & 期望 \\
+$\mathrm{Var}[\cdot]$ & 方差 \\
+$D_{\mathrm{KL}}(p \| q)$ & 从参考分布 $q$ 到分布 $p$ 的 KL 散度 \\
+$H(p)$ & 分布 $p$ 的香农熵 \\
+$H(p, q)$ & $q$ 相对于 $p$ 的交叉熵 \\
+$\mathbf{x}, \mathbf{W}$ & 向量与矩阵（粗体小写 / 粗体大写） \\
+$x_i$ & 向量 $\mathbf{x}$ 的第 $i$ 个元素 \\
+$\|\mathbf{x}\|_2$ & $\mathbf{x}$ 的 $\ell_2$（欧几里得）范数 \\
+$\hat{y}$ & $y$ 的预测值 / 估计值 \\
+$\tau$ & 轨迹 $(s_0, a_0, r_0, s_1, \ldots)$ \\
+$G_t$ & 从时间步 $t$ 起的折扣回报 \\
+$V^\pi(s)$ & 策略 $\pi$ 下的状态价值函数 \\
+$Q^\pi(s,a)$ & 策略 $\pi$ 下的动作价值函数 \\
+$A^\pi(s,a)$ & 优势函数 \\
+$r_t(\theta)$ & 概率比 $\pi_\theta(a_t|s_t) / \pi_{\theta_{\mathrm{old}}}(a_t|s_t)$ \\
+$T$ & 温度（softmax 缩放）或序列长度（视上下文而定） \\
+$V$ & 词表大小 \\
+$d_{\mathrm{model}}$ & 模型隐藏维度 \\
+$d_k$ & 每个注意力头的键/查询维度 \\
+$n_{\mathrm{heads}}$ & 注意力头数量 \\
+$L$ & Transformer 层数 \\
+$B$ & 批大小 \\
+$\beta_1, \beta_2$ & Adam 动量系数 \\
+\bottomrule
+\end{tabular}
+\end{table}

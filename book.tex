@@ -11,9 +11,49 @@
 % Falls back gracefully if invoked under pdflatex (preamble will fail then,
 % so this branch assumes XeLaTeX. The Makefile already uses xelatex.)
 \usepackage{xeCJK}
-\setCJKmainfont{Songti SC}[AutoFakeBold=2.5, AutoFakeSlant=0.15]
-\setCJKsansfont{PingFang SC}
-\setCJKmonofont{STFangsong}
+% Cross-platform CJK font selection: prefer Noto CJK (Linux/CI and many
+% Windows/macOS installs), then the original macOS fonts, then Windows
+% system fonts. This keeps local Windows builds and GitHub Actions identical
+% without editing the source in CI.
+\IfFontExistsTF{Noto Serif CJK SC}{%
+  \setCJKmainfont{Noto Serif CJK SC}%
+}{%
+  \IfFontExistsTF{Noto Serif SC}{%
+    \setCJKmainfont{Noto Serif SC}[AutoFakeBold=2.5, AutoFakeSlant=0.15]%
+  }{%
+    \IfFontExistsTF{Songti SC}{%
+      \setCJKmainfont{Songti SC}[AutoFakeBold=2.5, AutoFakeSlant=0.15]%
+    }{%
+      \setCJKmainfont{SimSun}[AutoFakeBold=2.5, AutoFakeSlant=0.15]%
+    }%
+  }%
+}
+\IfFontExistsTF{Noto Sans CJK SC}{%
+  \setCJKsansfont{Noto Sans CJK SC}%
+}{%
+  \IfFontExistsTF{Noto Sans SC}{%
+    \setCJKsansfont{Noto Sans SC}%
+  }{%
+    \IfFontExistsTF{PingFang SC}{%
+      \setCJKsansfont{PingFang SC}%
+    }{%
+      \setCJKsansfont{Microsoft YaHei}%
+    }%
+  }%
+}
+\IfFontExistsTF{Noto Sans Mono CJK SC}{%
+  \setCJKmonofont{Noto Sans Mono CJK SC}%
+}{%
+  \IfFontExistsTF{STFangsong}{%
+    \setCJKmonofont{STFangsong}%
+  }{%
+    \IfFontExistsTF{FangSong}{%
+      \setCJKmonofont{FangSong}%
+    }{%
+      \setCJKmonofont{SimSun}%
+    }%
+  }%
+}
 % Allow line-breaking around CJK ↔ Latin/punctuation
 \XeTeXlinebreaklocale "zh"
 \XeTeXlinebreakskip = 0pt plus 1pt
@@ -35,6 +75,7 @@
 % Graphics and figures
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{needspace}
 \usepackage[font=small,labelfont=bf]{caption}
 \usepackage{tikz}
 \usetikzlibrary{positioning, arrows.meta, calc}
@@ -73,6 +114,12 @@
 \usepackage[numbers,sort&compress]{natbib}
 
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\hypersetup{
+  pdftitle={智能体 AI 漫游指南：从基础到系统},
+  pdfauthor={Haggai Roitman（原著）；Jiancong Zhu（中文翻译）},
+  pdfsubject={The Hitchhiker's Guide to Agentic AI 中文版（对应英文 Version 1.4，arXiv:2606.24937v3）},
+  pdfkeywords={智能体 AI, Agentic AI, 大语言模型, LLM, 强化学习, RAG, MCP, 图工程}
+}
 % --- Running headers ---
 \pagestyle{fancy}
 \fancyhf{}
@@ -180,6 +227,67 @@
 \DeclareMathOperator{\diag}{diag}
 \DeclareMathOperator{\rank}{rank}
 
+% --- Chinese structural labels ---
+% Keep the book-class spacing and TOC machinery, but replace the English
+% structural names with Chinese labels. \chapterlabel is redefined after
+% \appendix so Appendix A prints as "附录 A".
+\renewcommand{\contentsname}{目录}
+\renewcommand{\figurename}{图}
+\renewcommand{\tablename}{表}
+\renewcommand{\appendixname}{附录}
+\renewcommand{\bibname}{参考文献}
+\renewcommand{\lstlistingname}{代码清单}
+\newcommand{\chapterlabel}{第~\thechapter~章}
+
+% Wider TOC number boxes so five-character section numbers (e.g. 11.10,
+% 29.10) and seven-character subsection numbers (e.g. 11.10.1) do not
+% collide with their titles.
+\makeatletter
+\renewcommand*\l@section{\@dottedtocline{1}{1.5em}{3.0em}}
+\renewcommand*\l@subsection{\@dottedtocline{2}{4.5em}{4.2em}}
+\makeatother
+
+\makeatletter
+% Copied from book.cls, with "Part I" -> "第 I 部分" in the heading and TOC.
+\def\@part[#1]#2{%
+    \ifnum \c@secnumdepth >-2\relax
+      \refstepcounter{part}%
+      \addcontentsline{toc}{part}{第~\thepart~部分\hspace{1em}#1}%
+    \else
+      \addcontentsline{toc}{part}{#1}%
+    \fi
+    \markboth{}{}%
+    {\centering
+     \interlinepenalty \@M
+     \normalfont
+     \ifnum \c@secnumdepth >-2\relax
+       \huge\bfseries 第~\thepart~部分
+       \par
+       \vskip 20\p@
+     \fi
+     \Huge \bfseries #2\par}%
+    \@endpart}
+% Copied from book.cls, with "Chapter N" -> "第 N 章" via \chapterlabel.
+\def\@makechapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \raggedright \normalfont
+    \ifnum \c@secnumdepth >\m@ne
+      \if@mainmatter
+        \huge\bfseries \chapterlabel
+        \par\nobreak
+        \vskip 20\p@
+      \fi
+    \fi
+    \interlinepenalty\@M
+    \Huge \bfseries #1\par\nobreak
+    \vskip 40\p@
+  }}
+\makeatother
+
+% Large unbreakable boxes (questionbox/keybox) otherwise let \flushbottom
+% stretch the only available inter-box glue, creating gaps such as p595.
+\raggedbottom
+
 % --- Title ---
 % \title{\textbf{The Hitchhiker's Guide to Agentic AI}\\[0.5em]\Large From Foundations to Systems}
 \title{\textbf{智能体 AI 漫游指南}\\[0.5em]\Large 从基础到系统}
@@ -202,15 +310,17 @@
 \vspace{0.5cm}
 {\large 2026\par}
 \vfill
-{\normalsize Version 1.3\par}
+{\normalsize Version 1.4\par}
 \vspace{1cm}
 \end{titlepage}
 
 \newpage
 ~\vfill
 \begin{center}
-% {\large\itshape To my beloved wife Janna and daughters Inbar and Einav.}
-{\large\itshape 献给我深爱的妻子 Janna，以及女儿 Inbar 与 Einav。}
+% {\large\itshape In memory of Dr.\ Dafna Sheinwald, R.I.P.\\[0.4em]
+% An admired and inspirational colleague.}
+{\large\itshape 纪念 Dr.\ Dafna Sheinwald，愿她安息。\\[0.4em]
+一位令人敬仰、给人启迪的同事。}
 \end{center}
 \vfill
 \newpage
@@ -254,6 +364,28 @@
 % When not thinking about gradient flows and KV caches, he can be found behind a set of turntables, mixing progressive trance and deep house.
 当他不在思考梯度流与 KV 缓存时，可以在打碟机前找到他——在那里他混音 progressive trance 与 deep house。
 
+\chapter*{悼念 Dr.\ Dafna Sheinwald}
+\addcontentsline{toc}{chapter}{悼念 Dr.\ Dafna Sheinwald}
+\label{in-memoriam-dafna-sheinwald}
+
+\begin{center}
+{\large\itshape 才华、正直与创新的一生}
+\end{center}
+
+\bigskip
+
+Dr.\ Dafna Sheinwald 的离世，意味着计算机科学领域失去了一位真正的远见者——她以数十年的研究，默默构筑了现代数字生活的基石。作为 IBM Research——海法实验室（Haifa Lab）的资深研究员，Sheinwald 博士在计算领域的各个方向之间从容穿行，解决了那些深刻而复杂的数学与架构问题，塑造了人类存储、检索与交互信息的方式。
+
+她一生对智识卓越的追求，始于学术史上的巅峰之地。她在 Technion——以色列理工学院获得理学博士学位（Doctor of Science, D.Sc.），博士研究深深扎根于信息论与数据压缩。她曾与传奇的 Abraham Lempel 和 Jacob Ziv——全球尊崇的信息论奠基人——并肩研究，掌握了关于数据如何被组织、约简与传输的基础数学。这段非凡的学术谱系，赋予她一套深刻而世界级的分析框架，而她在余下的职业生涯中将其发挥到了极致。
+
+21 世纪初，互联网正经历第一次大规模扩张，Sheinwald 博士将这些信息论的核心概念应用于全球网络协议。她参与合著的基础性工作——包括 IETF RFC 3385 标准——确保海量数据流经由 IP 网络穿越全球时能够完好无损地抵达，并由她优雅的增量式差错校验计算保护，免受损坏。随着技术演进，她的好奇心也不断延伸。她转向高级信息检索，并在近年为 Unitxt 等开源工具包以及面向大语言模型（LLM）的数据准备框架做出了重要贡献。
+
+然而，与 Sheinwald 博士共事过的人，记住的远不止她的技术荣誉；人们深深敬佩她知识的广度、敏锐的幽默感，以及她提出刁钻问题的传奇癖好。她拥有一种罕见而全景式的好奇心，远远超出代码本身，能够毫不费力地在不同学科之间建立联系。在实验室与讲堂里，她从不直接给出答案，而是用机敏的才智与耐人寻味的谜题挑战既有假设，俏皮地推动同事与学生想得更深、看得更细，并从完全意想不到的角度接近问题。
+
+她深信传承知识的责任，是一位充满热情的学术讲师，讲授信息论等基础概念，并经常回到包括 Technion 在内的大学做客座讲座，用 IBM Watson 等前沿技术的现实可能性激励顶尖的计算机科学学生。对学生而言，她是一位耐心的教育者，能够把复杂问题讲得清晰易懂；对同行而言，她是一束智识的火花，让实验室始终充满笑声与深入的探究。
+
+Sheinwald 博士留下的遗产，是安静而坚定的奉献。她代表了现代科学家的最高理想：一个以追求知识来建设更稳健、更智能、更互联世界的人。她的工作仍然活在我们每天使用的网络流水线、我们输入文字的搜索框、她激励过的课堂，以及塑造明天的 AI 模型之中。人们深切地怀念她，但她的架构蓝图与令人难忘的机智，将继续激励后来的一代代思想者。
+
 \chapter*{前言}
 \addcontentsline{toc}{chapter}{前言}
 \label{preface}
@@ -288,8 +420,8 @@
 \begin{enumerate}
   % \item \textbf{Architectural foundations (2017--2020)}: The Transformer~\cite{vaswani2017attention} introduced self-attention as a universal sequence-processing primitive. Scaling laws revealed that larger models trained on more data reliably improve. GPT-2 and GPT-3 demonstrated that decoder-only transformers, scaled sufficiently, become capable few-shot learners.
   \item \textbf{架构基础（2017--2020）}：Transformer~\cite{vaswani2017attention} 把 self-attention 引入为一种通用的序列处理原语。Scaling Laws 揭示：用更多数据训练的更大模型会稳定地变好。GPT-2 与 GPT-3 证明，仅 decoder 结构的 Transformer 在足够规模化之后，会成为有能力的 few-shot learner。
-  % \item \textbf{Systems and efficiency (2020--2023)}: FlashAttention~\cite{dao2022flashattention} made training 2--4$\times$ faster by eliminating memory bottlenecks. LoRA~\cite{hu2022lora} enabled fine-tuning 70B+ models on a single node. Mixture-of-Experts (MoE) decoupled model capacity from compute cost. Inference engines like vLLM brought throughput within reach of real-time applications.
-  \item \textbf{系统与效率（2020--2023）}：FlashAttention~\cite{dao2022flashattention} 通过消除显存瓶颈让训练加速 2--4$\times$。LoRA~\cite{hu2022lora} 让在单个节点上微调 70B+ 模型成为可能。专家混合（Mixture-of-Experts, MoE）将模型容量与算力成本解耦。vLLM 这类推理引擎把吞吐量带到了实时应用可触及的范围。
+  % \item \textbf{Systems and efficiency (2020--2023)}: FlashAttention~\cite{dao2022flashattention} made training 2--4$\times$ faster by eliminating memory bottlenecks. LoRA~\cite{hu2021lora} enabled fine-tuning 70B+ models on a single node. Mixture-of-Experts (MoE) decoupled model capacity from compute cost. Inference engines like vLLM brought throughput within reach of real-time applications.
+  \item \textbf{系统与效率（2020--2023）}：FlashAttention~\cite{dao2022flashattention} 通过消除显存瓶颈让训练加速 2--4$\times$。LoRA~\cite{hu2021lora} 让在单个节点上微调 70B+ 模型成为可能。专家混合（Mixture-of-Experts, MoE）将模型容量与算力成本解耦。vLLM 这类推理引擎把吞吐量带到了实时应用可触及的范围。
   % \item \textbf{Alignment via RL (2022--2024)}: RLHF~\cite{ouyang2022training} transformed capable-but-unhelpful base models into useful assistants --- the recipe behind ChatGPT. DPO~\cite{rafailov2023direct} collapsed the reward model and RL loop into a single supervised loss, democratizing alignment. Variants proliferated: KTO~\cite{ethayarajh2024kto}, IPO~\cite{azar2024general}, ORPO~\cite{hong2024orpo}, GRPO~\cite{shao2024deepseekmath}.
   \item \textbf{基于 RL 的对齐（2022--2024）}：RLHF~\cite{ouyang2022training} 把“有能力但不实用”的 base 模型变成了真正有用的助手——这正是 ChatGPT 背后的配方。DPO~\cite{rafailov2023direct} 把 reward 模型与 RL 循环压缩成单一的监督 loss，降低了对齐的门槛。变体随之涌现：KTO~\cite{ethayarajh2024kto}、IPO~\cite{azar2024general}、ORPO~\cite{hong2024orpo}、GRPO~\cite{shao2024deepseekmath}。
   % \item \textbf{Reasoning and autonomy (2024--2026)}: DeepSeek-R1~\cite{deepseek2025r1} and OpenAI’s o1/o3 demonstrated that RL could teach \emph{reasoning itself} --- models spontaneously discover chain-of-thought, backtracking, and self-verification. Simultaneously, the Model Context Protocol (MCP) standardized tool access, Agent-to-Agent (A2A) enabled inter-agent communication, and production-grade orchestration frameworks matured.
@@ -345,7 +477,7 @@
 \label{how-this-guide-is-organized}
 
 % The guide spans 30 chapters organized in six parts:
-本指南共 30 章，按六个部分组织：
+本指南共 31 章，按六个部分组织：
 
 \begin{enumerate}
   % \item \textbf{Part I --- Foundations} (Chapters 1--3): LLM architecture and optimization (transformers, attention, positional encodings, FlashAttention, LoRA, MoE), systems foundations (GPU hierarchies, distributed training, vLLM), and classical RL theory (MDPs, policy gradients, actor-critic).
@@ -355,15 +487,15 @@
   % \item \textbf{Part III --- Reasoning} (Chapter 13): Large reasoning models --- DeepSeek-R1, OpenAI o1/o3/o4-mini, QwQ --- how RL discovers chain-of-thought, MCTS, process reward models, and test-time compute scaling.
   \item \textbf{第三部分——推理}（第 13 章）：大型推理模型——DeepSeek-R1、OpenAI o1/o3/o4-mini、QwQ——RL 如何发现思维链、MCTS、过程奖励模型（Process Reward Model, PRM）与测试时算力扩展（Test-Time Scaling）。
   % \item \textbf{Part IV --- Evaluation} (Chapter 14): Comprehensive LLM evaluation methodology --- metrics, LLM-as-Judge, human annotation, benchmark suites, contamination detection, and agentic evaluation.
-  \item \textbf{第四部分——评估}（第 14 章）：全面的 LLM 评估方法论——指标、LLM-as-Judge、人工标注、基准套件、污染检测，以及智能体评估。
-  % \item \textbf{Part V --- Agentic AI} (Chapters 15--27): The complete agentic stack --- introduction to agentic AI, RAG and retrieval, memory systems, orchestration and context management, loop engineering, design patterns, agentic environments and benchmarks, Model Context Protocol (MCP), agent skills, Agent-to-Agent communication (A2A), multi-agent systems, development frameworks, and agentic UI.
-  \item \textbf{第五部分——智能体 AI}（第 15--27 章）：完整的智能体技术栈——智能体 AI 简介、检索增强生成（Retrieval-Augmented Generation, RAG）与检索、记忆系统、编排与上下文管理、循环工程（Loop Engineering）、设计模式、智能体环境与基准、Model Context Protocol (MCP)、Agent Skills、Agent-to-Agent (A2A) 通信、多智能体系统、开发框架以及智能体 UI。
-  % \item \textbf{Part VI --- Assessment \& Reference} (Chapters 28--30): 108 detailed quiz questions with comprehensive answers spanning all topics, a quick-reference chapter consolidating key equations, API references, and failure mode diagnostics, and a conclusion with future directions.
-  \item \textbf{第六部分——自测与参考}（第 28--30 章）：覆盖全部主题的 108 道详细测验题与完整解答；一章快速参考，整合关键公式、API 参考与失败模式诊断；以及关于未来方向的总结。
+  \item \textbf{第四部分——评估}（第 14 章）：全面的 LLM 评估方法论——指标、LLM-as-Judge、人工标注、基准套件、污染检测、智能体评估，以及问题改写下的推理崩溃（reasoning collapse under reformulation）。
+  % \item \textbf{Part V --- Agentic AI} (Chapters 15--28): The complete agentic stack --- introduction to agentic AI, RAG and retrieval, memory systems (including bi-temporal fact management and agent dreaming), orchestration and context management, loop engineering (including cognitive escalation), graph engineering, design patterns (including agentic security, red teaming, and agent gateway infrastructure), agentic environments and benchmarks (including non-deterministic evaluation, legal and regulatory considerations), Model Context Protocol (MCP), agent skills (including self-evolving agents), Agent-to-Agent communication (A2A), multi-agent systems (including process-centric architectures), development frameworks, and agentic UI.
+  \item \textbf{第五部分——智能体 AI}（第 15--28 章）：完整的智能体技术栈——智能体 AI 简介、检索增强生成（Retrieval-Augmented Generation, RAG）与检索、记忆系统（包括双时间事实管理与智能体“做梦”）、编排与上下文管理、循环工程（包括认知升级）、图工程（Graph Engineering）、设计模式（包括智能体安全、红队测试与智能体网关基础设施）、智能体环境与基准（包括非确定性评估、法律与监管考量）、Model Context Protocol (MCP)、Agent Skills（包括自进化智能体）、Agent-to-Agent (A2A) 通信、多智能体系统（包括以流程为中心的架构）、开发框架以及 Agentic UI。
+  % \item \textbf{Part VI --- Assessment \& Reference} (Chapters 29--31): 118 detailed quiz questions with comprehensive answers spanning all topics, a quick-reference chapter consolidating key equations, API references, and failure mode diagnostics, and a conclusion with future directions.
+  \item \textbf{第六部分——自测与参考}（第 29--31 章）：覆盖全部主题的 118 道详细测验题与完整解答；一章快速参考，整合关键公式、API 参考与失败模式诊断；以及关于未来方向的总结。
 \end{enumerate}
 
-% The guide includes over 100 detailed quiz questions with comprehensive answers spanning all topics, plus a quick-reference chapter consolidating key equations, API references, and failure mode diagnostics.
-本指南包含 100+ 道详细测验题及覆盖所有主题的完整解答，并附带一章整合关键公式、API 参考与失败模式诊断的快速参考。
+% The guide includes 118 detailed quiz questions with comprehensive answers spanning all topics, plus a quick-reference chapter consolidating key equations, API references, and failure mode diagnostics.
+本指南包含 118 道详细测验题及覆盖所有主题的完整解答，并附带一章整合关键公式、API 参考与失败模式诊断的快速参考。
 
 \section*{设计哲学}
 \label{design-philosophy}
@@ -390,7 +522,7 @@
   % \item \textbf{Multimodal models} (vision--language, audio, video). Multimodal architectures introduce distinct training pipelines (contrastive pre-training, cross-modal alignment, modality-specific encoders), data curation challenges, and evaluation protocols that each merit book-length treatment. Including them would double the scope without deepening the RL and agentic core that unifies this guide.
   \item \textbf{多模态模型}（视觉--语言、音频、视频）。多模态架构引入了独特的训练流水线（对比预训练、跨模态对齐、模态专用编码器）、数据精选挑战与评估协议，每一项都值得用一本书的篇幅来讨论。将其纳入只会让范围翻倍，却无法加深贯穿本指南的 RL 与智能体核心。
   % \item \textbf{Domain-specific deployments} (healthcare, legal, finance, scientific discovery). Domain adaptation introduces regulatory constraints, specialized evaluation, and data-access issues that are orthogonal to the general methods presented here. The algorithms and architectures we cover \emph{are} the building blocks practitioners adapt to these domains, but the adaptation details are better served by dedicated references.
-  \item \textbf{特定领域部署}（医疗、法律、金融、科学发现）。领域适配带来监管约束、专门评估与数据访问问题，这些都与本文呈现的通用方法正交。我们覆盖的算法与架构\emph{正是}从业者向这些领域适配时所使用的构建模块，但适配细节交由专门的参考文献会更合适。
+  \item \textbf{特定领域部署}（医疗、法律、金融、科学发现）。领域适配带来监管约束、专门评估与数据访问问题，这些都与本文呈现的通用方法正交。我们覆盖的算法与架构\emph{正是}从业者向这些领域适配时所使用的构建模块，但适配细节交由专门的参考文献会更合适。话虽如此，全书使用了一个来自医疗领域的贯穿案例——\textbf{守护天使系统（Guardian Angel System, GAS）}，一个面向糖尿病患者的、多智能体血糖监测助手——来把抽象算法落到一个具体且高利害的应用场景中。GAS 仅作为说明性载体使用；本书并不隐含任何特定领域的监管或临床指导。
   % \item \textbf{Personalization and recommendation systems.} Personalization relies on user modeling, collaborative filtering, and interaction-history architectures that form a parallel research tradition. While LLMs are increasingly used \emph{within} recommender systems, the core techniques (sequential models, bandit-based exploration, cold-start handling) are sufficiently distinct to warrant separate coverage.
   \item \textbf{个性化与推荐系统}。个性化依赖用户建模、协同过滤与交互历史架构，构成了一条平行的研究传统。尽管 LLM 越来越多地被\emph{用在}推荐系统中，但其核心技术（序列模型、基于 bandit 的探索、冷启动处理）足够独特，值得另行讨论。
 \end{itemize}
@@ -401,97 +533,177 @@
 % --- \emph{Haggai Roitman, 2026}
 --- \emph{Haggai Roitman，2026}
 
-\section*{1.3 版新增内容}
-\label{whats-new-v13}
+\newpage
+\section*{1.4 版新增内容}
+\label{whats-new-v14}
 
-% Version 1.3 adds nineteen new topics reflecting developments through mid-2026:
-1.3 版新增了十九个主题，反映截至 2026 年中的最新进展：
+% Version 1.4 adds twenty-five new topics, a new chapter, a new running use case, and expands several existing sections, reflecting the continued rapid development of agentic AI through mid-2026. All additions are new material; no existing content was modified.
+1.4 版新增了二十五个主题、一个新章节、一个全新的贯穿案例，并扩充了若干既有小节，反映截至 2026 年中智能体 AI 的持续快速发展。所有新增内容均为新材料，未修改任何既有内容。
 
 \begin{description}
-  % \item[Chapter 1 --- LLM Architecture and Optimization:]~
-  \item[第 1 章——LLM 架构与优化：]~
+  % \item[Running Use Case --- Guardian Angel System (GAS):]~
+  \item[贯穿案例——守护天使系统（Guardian Angel System, GAS）：]~
     \begin{itemize}
-      % \item \textbf{Muon optimizer} --- Newton--Schulz orthogonalization as an AdamW successor (adopted by GLM-5, Kimi K2, DeepSeek-V4).
-      \item \textbf{Muon 优化器}——用 Newton--Schulz 正交化作为 AdamW 的继任者（已被 GLM-5、Kimi K2、DeepSeek-V4 采用）。
-      % \item \textbf{Multi-head Latent Attention (MLA)} --- DeepSeek's KV-cache compression via low-rank latent projection.
-      \item \textbf{多头潜在注意力（Multi-head Latent Attention, MLA）}——DeepSeek 通过低秩潜投影压缩 KV 缓存。
-      % \item \textbf{FP8/FP4 training} --- next-generation mixed precision with per-tile micro-scaling.
-      \item \textbf{FP8/FP4 训练}——采用逐 tile 微缩放的下一代混合精度。
-      % \item \textbf{Auxiliary-loss-free MoE} --- adaptive bias-based load balancing replacing costly auxiliary losses.
-      \item \textbf{无辅助损失 MoE（Auxiliary-Loss-Free MoE）}——用基于自适应偏置的负载均衡取代昂贵的辅助损失。
-      % \item \textbf{Mid-training} --- the emerging stage between pre-training and SFT that prepares models for RL.
-      \item \textbf{中期训练（Mid-training）}——介于预训练与 SFT 之间、为模型进入 RL 做准备的新兴阶段。
+      % \item \textbf{Guardian Angel System (GAS)} --- a new end-to-end running example woven throughout the book. GAS is a five-agent glucose-monitoring assistant for diabetic patients, built with LangGraph, FAISS-backed RAG, and a safety-critic architecture. Every chapter includes a \emph{GAS Connection} box that maps the chapter's algorithms directly to the GAS implementation in \texttt{capstone\_gas/gas\_system.py}, giving readers a single concrete system to trace from RL foundations all the way to multi-agent deployment.
+      \item \textbf{守护天使系统（GAS）}——一个贯穿全书的全新端到端案例。GAS 是一个面向糖尿病患者的五智能体血糖监测助手，使用 LangGraph、FAISS 检索增强生成（RAG）与安全评审器（safety critic）架构构建。每一章都包含一个\emph{GAS 关联（GAS Connection）}框，把本章算法直接映射到 \texttt{capstone\_gas/gas\_system.py} 中的 GAS 实现，使读者能够沿着一个具体系统，从 RL 基础一路追踪到多智能体部署。
     \end{itemize}
 
-  % \item[Chapter 2 --- Systems Foundations:]~
-  \item[第 2 章——系统基础：]~
+  % \item[New Chapter 20 --- Graph Engineering:]~
+  \item[新增第 20 章——图工程（Graph Engineering）：]~
     \begin{itemize}
-      % \item \textbf{Dynamo} --- NVIDIA's datacenter-scale inference orchestration framework.
-      \item \textbf{Dynamo}——NVIDIA 的数据中心级推理编排框架。
+      % \item \textbf{Graph Engineering} --- the topology layer of agentic system design: typed state schemas, conditional edges, fan-out/fan-in parallelism, subgraph composition, checkpointing, interrupt points, and the LangGraph reference implementation. Covers the full progression from loops to graphs and the engineering principles that make agentic workflows understandable, testable, and composable.
+      \item \textbf{图工程}——智能体系统设计的拓扑层：类型化状态模式、条件边、扇出/扇入并行、子图组合、检查点、中断点，以及 LangGraph 参考实现。内容覆盖从循环到图的完整演进，以及使智能体工作流可理解、可测试、可组合的工程原则。
     \end{itemize}
 
-  % \item[Chapter 11 --- System Architecture at Scale:]~
-  \item[第 11 章——大规模系统架构：]~
+  % \item[Chapter 8 --- Preference Optimization Variants:]~
+  \item[第 8 章——偏好优化变体：]~
     \begin{itemize}
-      % \item \textbf{Decoupled DiLoCo} --- Google's geo-distributed training with 236$\times$ bandwidth reduction.
-      \item \textbf{解耦 DiLoCo（Decoupled DiLoCo）}——Google 的地理分布式训练，带宽需求降低 236$\times$。
-      % \item \textbf{Miles} --- PyTorch-native RL post-training engine.
-      \item \textbf{Miles}——PyTorch 原生的 RL 后训练引擎。
+      % \item \textbf{Beyond Text Generation: Calibrated Decision Training} --- three new training paradigms for agents that must produce decisions rather than prose. \textbf{RLCR} (Reinforcement Learning with Calibration Reward) adds a proper-scoring-rule calibration term to the RL objective so agents learn to express reliable confidence alongside correct answers. \textbf{Jev/RLCD} (Reinforcement Learning from Calibrated Decisions) extends this to multi-class decisions with a Brier-score reward. \textbf{CLM} (Contrastive Language Model) is an open-source System One Model trained with a bidirectional InfoNCE objective over (state, action) pairs, enabling fast cached agent decisions. Includes a comparison table and decision tree for choosing among RLCR, RLCD, CLM, and standard RLVR.
+      \item \textbf{超越文本生成：校准决策训练}——面向“必须产出决策而非散文”的智能体的三种新训练范式。\textbf{RLCR}（Reinforcement Learning with Calibration Reward，带校准奖励的强化学习）在 RL 目标中加入恰当评分规则（proper scoring rule）的校准项，使智能体在给出正确答案的同时学会表达可靠的置信度。\textbf{Jev/RLCD}（Reinforcement Learning from Calibrated Decisions，基于校准决策的强化学习）用 Brier 分数奖励把这一思想扩展到多分类决策。\textbf{CLM}（Contrastive Language Model，对比语言模型）是一个开源 System One 模型，在（状态，动作）对上用双向 InfoNCE 目标训练，从而实现快速、可缓存的智能体决策。本章包含对比表与决策树，用于在 RLCR、RLCD、CLM 与标准 RLVR 之间做选择。
+    \end{itemize}
+
+  % \item[Chapter 11 --- System Architecture \& Infrastructure at Scale:]~
+  \item[第 11 章——大规模系统架构与基础设施：]~
+    \begin{itemize}
+      % \item \textbf{DualKV} --- Flash Attention kernel variant that processes the shared prompt once across all $N$ GRPO rollouts instead of $N$ times, via fused CUDA kernels and veRL token repacking. Delivers substantial policy-update speedups and MFU improvements at both dense and MoE scale. Mathematically exact.
+      \item \textbf{DualKV}——一种 Flash Attention 内核变体：通过融合 CUDA 内核与 veRL token 重打包，在所有 $N$ 条 GRPO rollout 中只处理一次共享提示，而不是处理 $N$ 次。它在稠密与 MoE 规模下都能显著加速策略更新并提升 MFU，且数学上精确等价。
     \end{itemize}
 
   % \item[Chapter 12 --- LLM Agentic Training:]~
   \item[第 12 章——LLM 智能体训练：]~
     \begin{itemize}
-      % \item \textbf{Interactive RL environments} --- NeMo Gym, RLFactory, and MOSAIC for agentic post-training.
-      \item \textbf{交互式 RL 环境（Interactive RL Environments）}——用于智能体后训练的 NeMo Gym、RLFactory 与 MOSAIC。
-      % \item \textbf{Training on real agent traces} --- using production trajectories as RL training signal.
-      \item \textbf{在真实 Agent 轨迹上训练}——把生产环境中的轨迹用作 RL 训练信号。
+      % \item \textbf{Harness Distillation (Harness-Zero)} --- training a model under a specialized harness $h^*$ then deploying it under a generic harness $h$, baking scaffolding behavior into weights. The distilled model exceeds the base model with $h^*$ still attached, recovering the majority of harness-exclusive behavioral patterns.
+      \item \textbf{Harness 蒸馏（Harness-Zero）}——先在专用 harness $h^*$ 下训练模型，再把它部署到通用 harness $h$ 下，从而把脚手架行为“烘焙”进权重。蒸馏后的模型优于仍挂载 $h^*$ 的基座模型，并恢复了大部分 harness 专属的行为模式。
     \end{itemize}
 
-  % \item[Chapter 13 --- RL for Large Reasoning Models:]~
-  \item[第 13 章——大型推理模型的 RL：]~
+  % \item[Chapter 14 --- LLM Evaluation:]~
+  \item[第 14 章——LLM 评估：]~
     \begin{itemize}
-      % \item \textbf{Inference-time compute scaling laws} --- log-linear relationships and budget-aware prompting.
-      \item \textbf{推理时算力扩展定律（Inference-Time Compute Scaling Laws）}——对数线性关系与预算感知提示（budget-aware prompting）。
-      % \item \textbf{Latent reasoning} --- coconut-style continuous thought without token-level chain-of-thought.
-      \item \textbf{潜空间推理（Latent Reasoning）}——coconut 式的连续思维，无需 token 级思维链。
-      % \item \textbf{On-policy self-distillation} --- dense token-level supervision from the model's own privileged context, achieving RL-level reasoning at 10--100$\times$ lower compute.
-      \item \textbf{同策略自蒸馏（On-Policy Self-Distillation）}——从模型自身的特权上下文获取密集的 token 级监督，以低 10--100$\times$ 的算力达到 RL 级推理。
+      % \item \textbf{Reasoning collapse under reformulation} --- how models fail on semantically equivalent but syntactically different problems (10--30 pp accuracy drops), with detection methods and agentic implications.
+      \item \textbf{问题改写下的推理崩溃（Reasoning Collapse under Reformulation）}——模型如何在语义等价但句法不同的问题上失败（准确率下降 10--30 个百分点），以及相应的检测方法与对智能体的影响。
+      % \item \textbf{JEV-as-a-Judge} --- decision-only judging with confidence cascades: accept confident verdicts, escalate uncertain ones to a stronger LLM. Competitive with frontier generative judges on ordinary preference and factuality tasks at a fraction of the cost.
+      \item \textbf{JEV-as-a-Judge}——采用置信度级联的“只做决策”评判：接受高置信度判定，把不确定的判定升级给更强的 LLM。在普通偏好与事实性任务上，它以远低的成本达到与前沿生成式评审器相当的水平。
     \end{itemize}
 
-  % \item[Chapter 17 --- Agentic Memory Systems:]~
-  \item[第 17 章——智能体记忆系统：]~
+  % \item[Chapter 15 --- Introduction to Agentic AI:]~
+  \item[第 15 章——智能体 AI 简介：]~
     \begin{itemize}
-      % \item \textbf{Proactive memory architectures} --- Meta AI's behavioral-state decay and anticipatory retrieval.
-      \item \textbf{主动记忆架构（Proactive Memory Architectures）}——Meta AI 的行为状态衰减（behavioral-state decay）与预判式检索。
+      % \item \textbf{A/T/C/S agent taxonomy} --- the Autonomous / Transactional / Collaborative / Supervisory four-role classification for structuring multi-agent systems.
+      \item \textbf{A/T/C/S 智能体分类法}——用自主型（Autonomous）、事务型（Transactional）、协作型（Collaborative）、监督型（Supervisory）四种角色来组织结构化多智能体系统。
+    \end{itemize}
+
+  % \item[Chapter 17 --- Memory Systems:]~
+  \item[第 17 章——记忆系统：]~
+    \begin{itemize}
+      % \item \textbf{Bi-Temporal Fact Management} --- valid-time vs.\ transaction-time axes for long-lived agent memory stores, engineering a bi-temporal store with four-timestamp entries, and practical trade-offs for production deployments.
+      \item \textbf{双时间事实管理（Bi-Temporal Fact Management）}——面向长期存活的智能体记忆存储，区分有效时间（valid time）与事务时间（transaction time）两个轴；介绍如何工程化一个带四时间戳条目的双时间存储，以及生产部署中的实际权衡。
+      % \item \textbf{Sleep-Time Compute and Agent Dreaming} --- the offline memory lifecycle: sleep-time compute for pre-computing anticipated queries ($5\times$ test-time compute reduction), and agent dreaming for curating and restructuring the memory store via scheduled background cycles (transcript replay, conflict resolution, compaction, pattern synthesis), AutoDreamer's GRPO-trained consolidator, Anthropic's Dreams feature with its proposal/commit audit pattern, and engineering trade-offs for dream cycle design.
+      \item \textbf{睡眠时算力与智能体“做梦”（Sleep-Time Compute and Agent Dreaming）}——离线记忆生命周期：用睡眠时算力预先计算预期查询（测试时算力降低 $5\times$），以及通过定时后台周期（对话记录回放、冲突消解、压缩、模式综合）来整理与重构记忆存储的智能体“做梦”；还包括 AutoDreamer 用 GRPO 训练的整合器、Anthropic 的 Dreams 功能及其提议/提交审计模式，以及设计“做梦”周期的工程权衡。
     \end{itemize}
 
   % \item[Chapter 19 --- Loop Engineering:]~
   \item[第 19 章——循环工程：]~
     \begin{itemize}
-      % \item \textbf{Context engineering} --- the discipline of optimizing what fills the context window (Lütke, Karpathy, Anthropic).
-      \item \textbf{上下文工程}——优化“用什么填满上下文窗口”的学科（Lütke、Karpathy、Anthropic）。
+      % \item \textbf{Parallel subagent fleet execution} --- three harness execution modes (fan-out/fan-in, speculative execution, pipeline parallelism), isolation requirements, and fleet budget management.
+      \item \textbf{并行子智能体集群执行}——三种 harness 执行模式（扇出/扇入、推测执行、流水线并行）、隔离要求以及集群预算管理。
+      % \item \textbf{Cognitive Escalation and Uncertainty-Driven Handoff} --- distinguishing stagnation, epistemic uncertainty, and capability-boundary failures; structured confidence signals (verifier score, assumption stability, budget consumption, novelty); dynamic escalation thresholds including Bayesian confidence tracking and asymmetric cost weighting; and the escalation handoff protocol for resumable human-in-the-loop intervention.
+      \item \textbf{认知升级与不确定性驱动的交接}——区分停滞、认知不确定性与能力边界失效；结构化置信信号（验证器分数、假设稳定性、预算消耗、新颖性）；动态升级阈值，包括贝叶斯置信度跟踪与非对称成本加权；以及支持可恢复人机协同干预的升级交接协议。
     \end{itemize}
 
-  % \item[Chapter 21 --- Agentic Environments:]~
-  \item[第 21 章——智能体环境：]~
+  % \item[Chapter 21 --- Agent Design Patterns:]~
+  \item[第 21 章——Agent 设计模式：]~
     \begin{itemize}
-      % \item \textbf{UniClawBench and Terminal-Bench} --- 2026 benchmarks for robotic manipulation and long-horizon terminal tasks.
-      \item \textbf{UniClawBench 与 Terminal-Bench}——面向机器人操作与长时程终端任务的 2026 年基准。
+      % \item \textbf{Agentic Security and Adversarial Red Teaming} --- the four-layer agentic attack surface (prompt, tool, memory, inter-agent), indirect prompt injection in depth, a structured red-teaming methodology for multi-step agent trajectories, and defense frameworks spanning model-level, architecture-level, and infrastructure-level controls.
+      \item \textbf{智能体安全与对抗性红队测试}——四层智能体攻击面（提示、工具、记忆、智能体间）、深入的间接提示注入分析、面向多步智能体轨迹的结构化红队方法，以及覆盖模型层、架构层与基础设施层的防御框架。
+      % \item \textbf{Agent Gateway Infrastructure} --- the agent gateway as the AI equivalent of an API gateway: dynamic least-privilege authorization, recursive loop throttling, PII scrubbing and data residency enforcement, distributed trace correlation, and cost/budget enforcement. Includes sidecar, centralized, and service-mesh deployment patterns.
+      \item \textbf{智能体网关基础设施}——把智能体网关视为 AI 版的 API 网关：动态最小权限授权、递归循环限流、PII 脱敏与数据驻留强制、分布式追踪关联，以及成本/预算强制。包含 sidecar（边车）、集中式与服务网格三种部署模式。
     \end{itemize}
 
-  % \item[Chapter 25 --- Multi-Agent Systems:]~
-  \item[第 25 章——多智能体系统：]~
+  % \item[Chapter 22 --- Agentic Environments and Benchmarks:]~
+  \item[第 22 章——智能体环境与基准：]~
     \begin{itemize}
-      % \item \textbf{BDI-LLM self-evolving agents} --- belief--desire--intention architectures with learned plan libraries.
-      \item \textbf{BDI-LLM 自进化 Agent}——带可学习计划库的信念—愿望—意图（Belief--Desire--Intention, BDI）架构。
+      % \item \textbf{Terminal-Bench expanded} --- harness-vs-model gap, current SOTA scores ($\sim$38\% on hard tasks), and the 8--12 pp open-weight lag as of mid-2026.
+      \item \textbf{Terminal-Bench 扩充}——harness 与模型之间的差距、当前最先进分数（困难任务约 38\%），以及截至 2026 年中的 8--12 个百分点开放权重模型落后幅度。
+      % \item \textbf{Scheming: goal-directed deception} --- documented mid-2026 incidents, comparison table with hallucination/prompt injection/reward hacking, and mitigation strategies.
+      \item \textbf{Scheming：目标导向的欺骗}——有记录的 2026 年中事件、与幻觉/提示注入/奖励黑客的对比表，以及缓解策略。
+      % \item \textbf{Sandbox escape expanded} --- updated warning box with documented 2026 incidents.
+      \item \textbf{沙箱逃逸扩充}——更新后的警告框，包含有记录的 2026 年事件。
+      % \item \textbf{Legal and Regulatory Considerations for Agentic Systems} --- the liability gap for autonomous agent actions, EU AI Act risk classification and high-risk obligations for agentic deployers, engineering-for-compliance patterns (auditability, human oversight integration, minimal data retention), and practical liability mitigation strategies.
+      \item \textbf{智能体系统的法律与监管考量}——自主智能体行为的责任缺口、EU AI Act 的风险分类与智能体部署者的高风险义务、面向合规的工程模式（可审计性、人工监督集成、最小数据保留），以及实用的责任缓解策略。
+      % \item \textbf{Production-Grade Evaluation of Non-Deterministic Agents} --- the Step-2-breaks-Step-47 long-horizon dependency problem, statistical test oracles (pass-rate, trajectory invariants, outcome equivalence classes), trace-level regression testing with KL-divergence step diffing, flakiness budgets, and evaluation infrastructure requirements for parallel trajectory execution.
+      \item \textbf{非确定性智能体的生产级评估}——“第 2 步破坏第 47 步”的长时程依赖问题、统计测试判据（通过率、轨迹不变量、结果等价类）、基于 KL 散度步骤差异的轨迹级回归测试、抖动预算，以及并行轨迹执行对评估基础设施的要求。
     \end{itemize}
 
-  % \item[Chapter 26 --- Agent Development Frameworks:]~
-  \item[第 26 章——Agent 开发框架：]~
+  % \item[Chapter 24 --- Agent Skills:]~
+  \item[第 24 章——Agent Skills：]~
     \begin{itemize}
-      % \item \textbf{NVIDIA OO Agents (NOOA)} --- object-oriented framework where agents are Python objects, methods are tools, and \texttt{...} bodies become LLM-driven loops.
-      \item \textbf{NVIDIA OO Agents (NOOA)}——面向对象框架：Agent 即 Python 对象，方法即工具，\texttt{...} 方法体成为由 LLM 驱动的循环。
+      % \item \textbf{Self-Evolving Agents: Lifelong Skill Acquisition} --- the self-improvement spectrum from skill retrieval to weight-level self-modification, tool synthesis and automatic skill authoring patterns, persistent self-modification risks (skill drift, capability creep, goal misalignment), and safe self-evolution engineering controls.
+      \item \textbf{自进化智能体：终身技能获取}——从技能检索到权重级自我修改的自我提升光谱、工具综合与自动技能编写模式、持久自我修改的风险（技能漂移、能力蔓延、目标错位），以及安全的自我演化工程控制。
+    \end{itemize}
+
+  % \item[Chapter 25 --- A2A Communication:]~
+  \item[第 25 章——A2A 通信：]~
+    \begin{itemize}
+      % \item \textbf{ACP (Agent Communication Protocol)} --- REST-based synchronous alternative to A2A; when to use each protocol.
+      \item \textbf{ACP（Agent Communication Protocol）}——基于 REST 的同步式 A2A 替代方案；以及何时使用哪种协议。
+    \end{itemize}
+
+  % \item[Chapter 26 --- Multi-Agent Systems:]~
+  \item[第 26 章——多智能体系统：]~
+    \begin{itemize}
+      % \item \textbf{Orchestrator-Worker-Critic (OWC) triad} --- the de facto three-role pattern for parallel agentic pipelines with quality gates; role comparison table.
+      \item \textbf{编排器—工作者—评审者（Orchestrator-Worker-Critic, OWC）三元组}——带质量门禁的并行智能体流水线事实上的三角色模式；附角色对比表。
+      % \item \textbf{Agent mesh architecture} --- dynamic peer-to-peer agent networks with capability-based routing, fault tolerance, and relationship to A2A.
+      \item \textbf{Agent Mesh 架构}——动态点对点智能体网络，具备基于能力的路由、容错，以及与 A2A 的关系。
+      % \item \textbf{Process-Centric Agent Architectures} --- the shift from digital-labor (agent-per-role) to process-engine (agent-as-workflow) thinking; event-driven triggers, structured I/O contracts, durable long-running process state, and idempotent execution; enterprise data fabric integration (semantic layer, event streaming, data lineage); and the supply chain agent example as a concrete process-centric pattern.
+      \item \textbf{以流程为中心的智能体架构}——从“数字劳动力”（每个角色一个智能体）转向“流程引擎”（智能体即工作流）的思维；事件驱动触发、结构化 I/O 契约、持久化的长运行流程状态与幂等执行；企业数据编织（data fabric）集成（语义层、事件流、数据血缘）；以及作为具体流程中心模式示例的供应链智能体。
+    \end{itemize}
+
+  % \item[Chapter 27 --- Agent Development Frameworks:]~
+  \item[第 27 章——Agent 开发框架：]~
+    \begin{itemize}
+      % \item \textbf{AutoGen 3.0 / AG2} --- the actor-based runtime rewrite: typed message passing, async-first design, distributed execution, and pluggable runtimes.
+      \item \textbf{AutoGen 3.0 / AG2}——基于 actor 的运行时重写：类型化消息传递、异步优先设计、分布式执行与可插拔运行时。
+      % \item \textbf{Pydantic AI} --- type-safe agent framework with structured outputs, dependency injection, model-agnostic interface, and streaming validation.
+      \item \textbf{Pydantic AI}——类型安全的智能体框架，具备结构化输出、依赖注入、模型无关接口与流式校验。
+    \end{itemize}
+
+  % \item[Appendix A --- Mathematical Background:]~
+  \item[附录 A——数学基础：]~
+    \begin{itemize}
+      % \item \textbf{New appendix} providing a self-contained mathematical reference for the entire book. Four sections cover Linear Algebra, Calculus and Automatic Differentiation (including log-space arithmetic, the log-sum-exp trick, and Hessian and second-order methods), Probability and Statistics (including log-likelihood and MLE, importance sampling and probability ratios, and Monte Carlo estimation), and Information Theory (including the KL--cross-entropy relationship and perplexity). Optimization and Reinforcement Learning Fundamentals are covered in depth in Chapter~1 (Optimization Theory) and Chapter~3 (RL Foundations) respectively, with explicit cross-references throughout. A notation summary table closes the appendix.
+      \item \textbf{新增附录}，为全书提供一份自包含的数学参考。四个小节分别覆盖线性代数、微积分与自动微分（包括对数空间运算、log-sum-exp 技巧，以及 Hessian 与二阶方法）、概率与统计（包括对数似然与 MLE、重要性采样与概率比、蒙特卡洛估计），以及信息论（包括 KL 散度与交叉熵的关系、困惑度）。优化与强化学习基础分别在第 1 章（优化理论）与第 3 章（RL 基础）中深入讨论，附录中提供了明确的交叉引用。最后以一张符号汇总表收尾。
+    \end{itemize}
+
+  % \item[Chapter 29 --- Quiz Questions:]~
+  \item[第 29 章——测验题：]~
+    \begin{itemize}
+      % \item \textbf{Loop Engineering Questions} (5 new questions) --- the five loop primitives, parallel fleet execution modes, context engineering, stagnation detection and recovery, and production loop architecture patterns.
+      \item \textbf{循环工程题目}（5 道新题）——五种循环原语、并行集群执行模式、上下文工程、停滞检测与恢复，以及生产循环架构模式。
+      % \item \textbf{Graph Engineering Questions} (5 new questions) --- graph vs.\ loop engineering, typed state design, conditional edges, fan-out/fan-in with reducers, and graph checkpointing for human-in-the-loop and fault tolerance.
+      \item \textbf{图工程题目}（5 道新题）——图工程与循环工程的对比、类型化状态设计、条件边、带 reducer 的扇出/扇入，以及面向人机协同与容错的图检查点。
+      % \item Question count updated from 108 to \textbf{118}.
+      \item 题目总数从 108 更新为 \textbf{118}。
+    \end{itemize}
+
+  % \item[Chapter 30 --- Quick Reference:]~
+  \item[第 30 章——速查手册：]~
+    \begin{itemize}
+      % \item \textbf{ACP added} to Agent Communication Protocols table.
+      \item 在 Agent 通信协议表中新增 \textbf{ACP}。
+      % \item \textbf{Terminal-Bench added} to Key Agentic Benchmarks table; header updated to mid-2026 SOTA.
+      \item 在关键智能体基准表中新增 \textbf{Terminal-Bench}；表头更新为 2026 年中 SOTA。
+    \end{itemize}
+
+  % \item[Chapter 31 --- Conclusion and Future Directions:]~
+  \item[第 31 章——总结与未来方向：]~
+    \begin{itemize}
+      % \item \textbf{Reasoning architecture vs.\ scale} --- open challenge: does reasoning scale with parameters or does architecture matter more? Evidence from DeepSeek-R1 and reasoning-trained models.
+      \item \textbf{推理架构与规模之争}——开放挑战：推理能力是随参数规模扩展，还是架构更重要？来自 DeepSeek-R1 与推理训练模型的证据。
+      % \item \textbf{Regulatory environment} --- EU AI Act (risk classification, GPAI obligations, penalties), California SB 942 (AI transparency), and cross-jurisdictional themes for practitioners.
+      \item \textbf{监管环境}——EU AI Act（风险分类、GPAI 义务、处罚）、加州 SB 942（AI 透明度），以及从业者需要关注的跨司法辖区主题。
+      % \item \textbf{Model landscape note (mid-2026)} --- exact mid-2026 frontier models (GPT-5.6 Sol/Terra/Luna, Claude Opus~5/Opus~5.5/Fable~5/Fable~5.1, Gemini 3.1 Pro/3.8 Flash, Llama~4 Scout/Maverick, Qwen~3.8), open-weight lag ($\sim$3--6 months on agentic benchmarks), and guidance on interpreting model comparisons.
+      \item \textbf{模型格局说明（2026 年中）}——2026 年中的前沿模型（GPT-5.6 Sol/Terra/Luna、Claude Opus~5/Opus~5.5/Fable~5/Fable~5.1、Gemini 3.1 Pro/3.8 Flash、Llama~4 Scout/Maverick、Qwen~3.8）、开放权重模型的落后幅度（在智能体基准上约 3--6 个月），以及如何解读模型对比的指导。
     \end{itemize}
 \end{description}
 
@@ -565,11 +777,11 @@
 
 \begin{itemize}
   % \item \textbf{Chapters 4--8}: Every major RL/preference algorithm with math, intuition, and TRL code --- PPO, DPO, GRPO, and preference optimization variants (Online DPO, KTO, IPO, ORPO, SimPO, Best-of-N).
-  \item \textbf{第 4--8 章}：每一个主流 RL / 偏好算法都配有数学推导、直觉解释与 TRL 代码——PPO、DPO、GRPO，以及偏好优化变体（Online DPO、KTO、IPO、ORPO、SimPO、Best-of-N）。
+  \item \textbf{第 4--8 章}：每一个主流 RL / 偏好算法都配有数学推导、直觉解释与 TRL 代码——PPO、DPO、GRPO，以及偏好优化变体（Online DPO、KTO、IPO、ORPO、SimPO、Best-of-N）。第 8 章还覆盖校准决策训练（RLCR、Jev/RLCD、CLM），面向必须在给出正确答案的同时表达可靠置信度的智能体。
   % \item \textbf{Chapters 9--10}: Reward model training (Bradley--Terry, scaling laws, reward hacking) and SFT best practices (data quality, curriculum, formatting).
   \item \textbf{第 9--10 章}：Reward 模型训练（Bradley-Terry、scaling laws、reward hacking）与 SFT 最佳实践（数据质量、课程学习、格式化）。
-  % \item \textbf{Chapters 11--12}: System architecture at scale (decoupled training, fault tolerance, GPU allocation) and LLM agentic training --- how to train agents end-to-end with trajectory-level RL.
-  \item \textbf{第 11--12 章}：大规模系统架构（解耦训练、容错、GPU 分配）与 LLM 智能体训练——如何用轨迹级 RL 端到端训练 Agent。
+  % \item \textbf{Chapters 11--12}: System architecture at scale (decoupled training, fault tolerance, GPU allocation) and LLM agentic training --- how to train agents end-to-end with trajectory-level RL, including harness distillation (baking specialized scaffolding into model weights via Harness-Zero).
+  \item \textbf{第 11--12 章}：大规模系统架构（解耦训练、容错、GPU 分配）与 LLM 智能体训练——如何用轨迹级 RL 端到端训练 Agent，包括 harness 蒸馏（通过 Harness-Zero 把专用脚手架“烘焙”进模型权重）。
 \end{itemize}
 
 % \textbf{Part III: Reasoning} (Chapter 13) covers the frontier of model capability --- teaching LLMs to reason through multi-step problems.
@@ -585,52 +797,60 @@
 
 \begin{itemize}
   % \item \textbf{Chapter 14 --- LLM Evaluation}: Metrics (perplexity, pass@k, ELO), LLM-as-Judge patterns, contamination detection, benchmark suites, and agentic evaluation methodology.
-  \item \textbf{第 14 章——LLM 评估}：指标（perplexity、pass@k、ELO）、LLM-as-Judge 模式、污染检测、基准套件，以及智能体评估方法论。
+  \item \textbf{第 14 章——LLM 评估}：指标（perplexity、pass@k、ELO）、LLM-as-Judge 模式、污染检测、基准套件、智能体评估方法论，以及问题改写下的推理崩溃。
 \end{itemize}
 
-% \textbf{Part V: Agentic AI} (Chapters 15--27) takes you from a trained model to a deployed autonomous system. This is the largest part, covering everything an agent needs to operate in the real world.
-\textbf{第五部分：智能体 AI}（第 15--27 章）带你从一个训练好的模型走向一个被部署出去的自主系统。这是篇幅最大的部分，覆盖了一个 Agent 在真实世界中运作所需的一切。
+% \textbf{Part V: Agentic AI} (Chapters 15--28) takes you from a trained model to a deployed autonomous system. This is the largest part, covering everything an agent needs to operate in the real world.
+\textbf{第五部分：智能体 AI}（第 15--28 章）带你从一个训练好的模型走向一个被部署出去的自主系统。这是篇幅最大的部分，覆盖了一个 Agent 在真实世界中运作所需的一切。
 
 \begin{itemize}
-  % \item \textbf{Chapter 15 --- Introduction to Agentic AI}: What makes a system agentic, the spectrum from chatbots to autonomous agents, and the foundational concepts for the rest of Part V.
-  \item \textbf{第 15 章——智能体 AI 简介}：是什么让一个系统具备“智能体性”，从聊天机器人到自主 Agent 的光谱，以及第五部分余下章节所需的基础概念。
+  % \item \textbf{Chapter 15 --- Introduction to Agentic AI}: What makes a system agentic, the spectrum from chatbots to autonomous agents, the A/T/C/S role taxonomy, and the foundational concepts for the rest of Part V.
+  \item \textbf{第 15 章——智能体 AI 简介}：是什么让一个系统具备“智能体性”，从聊天机器人到自主 Agent 的光谱，A/T/C/S 角色分类法，以及第五部分余下章节所需的基础概念。
   % \item \textbf{Chapter 16 --- RAG}: Retrieval methods, chunking, embedding models, hybrid search, reranking, and production architectures.
   \item \textbf{第 16 章——RAG}：检索方法、分块、Embedding 模型、混合检索、重排，以及生产架构。
-  % \item \textbf{Chapter 17 --- Memory Systems}: Working, episodic, semantic, and procedural memory for persistent agent knowledge.
-  \item \textbf{第 17 章——记忆系统}：用于 Agent 持久知识的工作记忆、情景记忆、语义记忆与程序性记忆。
+  % \item \textbf{Chapter 17 --- Memory Systems}: Working, episodic, semantic, and procedural memory for persistent agent knowledge, bi-temporal fact management for long-lived agents, and offline memory consolidation via agent dreaming.
+  \item \textbf{第 17 章——记忆系统}：用于 Agent 持久知识的工作记忆、情景记忆、语义记忆与程序性记忆；面向长期存活 Agent 的双时间事实管理；以及通过智能体“做梦”进行的离线记忆整合。
   % \item \textbf{Chapter 18 --- Orchestration}: ReAct, Plan-and-Execute, LLM Compiler, reflexion patterns, context management, and harness design.
   \item \textbf{第 18 章——编排}：ReAct、Plan-and-Execute、LLM Compiler、reflexion 模式、上下文管理与 harness 设计。
-  % \item \textbf{Chapter 19 --- Loop Engineering}: Inference-time reinforcement learning, context engineering, adaptive orchestration loops, and loop-as-policy abstractions.
-  \item \textbf{第 19 章——循环工程（Loop Engineering）}：推理时强化学习、上下文工程（Context Engineering）、自适应编排循环，以及“循环即策略”（loop-as-policy）抽象。
-  % \item \textbf{Chapter 20 --- Design Patterns}: Prompt chaining, routing, parallelization, evaluation-driven orchestration, and the simplicity principle.
-  \item \textbf{第 20 章——设计模式}：prompt chaining、路由、并行化、评估驱动的编排，以及“简洁性原则”。
-  % \item \textbf{Chapter 21 --- Environments and Benchmarks}: WebArena, SWE-bench, OSWorld, GAIA --- evaluation environments for agentic capability.
-  \item \textbf{第 21 章——环境与基准}：WebArena、SWE-bench、OSWorld、GAIA——评估智能体能力的环境。
-  % \item \textbf{Chapter 22 --- Model Context Protocol (MCP)}: Architecture, transport layers, tool/resource/prompt primitives, security, and deployment.
-  \item \textbf{第 22 章——Model Context Protocol (MCP)}：架构、传输层，tool/resource/prompt 原语、安全与部署。
-  % \item \textbf{Chapter 23 --- Agent Skills}: Skill libraries, tool composition, and capability abstraction.
-  \item \textbf{第 23 章——Agent Skills}：技能库、工具组合与能力抽象。
-  % \item \textbf{Chapter 24 --- A2A Communication}: Google's Agent-to-Agent protocol --- Agent Cards, task lifecycle, streaming, enterprise patterns.
-  \item \textbf{第 24 章——A2A 通信}：Google 的 Agent-to-Agent 协议——Agent Cards、任务生命周期、流式通信与企业级模式。
-  % \item \textbf{Chapter 25 --- Multi-Agent Systems}: Hierarchical, debate, marketplace, and swarm architectures --- coordination at scale.
-  \item \textbf{第 25 章——多智能体系统}：层级式、辩论式、市场式与群体式架构——大规模协作。
-  % \item \textbf{Chapter 26 --- Development Frameworks}: LangGraph, CrewAI, AutoGen, OpenAI Agents SDK, NVIDIA OO Agents --- comparative analysis with code.
-  \item \textbf{第 26 章——开发框架}：LangGraph、CrewAI、AutoGen、OpenAI Agents SDK、NVIDIA OO Agents——附代码的对比分析。
-  % \item \textbf{Chapter 27 --- Agentic UI}: Streaming interfaces, generative UI, canvas paradigms, tool visualization, human-in-the-loop patterns.
-  \item \textbf{第 27 章——智能体 UI}：流式界面、生成式 UI、canvas 范式、工具可视化与人机协同（Human-in-the-Loop）模式。
+  % \item \textbf{Chapter 19 --- Loop Engineering}: Inference-time reinforcement learning, context engineering, adaptive orchestration loops, loop-as-policy abstractions, parallel subagent fleet execution (fan-out/fan-in, speculative execution, pipeline parallelism), and cognitive escalation with uncertainty-driven handoff.
+  \item \textbf{第 19 章——循环工程（Loop Engineering）}：推理时强化学习、上下文工程（Context Engineering）、自适应编排循环、“循环即策略”（loop-as-policy）抽象、并行子智能体集群执行（扇出/扇入、推测执行、流水线并行），以及带不确定性驱动交接的认知升级。
+  % \item \textbf{Chapter 20 --- Graph Engineering}: The topology layer. Typed state, conditional edges, fan-out/fan-in parallelism, subgraph composition, checkpointing, and interrupt points --- the structural discipline that makes agentic workflows understandable, testable, and composable. Includes a full LangGraph walkthrough.
+  \item \textbf{第 20 章——图工程（Graph Engineering）}：拓扑层。类型化状态、条件边、扇出/扇入并行、子图组合、检查点与中断点——使智能体工作流可理解、可测试、可组合的结构性学科。包含完整的 LangGraph 实战演练。
+  % \item \textbf{Chapter 21 --- Design Patterns}: Prompt chaining, routing, parallelization, evaluation-driven orchestration, the simplicity principle, agentic security and adversarial red teaming, and agent gateway infrastructure.
+  \item \textbf{第 21 章——设计模式}：prompt chaining、路由、并行化、评估驱动的编排、“简洁性原则”、智能体安全与对抗性红队测试，以及智能体网关基础设施。
+  % \item \textbf{Chapter 22 --- Environments and Benchmarks}: WebArena, SWE-bench, OSWorld, GAIA, Terminal-Bench --- evaluation environments for agentic capability, including the harness-vs-model gap, scheming/sandbox-escape security patterns, legal and regulatory considerations, and production-grade evaluation of non-deterministic agents.
+  \item \textbf{第 22 章——环境与基准}：WebArena、SWE-bench、OSWorld、GAIA、Terminal-Bench——评估智能体能力的环境，包括 harness 与模型之间的差距、scheming/沙箱逃逸等安全模式、法律与监管考量，以及非确定性智能体的生产级评估。
+  % \item \textbf{Chapter 23 --- Model Context Protocol (MCP)}: Architecture, transport layers, tool/resource/prompt primitives, security, and deployment.
+  \item \textbf{第 23 章——Model Context Protocol (MCP)}：架构、传输层，tool/resource/prompt 原语、安全与部署。
+  % \item \textbf{Chapter 24 --- Agent Skills}: Skill libraries, tool composition, capability abstraction, and self-evolving agents with lifelong skill acquisition.
+  \item \textbf{第 24 章——Agent Skills}：技能库、工具组合、能力抽象，以及具备终身技能获取能力的自进化智能体。
+  % \item \textbf{Chapter 25 --- A2A Communication}: Google's Agent-to-Agent protocol --- Agent Cards, task lifecycle, streaming, enterprise patterns, and the ACP alternative for synchronous calls.
+  \item \textbf{第 25 章——A2A 通信}：Google 的 Agent-to-Agent 协议——Agent Cards、任务生命周期、流式通信、企业级模式，以及用于同步调用的 ACP 替代方案。
+  % \item \textbf{Chapter 26 --- Multi-Agent Systems}: Hierarchical, debate, marketplace, swarm, Orchestrator-Worker-Critic triad, and agent mesh architectures --- coordination at scale --- and process-centric architectures for enterprise workflow automation.
+  \item \textbf{第 26 章——多智能体系统}：层级式、辩论式、市场式、群体式、编排器—工作者—评审者三元组与 Agent Mesh 架构——大规模协作——以及面向企业工作流自动化的以流程为中心架构。
+  % \item \textbf{Chapter 27 --- Development Frameworks}: LangGraph, CrewAI, AutoGen/AG2, OpenAI Agents SDK, Pydantic AI, NVIDIA OO Agents --- comparative analysis with code.
+  \item \textbf{第 27 章——开发框架}：LangGraph、CrewAI、AutoGen/AG2、OpenAI Agents SDK、Pydantic AI、NVIDIA OO Agents——附代码的对比分析。
+  % \item \textbf{Chapter 28 --- Agentic UI}: Streaming interfaces, generative UI, canvas paradigms, tool visualization, human-in-the-loop patterns.
+  \item \textbf{第 28 章——Agentic UI}：流式界面、生成式 UI、canvas 范式、工具可视化与人机协同（Human-in-the-Loop）模式。
 \end{itemize}
 
-% \textbf{Part VI: Assessment \& Reference} (Chapters 28--30) consolidates assessment material and provides quick-lookup references for practitioners.
-\textbf{第六部分：自测与参考}（第 28--30 章）整合自测材料，并为从业者提供快速查阅的参考。
+% \textbf{Part VI: Assessment \& Reference} (Chapters 29--31) consolidates assessment material and provides quick-lookup references for practitioners.
+\textbf{第六部分：自测与参考}（第 29--31 章）整合自测材料，并为从业者提供快速查阅的参考。
 
 \begin{itemize}
-  % \item \textbf{Chapter 28 --- Quiz Questions \& Detailed Answers}: 108 questions spanning all topics --- architecture, RL, reasoning, agentic systems --- with comprehensive worked answers.
-  \item \textbf{第 28 章——测验题与详细解答}：覆盖全部主题——架构、RL、推理、智能体系统——的 108 道题，并配有完整的推导式解答。
-  % \item \textbf{Chapter 29 --- Quick Reference}: Key equations, API references, hyperparameter tables, and failure mode diagnostics in a compact lookup format.
-  \item \textbf{第 29 章——速查手册}：以紧凑的查阅格式呈现关键公式、API 参考、超参数表与失败模式诊断。
-  % \item \textbf{Chapter 30 --- Conclusion and Future Directions}: Where the field is heading --- open problems, emerging paradigms, and the road ahead.
-  \item \textbf{第 30 章——总结与未来方向}：领域将走向何方——开放问题、新兴范式与前路。
+  % \item \textbf{Chapter 29 --- Quiz Questions \& Detailed Answers}: 118 questions spanning all topics --- architecture, RL, reasoning, agentic systems --- with comprehensive worked answers.
+  \item \textbf{第 29 章——测验题与详细解答}：覆盖全部主题——架构、RL、推理、智能体系统——的 118 道题，并配有完整的推导式解答。
+  % \item \textbf{Chapter 30 --- Quick Reference}: Key equations, API references, hyperparameter tables, and failure mode diagnostics in a compact lookup format.
+  \item \textbf{第 30 章——速查手册}：以紧凑的查阅格式呈现关键公式、API 参考、超参数表与失败模式诊断。
+  % \item \textbf{Chapter 31 --- Conclusion and Future Directions}: Where the field is heading --- open problems, emerging paradigms, and the road ahead.
+  \item \textbf{第 31 章——总结与未来方向}：领域将走向何方——开放问题、新兴范式与前路。
 \end{itemize}
+
+% \textbf{A note on mathematical prerequisites.} The guide assumes familiarity with basic calculus, probability, and linear algebra, but does not require deep expertise. Readers who want a refresher --- or who encounter an unfamiliar concept such as the KL divergence or the log-sum-exp trick --- are encouraged to consult \textbf{Appendix~A: Mathematical Background} at any point. The appendix is a compact, self-contained reference covering four mathematical areas (linear algebra, calculus and automatic differentiation, probability and statistics, and information theory), with explicit pointers back to the chapters where each concept is most heavily used. Optimization is covered in depth in Chapter~1 (Optimization Theory) and reinforcement learning foundations in Chapter~3 (RL Foundations), so those topics are not duplicated in the appendix. Treat it as a reference you reach for whenever the math in a chapter feels unfamiliar.
+\textbf{关于数学预备知识的说明。}本指南假设读者熟悉基础微积分、概率论与线性代数，但不要求深入的专业知识。想要复习——或遇到 KL 散度、log-sum-exp 技巧等不熟悉概念——的读者，可以随时查阅\textbf{附录 A：数学基础}。该附录是一份紧凑、自包含的参考，覆盖四个数学领域（线性代数、微积分与自动微分、概率与统计、信息论），并明确指回每个概念使用最密集的章节。优化在第 1 章（优化理论）中有深入讨论，强化学习基础在第 3 章（RL 基础）中介绍，因此附录不再重复这些主题。当你觉得某一章的数学变得陌生时，可以把它当作随手查阅的参考。
+
+% Throughout this guide, every concept is grounded in a single running example: the \textbf{Guardian Angel System (GAS)}, a multi-agent AI system for continuous supervision of diabetic patients. A companion code repository (\url{https://github.com/haggair/agentic-ai-book}) provides a working, tested notebook for every chapter --- each one adding one concrete piece to the GAS until, by the final chapter, you have a fully operational multi-agent application. Before diving into Part~I, the chapter immediately following this Introduction --- \emph{The Guardian Angel System: Our Running Example} --- describes the system in full, walks through the codebase, and shows you how to run it locally.
+在整本指南中，每一个概念都落地在一个贯穿案例上：\textbf{守护天使系统（Guardian Angel System, GAS）}，一个持续监护糖尿病患者的智能体 AI 系统。配套代码仓库（\url{https://github.com/haggair/agentic-ai-book}）为每一章提供了可运行、经过测试的 notebook——每一章都向 GAS 添加一个具体部件，到最后一章时，你将拥有一个完整可运行的多智能体应用。在进入第一部分之前，紧接本引言之后的章节——\emph{守护天使系统：我们的贯穿案例}——会完整描述该系统、走读代码库，并展示如何在本地运行它。
 
 \section*{现代 AI 流水线}
 \label{the-modern-ai-pipeline}
@@ -647,6 +867,336 @@
 \end{figure}
 
 % --- Body split into parts/ ---
+\chapter*{守护天使系统：我们的贯穿案例}
+\addcontentsline{toc}{chapter}{守护天使系统：我们的贯穿案例}
+\label{gas-overview}
+
+\begin{intuitionbox}[本章的用途]
+本指南中的每一个概念，都由同一个真实系统来例证；该系统在全部 28 个代码章节中逐步构建。本章会在你逐件遇到它之前，先介绍这个系统——\textbf{守护天使系统（Guardian Angel System, GAS）}。现在阅读本章，理解你正在构建\emph{什么}以及\emph{为什么}；之后每当你想知道某一章的概念如何嵌入整体时，都可以回到这里。
+\end{intuitionbox}
+
+% ------------------------------------------------------------
+\section*{为什么需要贯穿案例？}
+\label{gas-why}
+% ------------------------------------------------------------
+
+大多数技术指南孤立地讲授概念：一章讲 RAG，一章讲多智能体协作，一章讲安全。这些概念本身是正确的，但读者只能自行想象它们如何在一个真实系统中组合起来。本指南采取了不同的方法。
+
+每一章在引入一个新概念的同时，也向一个贯穿应用添加一个具体部件。到最后一章时，你得到的不是一个彼此割裂的 notebook 集合，而是一个完整可运行、达到生产质量的多智能体 AI 系统。这种增量构建理念有两个好处：它为每个抽象概念提供了一个具体的落点；它也迫使我们面对那些只有在组件必须真正协同工作时才会出现的设计决策。
+
+我们要构建的系统是\textbf{守护天使系统}——一个持续监护糖尿病患者的智能体 AI。它足够复杂，因而具有现实感（五个专用智能体、一个由 FAISS 支撑的 RAG 知识库、一个 LangGraph 状态存储、一个 CGM 传感器模拟器、安全约束，以及一条人机协同的升级路径），同时又足够自包含，可以用一条命令在笔记本电脑上运行。
+
+配套代码仓库公开可用：
+\begin{center}
+\url{https://github.com/haggair/agentic-ai-book}
+\end{center}
+每一章都有对应的 notebook。所有 notebook 都会在每次提交时经过 CI 测试。
+
+% ------------------------------------------------------------
+\section*{临床问题}
+\label{gas-clinical}
+% ------------------------------------------------------------
+
+糖尿病影响着全球超过 5 亿人。对于 1 型糖尿病患者以及许多 2 型糖尿病患者来说，管理血糖是一项持续且高利害的任务。连续血糖监测仪（Continuous Glucose Monitor, CGM）每五分钟采样一次组织间液葡萄糖，每天产生约 288 条读数。每一条读数都必须结合上下文来解释：患者吃了什么？注射了多少胰岛素？进行了什么体力活动？当前趋势是上升还是下降？患者是否在睡觉？
+
+决策空间很大，错误的后果很严重（低于 54~mg/dL 的低血糖可导致抽搐（惊厥）或死亡；持续高于 250~mg/dL 的高血糖会造成长期器官损伤），而监护负担却无休无止。照护者——家属、护士、内分泌科医生——不可能全天候盯着一条传感器数据流。
+
+这正是智能体 AI 被设计来解决的问题：
+
+\begin{itemize}
+  \item \textbf{长时程监测}：系统必须在数小时乃至数天的时间跨度上保持上下文，而不仅仅是单轮对话。
+  \item \textbf{多模态输入}：血糖读数、活动数据、饮食记录与用药记录必须被融合。
+  \item \textbf{安全关键输出}：每一条建议在到达患者之前，都必须经过硬性临床约束的检查。
+  \item \textbf{人机协同升级}：系统必须知道何时自主行动、何时提醒人类。
+  \item \textbf{个性化}：建议必须基于个体患者的历史，而不是泛泛的指南。
+\end{itemize}
+
+\begin{intuitionbox}[为什么糖尿病管理是一个完美的智能体问题]
+GAS 不是玩具。它包含实时传感器流、面向医学文献的检索增强生成、经强化学习训练的安全约束、多智能体协作，以及一条生产部署路径。本指南中的每一个架构决策——从奖励建模到图工程再到 MCP——在这里都有一个直接且有动机的应用。
+\end{intuitionbox}
+
+% ------------------------------------------------------------
+\section*{最初的愿景（1994）}
+\label{gas-history}
+% ------------------------------------------------------------
+
+“守护天使”（Guardian Angel）这一概念，最早由 Szolovits、Doyle、Long、Kohane 与 Pauker 在 1994 年麻省理工学院的一份里程碑式技术报告中提出——\emph{Guardian Angel: Patient-Centered Health Information Systems}~\cite{szolovits1994guardian}（MIT LCS TR-604）。该报告设想了一个终身的、以患者为中心的 AI 智能体：它监测健康、推理风险、自主协调照护，并在整个医疗系统中充当患者持久的代言人。那是一份富有远见的蓝图，写于实现它所需的技术出现之前的几十年。
+
+\begin{keybox}[致敬：最初的守护天使（Szolovits 等，1994）]
+麻省理工学院的 \textbf{Peter Szolovits、John Doyle、William Long、Isaac Kohane 与 Stephen Pauker} 在 1994 年阐述了守护天使愿景——比实现它的工具出现早了三十多年。他们的核心思想（几乎按原文引用如下）直接映射到本指南所构建的系统：
+
+\begin{itemize}
+  \item \emph{“守护天使会了解你的一切医疗信息”}——在本项目中实现为 \texttt{GASState} 上下文窗口与 \texttt{GASMemory} 患者历史。
+  \item \emph{“它会持续监测你的健康”}——实现为 \texttt{monitor\_node()} 智能体，每五分钟处理一次 CGM 读数。
+  \item \emph{“它会推理风险并建议行动”}——实现为 \texttt{advisor\_node()} RAG 流水线，以 ADA 临床指南为依据。
+  \item \emph{“未经你的知情同意，它绝不会行动”}——实现为 \texttt{safety\_node()} 评审器，以及人机协同的 \texttt{caregiver\_node()} 升级路径。
+  \item \emph{“它会在整个医疗系统中协调你的照护”}——这是长期愿景；这里的多智能体架构只是第一步。
+\end{itemize}
+
+本指南构建的 GAS 是他们工作的直接思想后裔。最初的想法是对的，改变的只是工具。
+\end{keybox}
+
+二十多年前，我还是信息系统工程专业的一名本科生，受到这一愿景的启发，并将其作为学生项目进行了探索——用 \textbf{JADE}（Java Agent DEvelopment Framework）实现，这是一个遵循 FIPA 的多智能体平台。那段关于结构化智能体通信协议、基于本体的知识表示与基于规则的推理的经历，为本指南中的一切埋下了种子。
+
+你在这里构建的版本，是同一愿景在 2026 年的实现：最初的想法，如今由大语言模型、基于人类反馈的强化学习、检索增强生成与现代编排框架来驱动。
+
+% ------------------------------------------------------------
+\section*{系统架构}
+\label{gas-architecture}
+% ------------------------------------------------------------
+
+GAS 由五个专用智能体组成，由一个 LangGraph 监督者图协调，并依托三个共享服务。
+
+\begin{table}[ht!]
+\centering
+\small
+\begin{tabular}{lp{9.5cm}}
+\hline
+\textbf{智能体} & \textbf{角色} \\
+\hline
+\textbf{监督者（Supervisor）} & 编排其他智能体；根据患者状态与待处理任务决定下一个行动的智能体。实现为一个 LangGraph 条件边图。 \\
+\textbf{监测器（Monitor）} & 接收实时 CGM、活动与饮食传感器流；检测异常与趋势变化；为监督者生成结构化观察。 \\
+\textbf{顾问（Advisor）} & 使用 RAG，在由 FAISS 索引的 ADA 医学指南精选语料上生成个性化、循证的建议（\texttt{GASKnowledgeBase} 位于 \texttt{capstone\_gas/gas\_system.py}）。 \\
+\textbf{安全评审器（Safety Critic）} & 根据硬性安全规则评估每一个提议动作；在到达患者之前拦截或修改不安全输出。使用宪法式 AI 与 PPO 训练。 \\
+\textbf{照护者通知器（Caregiver Notifier）} & 当监督者判定需要人工升级时，编写并向家属、护士或急救服务发送告警。 \\
+\hline
+\end{tabular}
+\caption{GAS 的五个智能体及其角色。}
+\label{tab:gas-agents}
+\end{table}
+
+\begin{figure}[ht!]
+\centering
+\tikzset{
+  gasA/.style={draw=blue!60!black, fill=blue!15, rounded corners=5pt,
+               text width=4.4cm, align=center, minimum height=1.8cm,
+               font=\small\bfseries, line width=1.5pt, inner sep=7pt},
+  gasD/.style={draw=orange!75!black, fill=orange!20, rounded corners=5pt,
+               text width=3.4cm, align=center, minimum height=1.4cm,
+               font=\small\bfseries, line width=1.5pt, inner sep=7pt},
+  gasS/.style={draw=green!50!black, fill=green!15, rounded corners=5pt,
+               text width=4.4cm, align=center, minimum height=1.8cm,
+               font=\small\bfseries, line width=1.5pt, inner sep=7pt},
+  ga/.style={-{Stealth[length=8pt,width=6pt]}, line width=1.4pt, color=black!65},
+  gl/.style={line width=1.4pt, color=black!65},
+}
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}
+
+% ── Nodes ────────────────────────────────────────────────────────────────────
+\node[gasD] (cgm)  at ( 0, 16.0) {CGM 传感器\\\footnotesize\itshape\mdseries 血糖数据流};
+\node[gasD] (act)  at ( 0, 12.5) {活动数据\\\footnotesize\itshape\mdseries 步数 / 心率};
+\node[gasD] (meal) at ( 0,  9.0) {饮食记录\\\footnotesize\itshape\mdseries 碳水 / 胰岛素};
+
+\node[gasA] (sup)  at (12.0, 16.0) {监督者\\\footnotesize\itshape\mdseries LangGraph 路由器\\编排所有智能体};
+\node[gasA] (mon)  at ( 6.5, 12.0) {监测器\\\footnotesize\itshape\mdseries 异常检测\\趋势分析};
+\node[gasA] (adv)  at (17.5, 12.0) {顾问\\\footnotesize\itshape\mdseries 基于 ADA 指南的 RAG\\（FAISS）};
+\node[gasA] (saf)  at ( 6.5,  7.5) {安全评审器\\\footnotesize\itshape\mdseries 拦截不安全输出\\硬性临床规则};
+\node[gasA] (car)  at (17.5,  7.5) {照护者通知器\\\footnotesize\itshape\mdseries 邮件 / 短信告警\\升级逻辑};
+
+\node[gasS] (faiss) at ( 4.0,  3.0) {FAISS 知识库\\\footnotesize\itshape\mdseries 15 条 ADA 指南\\all-MiniLM-L6-v2};
+\node[gasS] (state) at (12.0,  3.0) {LangGraph 状态存储\\\footnotesize\itshape\mdseries GASState + MemorySaver};
+\node[gasS] (sim)   at (20.0,  3.0) {CGM 模拟器\\\footnotesize\itshape\mdseries patient\_data.py\\5 个临床场景};
+
+% ── Data sources → Monitor via bus ───────────────────────────────────────────
+% Trunk at x=3.0. Stubs from each source to trunk x. Vertical trunk from
+% cgm-level (y=16) all the way down to meal-level (y=9), then up to mon-level.
+\coordinate (trunk)     at (3.0, 12.0);  % junction point at Monitor y
+\coordinate (trunkTop)  at (3.0, 16.0);  % top of trunk (CGM level)
+\coordinate (trunkBot)  at (3.0,  9.0);  % bottom of trunk (Meal Log level)
+% Horizontal stubs
+\draw[gl] (cgm.east)  -- (trunkTop);
+\draw[gl] (act.east)  -- (act.east  -| trunk);
+\draw[gl] (meal.east) -- (trunkBot);
+% Vertical backbone connecting all three stubs
+\draw[gl] (trunkTop) -- (trunkBot);
+% Arrow from trunk junction to Monitor
+\draw[ga] (trunk) -- (mon.west);
+
+% ── Supervisor ↔ Monitor (L-shaped pair, offset ±6pt) ────────────────────────
+% Mon→Sup: up from mon.north, then right to sup.south (left-offset lane)
+% Sup→Mon: down from sup.south, then left to mon.north (right-offset lane)
+\draw[ga] ([xshift=-6pt]mon.north) -- ([xshift=-6pt]mon.north |- sup.south) -- ([xshift=-6pt]sup.south);
+\draw[ga] ([xshift= 6pt]sup.south) -- ([xshift= 6pt]sup.south |- mon.north) -- ([xshift= 6pt]mon.north);
+
+% ── Supervisor → Advisor (right then down, fully orthogonal) ─────────────────
+% sup.east=(14.9,16) → right to x=17.5 → down to adv.north=(17.5,13.1)
+\draw[ga] (sup.east) -- (17.5,16.0) -- (adv.north);
+
+% ── Supervisor → Safety Critic ────────────────────────────────────────────────
+% sup.west=(9.1,16) → left to CL=2.5 → down to y=7.5 → right to saf.west
+% CL=2.5: between datasrc-right(2.4) and mon-left(3.6), hugging datasrc side
+\draw[ga] (sup.west) -- (2.5,16.0) -- (2.5,7.5) -- (saf.west);
+
+% ── Supervisor → Caregiver Notifier ──────────────────────────────────────────
+% sup.east → right to CR=21.0 → down to car.east y=7.5
+\draw[ga] (sup.east) -- (21.0,16.0) -- (21.0,7.5) -- (car.east);
+
+% ── Monitor → Safety Critic (straight vertical) ───────────────────────────────
+\draw[ga] (mon.south) -- (saf.north);
+
+% ── Safety Critic ↔ Caregiver Notifier ───────────────────────────────────────
+\draw[ga] ([yshift= 6pt]saf.east) --
+  node[above,font=\small\itshape,color=black!50]{提议动作}
+  ([yshift= 6pt]car.west);
+\draw[ga] ([yshift=-6pt]car.west) --
+  node[below,font=\small\itshape,color=black!50]{批准 / 升级}
+  ([yshift=-6pt]saf.east);
+
+% ── Safety Critic → FAISS ─────────────────────────────────────────────────────
+% saf.south=(6.5,6.4) → down to y=5.5 → left to faiss.north x=4.0
+\draw[ga] (saf.south) -- (6.5,5.5) -- (4.0,5.5) -- (faiss.north);
+
+% ── Advisor → FAISS ───────────────────────────────────────────────────────────
+% Exit adv.west=(15.1,12) → left to x=14.5 → down to y=5.5 → left to faiss.east=(6.9,3.0)
+% Avoids Caregiver (x=15.1..20.4) entirely — stays left of car
+\draw[ga] (adv.west) -- (14.5,12.0) -- (14.5,5.5) -- (6.9,5.5) -- (faiss.east);
+
+% ── Monitor → State Store ─────────────────────────────────────────────────────
+% mon.south=(6.5,10.9) → down to y=4.5 → right to state.west x=9.1 → right to state.west
+\draw[ga] (mon.south) -- (6.5,4.5) -- (9.1,4.5) -- (state.west);
+
+% ── Supervisor → State Store (straight down, x=12 clear of all agent boxes) ──
+\draw[ga] (sup.south) -- (state.north);
+
+% ── CGM Simulator → Caregiver Notifier (straight vertical) ───────────────────
+\draw[ga] (sim.north) -- (car.south);
+
+% ── Section labels ────────────────────────────────────────────────────────────
+\node[font=\normalsize\bfseries,color=orange!75!black] at ( 0.0,17.8) {数据源};
+\node[font=\normalsize\bfseries,color=blue!60!black]   at (12.0,17.8) {智能体层};
+\node[font=\normalsize\bfseries,color=green!50!black]  at (12.0, 1.5) {共享服务};
+\node[font=\Large\bfseries] at (12.0,18.8) {守护天使系统——架构};
+
+% ── Legend (bottom, horizontal, closer to diagram) ────────────────────────────
+\node[font=\small\bfseries] at (12.0, 0.3) {图例：};
+\node[gasA,text width=2.8cm,minimum height=0.7cm,font=\small\bfseries] at ( 5.5,-0.7) {智能体};
+\node[gasS,text width=2.8cm,minimum height=0.7cm,font=\small\bfseries] at (12.0,-0.7) {共享服务};
+\node[gasD,text width=2.8cm,minimum height=0.7cm,font=\small\bfseries] at (18.5,-0.7) {数据源};
+
+\end{tikzpicture}}
+\caption{守护天使系统架构。传感器数据流入监测器智能体；监督者通过 LangGraph 图编排所有智能体；顾问从 FAISS 知识库检索；安全评审器为每一个输出把关；照护者通知器向人类升级。}
+\label{fig:gas-architecture}
+\end{figure}
+
+三个共享服务支撑着每一个智能体：
+
+\begin{itemize}
+  \item \textbf{FAISS 知识库}（\texttt{GASKnowledgeBase}）：使用 \texttt{sentence-transformers/all-MiniLM-L6-v2} 与 FAISS \texttt{IndexFlatIP} 索引，存储 15 条 ADA 医学指南的嵌入。顾问用它做 RAG 检索；如果未安装 FAISS，则回退到 NumPy 点积搜索或关键词搜索。
+  \item \textbf{LangGraph 状态存储}（\texttt{GASState} + \texttt{MemorySaver}）：为所有智能体提供共享工作记忆——当前患者状态、告警级别、建议、安全分数以及智能体间消息历史。\texttt{MemorySaver} 检查点器在多次流水线调用之间持久化状态。
+  \item \textbf{CGM 模拟器}（\texttt{shared/patient\_data.py}）：以 5 分钟为间隔，为五个临床场景生成逼真的血糖轨迹，为完整智能体流水线提供评估环境。
+\end{itemize}
+
+% ------------------------------------------------------------
+\section*{代码库的组织方式}
+\label{gas-codebase}
+% ------------------------------------------------------------
+
+仓库结构与本指南保持一致：
+
+\begin{verbatim}
+agentic-ai-book/
++-- shared/                  # Utilities used by every chapter
+|   +-- llm_client.py        # Unified LLM client (OpenAI/Anthropic/Ollama)
+|   +-- gas_state.py         # GASState TypedDict + GASMemory dataclass
+|   +-- patient_data.py      # CGMSimulator: glucose trace generator
++-- part1_foundations/       # Chapters 1-2
++-- part2_rl_methods/        # Chapters 3-11
++-- part3_reasoning/         # Chapters 12-13
++-- part4_evaluation/        # Chapter 14
++-- part5_agentic/           # Chapters 15-28
++-- capstone_gas/            # Complete Guardian Angel System
+    +-- gas_system.py        # All five agents + GASKnowledgeBase + GASLLMClient
+    +-- notebook_capstone.ipynb  # End-to-end walkthrough
+\end{verbatim}
+
+\texttt{shared/} 目录是整个项目的骨干。其中的 \texttt{GASLLMClient} 类（位于 \texttt{shared/llm\_client.py}）会自动探测可用的后端——如果设置了 \texttt{OPENAI\_API\_KEY} 就用 OpenAI，如果设置了 \texttt{ANTHROPIC\_API\_KEY} 就用 Anthropic，如果本地服务器在运行就用 Ollama，否则使用 \textbf{Mock} 客户端（确定性响应，不需要 API key 或网络）。每个 notebook 都从 \texttt{shared/} 导入，而不是复制样板代码，因此在一个地方切换 LLM 后端就会在所有地方生效。
+
+\begin{warningbox}[增量构建]
+每一章的 notebook 都是自包含的，可以独立运行。但这些 notebook 也被设计为按顺序阅读：每一个都会明确指出自己正在构建哪个 GAS 组件，以及它如何与前面章节构建的组件连接。capstone notebook 会把所有部件组装成完整系统。
+\end{warningbox}
+
+% ------------------------------------------------------------
+\section*{逐章路线图}
+\label{gas-roadmap}
+% ------------------------------------------------------------
+
+下表把本指南的每一章映射到它所贡献的 GAS 组件。没有 GAS 条目的章节（第一至第四部分）构建的是智能体章节所依赖的基础知识。
+
+\begin{table}[ht!]
+\centering
+\small
+\begin{tabular}{clp{6.5cm}}
+\hline
+\textbf{章} & \textbf{关键概念} & \textbf{构建的 GAS 部件} \\
+\hline
+1  & LLM 架构与优化   & ——（基础） \\
+2  & 系统基础                & ——（基础） \\
+3  & RL 导论                 & ——（基础） \\
+4  & LLM 的 RL 基础            & 临床建议质量的奖励信号设计 \\
+5  & PPO                                & 顾问智能体的 PPO 微调循环 \\
+6  & DPO                                & 顾问的 DPO 替代方案；A/B 对比 \\
+7  & GRPO                               & 安全评审器评分的 GRPO 微调 \\
+8  & 偏好优化变体   & ——（方法综述） \\
+9  & 奖励模型训练              & 临床建议质量的奖励模型 \\
+10 & SFT 最佳实践                 & 顾问的 SFT 基线 \\
+11 & 大规模系统架构       & ——（基础设施） \\
+12 & LLM 智能体训练               & 监督者的端到端轨迹 RL \\
+13 & 大型推理模型的 RL      & ——（推理方法） \\
+14 & LLM 评估                     & 顾问回答的评估 harness \\
+15 & 智能体 AI 简介         & GAS 智能体分类与角色定义 \\
+16 & RAG                                & 基于医学文献的顾问 RAG 流水线 \\
+17 & 记忆系统                     & 所有智能体共享的 Redis 记忆层 \\
+18 & 编排                      & 智能体 harness 与上下文管理 \\
+19 & 循环工程               & 监督者的自适应监测循环 \\
+20 & 图工程                  & 带条件路由的监督者 LangGraph \\
+21 & 设计模式                    & 将安全评审器作为评估驱动的模式 \\
+22 & 环境与基准         & GAS 评估环境与测试 harness \\
+23 & Model Context Protocol (MCP)       & 向任意 LLM 暴露 GAS 工具的 MCP 服务器 \\
+24 & Agent Skills                       & 监测器与顾问的技能库 \\
+25 & A2A 通信                  & GAS 智能体之间的消息传递 \\
+26 & 多智能体系统                & 完整的五智能体 GAS 协调 \\
+27 & 开发框架             & GAS 的 LangGraph、CrewAI、AutoGen 接线 \\
+28 & Agentic UI                         & GAS 的 Streamlit 实时仪表盘 \\
+$\star$ & \textbf{Capstone}           & \textbf{完整的守护天使系统} \\
+\hline
+\end{tabular}
+\caption{章节到 GAS 组件的映射。第五部分的每一章都为这个贯穿系统添加一个具体部件。}
+\label{tab:gas-roadmap}
+\end{table}
+
+% ------------------------------------------------------------
+\section*{运行代码}
+\label{gas-running}
+% ------------------------------------------------------------
+
+该仓库被设计为可在任何拥有 8~GB 内存的笔记本电脑上运行。除第 10 章（QLoRA 微调，可选）外，任何章节都不需要 GPU。也不需要 API key——默认的 LLM 后端是 \textbf{Ollama}，它在本地运行开放权重模型。
+
+\begin{examplebox}[快速开始——四条命令]
+\begin{verbatim}
+# 1. Clone and enter the repository
+git clone https://github.com/haggair/agentic-ai-book.git
+cd agentic-ai-book
+
+# 2. Create a virtual environment and install dependencies
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# 3. Pull the default LLM (llama3.2, ~2 GB) and start Ollama
+ollama pull llama3.2 && ollama serve
+
+# 4. Launch Jupyter and open the first notebook
+jupyter lab
+\end{verbatim}
+导航到 \texttt{part1\_foundations/ch01\_llm\_architecture/notebook.ipynb} 开始。
+\end{examplebox}
+
+仓库根目录下的 \texttt{SETUP.md} 文件包含完整的环境搭建指南，包括如何使用 OpenAI 或 Anthropic 代替 Ollama、微调章节的 GPU 配置，以及常见问题的排查方法。
+
+\begin{intuitionbox}[你不必按顺序阅读各章]
+每个 notebook 都是自包含的，可以独立运行。不过，按顺序阅读能让你最深刻地理解\emph{为什么}会做出每一个设计决策——因为你已经在上一章见过它要解决的问题。capstone notebook 假设你读过前面所有章节，但不要求你实际运行过它们。
+\end{intuitionbox}
+
 \chapter*{缩略语表}
 \addcontentsline{toc}{chapter}{缩略语表}
 \label{glossary}
@@ -659,12 +1209,17 @@
 \begin{description}
 
 \item[A2A] Agent-to-Agent（智能体到智能体通信协议）
+\item[ACP] Agent Communication Protocol（基于 REST 的同步式智能体通信标准）
+\item[AG2] AutoGen 2/3（Microsoft AutoGen 的社区分支；基于 actor 的运行时）
+\item[ATCS] Autonomous / Transactional / Collaborative / Supervisory（智能体角色分类法）
+\item[AUROC] Area Under the Receiver Operating Characteristic curve（受试者工作特征曲线下面积）
 \item[AdamW] Adam with decoupled Weight decay（权重衰减解耦的 Adam）
 \item[BDI] Belief--Desire--Intention（信念—愿望—意图结构）
 \item[BERT] Bidirectional Encoder Representations from Transformers（Transformer 双向编码器表征）\textsuperscript{4}
 \item[BLEU] Bilingual Evaluation Understudy（双语评估替补，指标）
 \item[BPE] Byte-Pair Encoding（字节对编码）
 \item[BT] Bradley--Terry（偏好模型）
+\item[CLM] Contrastive Language Model（System One 模型；亦指因果语言建模）
 \item[CoT] Chain of Thought（思维链）
 \item[CTDE] Centralized Training, Decentralized Execution（集中训练、分散执行）
 \item[CUDA] Compute Unified Device Architecture（统一计算设备架构）
@@ -676,6 +1231,7 @@
 \item[DPO] Direct Preference Optimization（直接偏好优化）
 \item[DQN] Deep Q-Network（深度 Q 网络）
 \item[DRAM] Dynamic Random-Access Memory（动态随机存取存储器）
+\item[ECE] Expected Calibration Error（期望校准误差，置信度与准确率之间的差距）
 \item[ELO] Elo rating system（以 Arpad Elo 命名的评分系统）
 \item[EOS] End of Sequence（序列结束，token）
 \item[FA] FlashAttention（注意力优化算法）\textsuperscript{1}
@@ -689,6 +1245,7 @@
 \item[GRPO] Group Relative Policy Optimization（组相对策略优化）
 \item[HBM] High Bandwidth Memory（高带宽内存）
 \item[IPO] Identity Preference Optimization（恒等偏好优化）\textsuperscript{2}
+\item[Jev] TypeSafe AI 的 System One 模型（校准决策模型；输出类型化概率分布）
 \item[KL] Kullback--Leibler（散度）
 \item[KTO] Kahneman--Tversky Optimization（Kahneman--Tversky 优化）\textsuperscript{2}
 \item[KV] Key--Value（键值，缓存）
@@ -709,6 +1266,7 @@
 \item[OPSD] On-Policy Self-Distillation（同策略自蒸馏）
 \item[ORPO] Odds Ratio Preference Optimization（优势比偏好优化）\textsuperscript{2}
 \item[ORM] Outcome Reward Model（结果奖励模型）
+\item[OWC] Orchestrator-Worker-Critic（编排器—工作者—评审者多智能体三元组）
 \item[PEFT] Parameter-Efficient Fine-Tuning（参数高效微调）
 \item[PP] Pipeline Parallelism（流水线并行）
 \item[PPO] Proximal Policy Optimization（近端策略优化）
@@ -717,6 +1275,8 @@
 \item[RAG] Retrieval-Augmented Generation（检索增强生成）
 \item[ReAct] Reasoning + Acting（推理 + 行动，Agent 模式）
 \item[RL] Reinforcement Learning（强化学习）
+\item[RLCD] Reinforcement Learning for Calibrated Decisions（TypeSafe AI 的校准决策后训练方法）
+\item[RLCR] Reinforcement Learning with Calibration Rewards（在 RLVR 中加入 Brier 分数校准项）
 \item[RLHF] Reinforcement Learning from Human Feedback（基于人类反馈的强化学习）
 \item[RLVR] Reinforcement Learning with Verifiable Rewards（基于可验证奖励的强化学习）
 \item[RM] Reward Model（奖励模型）
@@ -761,5 +1321,10 @@
 
 \bibliographystyle{plainnat}
 \bibliography{book}
+
+\appendix
+\renewcommand{\chapterlabel}{附录~\thechapter}
+
+\input{contents/appendix-math}
 
 \end{document}

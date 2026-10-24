@@ -3,8 +3,27 @@
 \chapter{面向大型推理模型的强化学习}
 \label{sec:rl_reasoning}
 
-% The emergence of large reasoning models represents one of the most significant developments in modern AI. Unlike standard language model training, which optimizes for next-token prediction, reasoning-focused RL teaches models to \emph{think before answering}---allocating additional computation at inference time to explore, verify, and refine intermediate steps. This section provides a comprehensive technical treatment of the methods, architectures, and scaling laws that underpin this paradigm.
-大型推理模型的出现是现代 AI 最重要的进展之一。与优化下一个 Token 预测的标准语言模型训练不同，面向推理的强化学习教会模型在\emph{回答之前先思考}——在推理时分配额外算力以探索、验证并精炼中间步骤。本节系统地介绍支撑这一范式的方法、架构与扩展律。
+\begin{keybox}[GAS 关联 —— 面向大型推理模型的强化学习]
+在 GAS 中，思维链推理不是奢侈品——而是一项安全要求。没有可见推理轨迹的建议无法被临床医生审计。本章关于训练推理模型的技术可直接应用于 GAS Advisor。
+
+\textbf{测试时扩展（\hyperref[sec:test_time_methods]{\S~测试时扩展方法}）。}
+GAS Advisor 可以在推理时使用 Best-of-N 采样：生成 $N$ 个候选建议，用 Safety Critic（\texttt{capstone\_gas/gas\_system.py} 中的 \texttt{safety\_node()}）为全部 $N$ 个打分，并选择得分最高的已批准建议。Safety Critic 的重试机制（最多 2 次重试）是该模式在原型中的版本。
+
+\textbf{DeepSeek-R1 风格训练（\hyperref[subsec:deepseek_r1]{\S~DeepSeek-R1}）。}
+GAS Advisor v2 可以使用 R1 配方训练：GRPO 配合格式 reward（推理轨迹必须遵循结构化模板）与结果 reward（Safety Critic 分数 $\geq 0.7$）。格式 reward 确保推理轨迹始终存在且可解析；结果 reward 确保它导向安全的建议。本章 notebook \texttt{part2\_rl\_methods/ch07\_grpo/notebook.ipynb} 演示了这一训练配方。
+
+\textbf{过程奖励模型（\hyperref[subsec:reasoning_methods]{\S~关键方法及其数学基础}）。}
+GAS Monitor（\texttt{capstone\_gas/gas\_system.py} 中的 \texttt{monitor\_node()}）使用思维链 Prompt 逐步推理血糖异常：当前读数（mg/dL）、趋势方向、与目标范围（70--180 mg/dL）的比较，以及警报级别分配。过程奖励模型（PRM）可以为每个推理步骤打分，从而提供比仅使用最终警报级别更密集的训练信号。
+
+\textbf{面向临床医生的可见推理。}
+Advisor 生成的推理轨迹会呈现在 Caregiver Notifier 的警报消息中（\texttt{capstone\_gas/gas\_system.py} 中的 \texttt{caregiver\_node()}）：照护者看到的不仅是建议，还有其背后的推理。这种透明度使临床医生能够推翻他们不同意的建议，并识别 Advisor 推理中的系统性错误。
+
+\textbf{推理时算力扩展（\hyperref[sec:inference-time-scaling]{\S~推理时算力扩展定律}）。}
+GAS 基准测试表明，对 Advisor 而言，在一定范围内，推理时算力（更多候选、更长推理轨迹）比训练时算力（更大模型）更具成本效益。\texttt{capstone\_gas/gas\_system.py} 中的 \texttt{GASLLMClient} 支持控制这一权衡的 temperature 与 max\_tokens 参数。
+\end{keybox}
+
+% The emergence of large reasoning models represents one of the most significant developments in modern AI. Unlike standard language model training, which optimizes for next-token prediction, reasoning-focused RL teaches models to \emph{think before answering}---allocating additional computation at inference time to explore, verify, and refine intermediate steps. This chapter provides a comprehensive technical treatment of the methods, architectures, and scaling laws that underpin this paradigm.
+大型推理模型的出现是现代 AI 最重要的进展之一。与优化下一个 Token 预测的标准语言模型训练不同，面向推理的强化学习教会模型在\emph{回答之前先思考}——在推理时分配额外算力以探索、验证并精炼中间步骤。本章系统地介绍支撑这一范式的方法、架构与扩展律。
 
 \section{动机与背景}
 \label{subsec:reasoning_motivation}
@@ -74,7 +93,7 @@
 \end{figure}
 
 % The practical implication is profound: \textbf{reasoning models trade training compute for inference compute}. Rather than always deploying the largest possible model, one can deploy a smaller, reasoning-capable model and allocate more tokens to ``thinking'' on hard problems.
-其实践含义深远：\textbf{推理模型用推理算力换取训练算力}。不必总是部署尽可能大的模型，而是可以部署一个具备推理能力的较小模型，并在难题上分配更多 Token 用于“思考”。
+其实践含义深远：\textbf{推理模型用训练算力换取推理算力}。不必总是部署尽可能大的模型，而是可以部署一个具备推理能力的较小模型，并在难题上分配更多 Token 用于“思考”。
 
 \section{测试时扩展方法}
 \label{sec:test_time_methods}
@@ -162,8 +181,8 @@ p(y|x) = \sum_{z} p(y|x, z) \cdot p(z|x) \approx p(y|x, z^*) \cdot p(z^*|x)
 \subsection{思维树（ToT）}
 \label{subsec:tot_method}
 
-% Tree-of-Thoughts~\cite{yao2024tree} generalizes CoT from a \textbf{linear chain} to a \textbf{tree structure}, enabling the model to explore multiple reasoning paths, evaluate intermediate states, and backtrack from unpromising branches. This introduces deliberate planning into the reasoning process.
-思维树（Tree-of-Thoughts，ToT）~\cite{yao2024tree} 将 CoT 从\textbf{线性链}推广为\textbf{树形结构}，使模型能够探索多条推理路径、评估中间状态，并从前景不佳的分支回溯。这为推理过程引入了刻意的规划。
+% Tree-of-Thoughts~\cite{yao2023tree} generalizes CoT from a \textbf{linear chain} to a \textbf{tree structure}, enabling the model to explore multiple reasoning paths, evaluate intermediate states, and backtrack from unpromising branches. This introduces deliberate planning into the reasoning process.
+思维树（Tree-of-Thoughts，ToT）~\cite{yao2023tree} 将 CoT 从\textbf{线性链}推广为\textbf{树形结构}，使模型能够探索多条推理路径、评估中间状态，并从前景不佳的分支回溯。这为推理过程引入了刻意的规划。
 
 \paragraph{核心抽象。}
 \label{core-abstraction.}
@@ -531,7 +550,7 @@ CoT~\cite{wei2022chain} & 链 & 1 & N/A & 否 & 简单—中等难度问题 \\
 Self-Consistency~\cite{wang2023selfconsistency} & 并行链 & $N$ & \checkmark{} 完全 & 否（多数投票） & 答案离散的数学题 \\
 Best-of-N + ORM & 并行链 & $N$ + 1 & \checkmark{} 完全 & 是（ORM） & 有良好 RM 的通用任务 \\
 Best-of-N + PRM & 并行链 & $N$ + $N{\cdot}K$ & \checkmark{} 完全 & 是（PRM） & 复杂多步推理 \\
-ToT~\cite{yao2024tree} & 树（BFS/DFS） & $O(kbd)$ & 部分 & LLM 作判官 & 结构化搜索问题 \\
+ToT~\cite{yao2023tree} & 树（BFS/DFS） & $O(kbd)$ & 部分 & LLM 作判官 & 结构化搜索问题 \\
 GoT~\cite{besta2024graph} & DAG & $O(kbd)$ & 部分 & LLM 作判官 & 可分解的问题 \\
 MCTS~\cite{kocsis2006bandit} & 树 + 价值 & $O(N_{\text{sim}} \cdot d)$ & 部分 & 是（价值网络） & 困难证明、编程 \\
 Self-Refine~\cite{madaan2023selfrefine} & 线性（迭代） & $2T$ & 否 & 自我评判 & 开放式生成 \\
@@ -703,7 +722,8 @@ GRPO 目标对概率比做截断（与近端策略优化（Proximal Policy Optim
   % \item $\beta > 0$ controls the KL penalty strength
   \item $\beta > 0$ 控制 KL 惩罚的强度
   % \item $|y_i|$ is the length of response $i$ (length normalization prevents bias toward short responses)
-  \item $|y_i|$ 是第 $i$ 个回答的长度（长度归一化可防止偏向较短回答）
+  % 勘误（英文 v1.4 有误）：GRPO 的 1/|y_i| 主要消除显式的线性长度缩放（即回答长度对损失与梯度尺度的放大），并非防止偏向短回答。
+  \item $|y_i|$ 是第 $i$ 个回答的长度（长度归一化消除显式的线性长度缩放）
 \end{itemize}
 
 \paragraph{KL 惩罚的具体形式}

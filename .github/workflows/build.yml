@@ -1,28 +1,23 @@
 name: Build Book
 
-# Build book.pdf on every PR and push to main; publish to GitHub Releases on tag.
+# Build agentic-ai-guide-zh.pdf on every PR, push to main/development, or
+# manual dispatch; publish it to GitHub Releases when a v* tag is pushed.
 #
-# Jobs:
-#   build    - compile book.pdf and upload as workflow artifact
-#              (runs on PR / push to main / tag)
-#   release  - attach PDF to a GitHub Release when a v* tag is pushed
+# The repository Makefile intentionally runs the explicit
+# `xelatex -> bibtex -> xelatex x3` sequence and avoids latexmk, so CI
+# calls `make dist` directly and matches the local build. The font stack in
+# book.tex selects Noto CJK automatically on Linux, so no source rewriting is
+# needed on the runner.
 #
-# Why a TeX Live container instead of xu-cheng/latex-action: the project's
-# Makefile deliberately runs the explicit `xelatex -> bibtex -> xelatex ->
-# xelatex` sequence and avoids latexmk (see Makefile header). Using the
-# texlive/texlive image lets us call `make` directly so CI matches local
-# behaviour 1:1.
-#
-# Font handling: book.tex uses macOS-only CJK fonts (Songti SC / PingFang SC /
-# STFangsong). On the Linux runner we swap them in-place to Noto CJK before
-# compiling. The edit lives only in the runner's working tree and is never
-# committed, so local macOS builds are untouched.
+# TeX Live is pinned to the frozen TL2025 historic image instead of `latest`;
+# for byte-reproducible builds, pin the image digest as well.
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, update-latest-zh]
     tags: ['v*']
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -31,39 +26,40 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: texlive/texlive:latest
+      image: texlive/texlive:TL2025-historic
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Noto CJK fonts
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends fonts-noto-cjk fonts-noto-cjk-extra
-          # Refresh fontconfig cache so XeLaTeX/fontspec can find the new fonts.
+          apt-get install -y --no-install-recommends make fonts-noto-cjk fonts-noto-cjk-extra
           fc-cache -f
 
-      - name: Swap macOS CJK fonts to Noto CJK for Linux build
+      - name: Verify CJK fonts
         run: |
-          sed -i \
-            -e 's/\\setCJKmainfont{Songti SC}\[AutoFakeBold=2.5, AutoFakeSlant=0.15\]/\\setCJKmainfont{Noto Serif CJK SC}/' \
-            -e 's/\\setCJKsansfont{PingFang SC}/\\setCJKsansfont{Noto Sans CJK SC}/' \
-            -e 's/\\setCJKmonofont{STFangsong}/\\setCJKmonofont{Noto Sans Mono CJK SC}/' \
-            book.tex
-          # Fail loudly if any of the three substitutions silently missed
-          # (e.g. someone reformatted the preamble and the regex no longer
-          # matches). Without these guards we'd ship a broken PDF.
-          grep -q 'Noto Serif CJK SC' book.tex
-          grep -q 'Noto Sans CJK SC' book.tex
-          grep -q 'Noto Sans Mono CJK SC' book.tex
+          fc-list : family | grep -qi 'Noto Serif CJK SC'
+          fc-list : family | grep -qi 'Noto Sans CJK SC'
 
-      - name: Compile book.pdf
-        run: make
+      - name: Compile PDF
+        run: make dist
 
-      - name: Upload book.pdf
+      - name: Verify build output
+        run: |
+          test -s agentic-ai-guide-zh.pdf
+          test -s book.log
+          if grep -E 'Citation .* undefined|Reference .* undefined|Missing character' book.log; then
+            echo "Build log contains unresolved references or missing glyphs"; exit 1
+          fi
+
+      - name: Upload PDF artifact
         uses: actions/upload-artifact@v4
         with:
-          name: book-pdf
-          path: book.pdf
+          name: agentic-ai-guide-zh-pdf
+          path: agentic-ai-guide-zh.pdf
           if-no-files-found: error
           retention-days: 14
 
@@ -76,15 +72,12 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: book-pdf
+          name: agentic-ai-guide-zh-pdf
           path: .
-
-      - name: Rename PDF with tag
-        run: mv book.pdf "agentic-ai-guide-zh-${{ github.ref_name }}.pdf"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: agentic-ai-guide-zh-${{ github.ref_name }}.pdf
+          files: agentic-ai-guide-zh.pdf
           generate_release_notes: true
           fail_on_unmatched_files: true
